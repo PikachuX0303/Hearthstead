@@ -52,6 +52,8 @@ public class Colony {
     private String style = dev.pikachux.hearthstead.blueprint.Styles.CLASSIC;
     private int nextCitizenId = 1;
     private long spawnTimer;
+    /** How fast citizens gain skill experience; raised by a staffed Library with books. */
+    private double skillGainMultiplier = 1;
 
     Colony(ColonyManager manager, int id) {
         this.manager = manager;
@@ -183,6 +185,36 @@ public class Colony {
                 .orElse(null);
     }
 
+    /** How fast citizens gain skill experience: 1, plus 0.25 per level of the best staffed Library that has books. */
+    public double skillGainMultiplier() {
+        return skillGainMultiplier;
+    }
+
+    private double libraryBonus(ServerLevel level) {
+        double best = 1;
+        for (BuildingData building : buildings.values()) {
+            if (building.type() != BuildingType.LIBRARY || building.level() == 0
+                    || citizens.values().stream().noneMatch(c -> building.pos().equals(c.workPos()))
+                    || Storage.count(Storage.containers(level, building), s -> s.is(net.minecraft.world.item.Items.BOOK)) == 0) {
+                continue;
+            }
+            best = Math.max(best, 1 + 0.25 * building.level());
+        }
+        return best;
+    }
+
+    /** The colony's best built training ground of this type (Combat Academy or Archery), or null. */
+    @Nullable
+    public BuildingData trainingGround(BuildingType type) {
+        BuildingData best = null;
+        for (BuildingData building : buildings.values()) {
+            if (building.type() == type && building.level() > 0 && (best == null || building.level() > best.level())) {
+                best = building;
+            }
+        }
+        return best;
+    }
+
     /** Who may do what in the colony. */
     public ColonyPermissions permissions() {
         return permissions;
@@ -295,6 +327,7 @@ public class Colony {
         assignHomes();
         assignJobs();
         raid.tick(server, this, level);
+        skillGainMultiplier = libraryBonus(level);
         happenings.tick(server, this, level);
 
         if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get() / (research.has(Research.WELCOME_WAGONS) ? 2 : 1)) {

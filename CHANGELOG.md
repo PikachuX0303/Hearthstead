@@ -5,6 +5,20 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.32.0-alpha] - 2026-10-31
+
+### Added
+- **Citizen skills.** Seven skills (Strength, Dexterity, Agility, Knowledge, Endurance, Combat,
+  Marksmanship), shown in the citizen window. Each job trains its skill while working, up to
+  level 50, and every level makes the citizen 1% faster in that job. Settlers arrive with a few
+  random points; citizens from older worlds start at 5.
+- **Library.** A librarian studies books; while it is staffed and has books, every citizen learns
+  25% faster per Library level.
+- **Combat Academy** and **Archery.** Guards train there every other stretch of a calm day:
+  Combat (more damage and health) at the academy, Marksmanship at the archery.
+- Guards with Marksmanship 5 or more shoot arrows at enemies out of sword reach, using arrows from
+  their tower; towers and barracks ask for arrows once the colony has an Archery.
+
 ## [0.31.0-alpha] - 2026-10-31
 
 ### Added

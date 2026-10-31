@@ -27,12 +27,12 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 41 huts and jobs, five building styles, research and
+Hearthstead has the core colony loop, 44 huts and jobs, citizen skills, five building styles, research and
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
-- Some jobs: no Combat Academy, Archery, Library, School, Tavern, Graveyard, and so on.
+- Some buildings: no School, Tavern or Graveyard yet; no children.
 - More raider cultures (barbarians and pirates so far), more colony events.
 
 ## Features
@@ -109,6 +109,7 @@ links to the releases and the changelog.
 | **Guard (Barracks)** | The Barracks employs 2 guards per level (up to 10), who patrol around it like Guard Tower guards. Asks for swords. |
 | **Healer** | Works at the Hospital and heals hurt citizens around it. Citizens below half health leave their work and go to a staffed Hospital until they have mostly recovered. |
 | **Quarrier** | Digs an open pit behind the Quarry, layer by layer from the top: 5x5 and 8 deep at level 1, up to 13x13 and 24 deep at level 5. Brings the stone and ores to the hut. Needs a pickaxe. |
+| **Librarian** | Studies the Library's books. While a staffed Library has books, every citizen gains skill experience 25% faster per Library level; one book is used up every quarter day. |
 | **Fisherman** | Needs a **fishing rod** in the hut. Finds open water near the hut, fishes from the shore using the vanilla fishing loot, and brings the catch home. |
 | **Builder** | Every hut is built from a blueprint (schematic) by a **Builder**. A placed hut starts at level 0 and gets a work order for level 1. The builder takes building materials from the **Builder's Hut** inventory and places the blueprint block by block, clearing whatever is in the way. Open a hut to see progress and the materials still needed. |
 | **Upgrades** | Huts go up to level 5, and each level has a bigger building. Open a hut and click **Upgrade** to create a work order. Other huts can't exceed the Town Hall's level, and a builder can only build up to its own hut's level (level 1 is always possible). |
@@ -160,6 +161,9 @@ Each hut is 8 planks around a center item:
 | Hospital | golden apple |
 | Quarry | iron pickaxe |
 | Stash | barrel |
+| Library | bookshelf |
+| Combat Academy | iron sword |
+| Archery | target |
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
@@ -296,6 +300,31 @@ and visitors may do. Officers can open the screen to look but not change it.
 
 A **Stash** is a drop-off box with no worker: put anything into it and the deliveryman carries
 it to the Warehouse on their next round. Handy next to a mine entrance or a farm.
+
+## Skills
+
+Every citizen has seven skills, shown in the citizen window (hover over one for details):
+
+| Skill | Used by |
+| --- | --- |
+| Strength | miners, lumberjacks, builders, quarriers, crushers, netherworkers |
+| Dexterity | sawmill workers, stonemasons, dyers, glassblowers, concrete mixers, mechanics, blacksmiths, fletchers, cooks, bakers |
+| Agility | deliverymen, fishermen, herders, beekeepers |
+| Knowledge | researchers, enchanters, alchemists, healers, librarians |
+| Endurance | farmers, planters, composters, florists, sifters, smelters |
+| Combat | guards: +1 damage per 10 levels and +1 health per 5 levels |
+| Marksmanship | guards: from level 5 they shoot arrows at enemies out of sword reach |
+
+New settlers start between 1 and 10 (Marksmanship at 1). Working trains the job's skill, up to
+level 50, and each level makes the citizen work 1% faster in that job. A **Library** with books
+and a librarian speeds up learning for the whole colony.
+
+**Guard training:** with a **Combat Academy** or an **Archery** in the colony, guards spend
+every other stretch of a calm day training there instead of patrolling: Combat at the academy,
+Marksmanship at the archery, faster at higher levels. Guard towers and barracks then ask for
+arrows for their marksmen (the Fletcher makes them).
+
+![Citizen window with skills](docs/screenshots/citizen.png)
 
 ## Hut settings
 

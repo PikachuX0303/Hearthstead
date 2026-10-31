@@ -15,7 +15,7 @@ public class CitizenScreen extends ColonyScreen {
     private final CitizenViewPayload view;
 
     public CitizenScreen(CitizenViewPayload view) {
-        super(Component.literal(view.name()), 230, 212);
+        super(Component.literal(view.name()), 230, 236);
         this.view = view;
     }
 
@@ -59,7 +59,9 @@ public class CitizenScreen extends ColonyScreen {
         text(g, Component.translatable("gui.hearthstead.happiness", String.format("%.1f", view.happiness())), x, y, TEXT);
         bar(g, x, y + 10, barWidth, 6, view.happiness(), 10, happinessColor(view.happiness()));
 
-        y = top + 110;
+        renderSkills(g, left + 8, top + 110, mouseX, mouseY);
+
+        y = top + 136;
         y = wrapped(g, Component.translatable("gui.hearthstead.status", view.status()), left + 8, y, panelWidth - 16, TEXT);
         text(g, Component.translatable("gui.hearthstead.home",
                 view.home().isEmpty() ? Component.translatable("gui.hearthstead.homeless") : Component.literal(view.home())),
@@ -76,6 +78,24 @@ public class CitizenScreen extends ColonyScreen {
             int sx = left + 30 + i * 18;
             drawSlot(g, sx, slotY);
             item(g, view.inventory().get(i), sx + 1, slotY + 1, mouseX, mouseY);
+        }
+    }
+
+    private static final String[] SKILLS = {"strength", "dexterity", "agility", "knowledge", "endurance", "combat", "marksmanship"};
+
+    /** Skills in two rows of four short labels; the job's skill is gold, full names on hover. */
+    private void renderSkills(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+        int column = (panelWidth - 16) / 4;
+        for (int i = 0; i < view.skills().size() && i < SKILLS.length; i++) {
+            int cx = x + (i % 4) * column;
+            int cy = y + (i / 4) * 11;
+            Component label = Component.translatable("skill.hearthstead." + SKILLS[i] + ".short")
+                    .append(" " + view.skills().get(i));
+            text(g, label, cx, cy, i == view.primarySkill() ? HEADER : TEXT);
+            if (mouseX >= cx && mouseX < cx + column - 2 && mouseY >= cy && mouseY < cy + 10) {
+                g.setTooltipForNextFrame(font, Component.translatable("skill.hearthstead." + SKILLS[i] + ".desc",
+                        Component.translatable("skill.hearthstead." + SKILLS[i]), view.skills().get(i)), mouseX, mouseY);
+            }
         }
     }
 

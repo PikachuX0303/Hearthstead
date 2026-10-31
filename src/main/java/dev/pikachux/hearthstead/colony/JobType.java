@@ -37,7 +37,8 @@ public enum JobType {
     FLETCHER("fletcher", "Fletcher"),
     STONE_SMELTER("stone_smelter", "Stone Smelter"),
     HEALER("healer", "Healer"),
-    QUARRIER("quarrier", "Quarrier");
+    QUARRIER("quarrier", "Quarrier"),
+    LIBRARIAN("librarian", "Librarian");
 
     private final String id;
     private final String displayName;

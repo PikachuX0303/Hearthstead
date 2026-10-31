@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutarchery"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutarchery",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutarchery",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutarchery",
+      "y": 270
+    }
+  }
+}

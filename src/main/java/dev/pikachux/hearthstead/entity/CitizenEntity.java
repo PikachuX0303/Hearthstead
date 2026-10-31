@@ -179,6 +179,9 @@ public class CitizenEntity extends PathfinderMob {
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.StoneSmelterGoal(this));
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.HealerGoal(this));
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.QuarrierGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.LibrarianGoal(this));
+        goalSelector.addGoal(5, new dev.pikachux.hearthstead.entity.ai.GuardTrainingGoal(this));
+        goalSelector.addGoal(1, new dev.pikachux.hearthstead.entity.ai.GuardRangedGoal(this));
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
         goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 6.0F));
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));
@@ -236,7 +239,12 @@ public class CitizenEntity extends PathfinderMob {
 
     private void syncFromData(CitizenData data) {
         Colony colony = colony();
-        updateGuardTraining(data.job() == JobType.GUARD, colony == null ? null : colony.research());
+        updateGuardTraining(data.job() == JobType.GUARD, colony == null ? null : colony.research(), data);
+        // Working trains the job's skill (a staffed Library with books speeds this up).
+        dev.pikachux.hearthstead.colony.Skill skill = dev.pikachux.hearthstead.colony.Skill.primary(data.job());
+        if (skill != null && colony != null && isWorking()) {
+            data.addExperience(skill, colony.skillGainMultiplier());
+        }
         apply(Attributes.MOVEMENT_SPEED, DELIVERY_SPEED, 0.3, AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
                 data.job() == JobType.DELIVERYMAN && colony != null && colony.research().has(Research.DELIVERY_CARTS));
         entityData.set(DATA_SKIN, data.skin());
@@ -290,12 +298,29 @@ public class CitizenEntity extends PathfinderMob {
     }
 
     /** Guards are trained fighters: more health, armour and attack while they hold the job (more with research). */
-    private void updateGuardTraining(boolean guard, @Nullable ColonyResearch research) {
+    /** Whether one of the citizen's job goals is running right now. */
+    public boolean isWorking() {
+        return goalSelector.getAvailableGoals().stream()
+                .anyMatch(goal -> goal.isRunning() && goal.getGoal() instanceof dev.pikachux.hearthstead.entity.ai.WorkGoal);
+    }
+
+    /** Extra attack damage from a guard's Combat skill: up to 5 at level 50. */
+    public static double combatDamage(int combat) {
+        return combat / 10.0;
+    }
+
+    /** Extra health from a guard's Combat skill: up to 10 at level 50. */
+    public static double combatHealth(int combat) {
+        return combat / 5.0;
+    }
+
+    private void updateGuardTraining(boolean guard, @Nullable ColonyResearch research, CitizenData data) {
+        int combat = data.skill(dev.pikachux.hearthstead.colony.Skill.COMBAT);
         boolean drills = has(research, Research.MILITIA_DRILLS);
         boolean veterans = has(research, Research.VETERAN_GUARDS);
-        apply(Attributes.MAX_HEALTH, GUARD_HEALTH, guardHealth(research), guard);
+        apply(Attributes.MAX_HEALTH, GUARD_HEALTH, guardHealth(research) + combatHealth(combat), guard);
         apply(Attributes.ARMOR, GUARD_ARMOR, guardArmor(research), guard);
-        apply(Attributes.ATTACK_DAMAGE, GUARD_ATTACK, 2.0 + (drills ? 2.0 : 0) + (veterans ? 3.0 : 0), guard);
+        apply(Attributes.ATTACK_DAMAGE, GUARD_ATTACK, 2.0 + (drills ? 2.0 : 0) + (veterans ? 3.0 : 0) + combatDamage(combat), guard);
         apply(Attributes.MOVEMENT_SPEED, GUARD_SPEED, 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
                 guard && has(research, Research.SWIFT_PATROLS));
         if (getHealth() > getMaxHealth()) {
@@ -341,6 +366,11 @@ public class CitizenEntity extends PathfinderMob {
             return 1.0;
         }
         double speed = (0.5 + data.happiness() / 10.0) * HearthsteadConfig.WORK_SPEED.get();
+        dev.pikachux.hearthstead.colony.Skill skill = dev.pikachux.hearthstead.colony.Skill.primary(data.job());
+        if (skill != null) {
+            // A skilled worker is faster: +1% per level of the job's skill.
+            speed *= 1 + data.skill(skill) / 100.0;
+        }
         if (colony.research().has(Research.APPRENTICESHIP)) {
             speed *= 1.10;
         }

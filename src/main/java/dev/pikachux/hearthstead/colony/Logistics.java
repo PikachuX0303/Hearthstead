@@ -134,7 +134,8 @@ public final class Logistics {
             case LUMBERJACK -> s -> s.is(ItemTags.AXES) || s.is(ItemTags.SAPLINGS);
             case FARMER -> s -> s.is(ItemTags.HOES) || s.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) || s.is(Items.BONE_MEAL);
             case MINER -> s -> s.is(ItemTags.PICKAXES) || s.is(Items.TORCH);
-            case GUARD_TOWER, BARRACKS -> s -> s.is(ItemTags.SWORDS);
+            case GUARD_TOWER, BARRACKS -> s -> s.is(ItemTags.SWORDS) || s.is(Items.ARROW);
+            case LIBRARY -> s -> s.is(Items.BOOK);
             case QUARRY -> s -> s.is(ItemTags.PICKAXES);
             case STASH -> s -> false;
             case FISHERMAN -> Logistics::isFishingRod;
@@ -237,7 +238,18 @@ public final class Logistics {
                     restock(building, storage, s -> s.is(Items.TORCH), 16, 32, "Torches", requests);
                 }
             }
-            case GUARD_TOWER, BARRACKS -> tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
+            case GUARD_TOWER, BARRACKS -> {
+                tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
+                // Guards trained at an Archery shoot arrows from their tower's stock.
+                if (building.level() > 0 && colony.trainingGround(BuildingType.ARCHERY) != null) {
+                    restock(building, storage, s -> s.is(Items.ARROW), 8, 32, "Arrows", requests);
+                }
+            }
+            case LIBRARY -> {
+                if (building.level() > 0) {
+                    restock(building, storage, s -> s.is(Items.BOOK), 2, 8, "Books", requests);
+                }
+            }
             case QUARRY -> tool(level, colony, building, storage, s -> s.is(ItemTags.PICKAXES), "Pickaxe", requests);
             case FISHERMAN -> tool(level, colony, building, storage, Logistics::isFishingRod, "Fishing Rod", requests);
             case COOK -> {

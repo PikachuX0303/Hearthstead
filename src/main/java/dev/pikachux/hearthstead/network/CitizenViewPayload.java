@@ -24,7 +24,9 @@ public record CitizenViewPayload(
         String home,
         String work,
         ItemStack heldItem,
-        List<ItemStack> inventory
+        List<ItemStack> inventory,
+        List<Integer> skills,
+        int primarySkill
 ) implements CustomPacketPayload {
     public static final Type<CitizenViewPayload> TYPE = new Type<>(Hearthstead.id("citizen_view"));
     public static final StreamCodec<RegistryFriendlyByteBuf, CitizenViewPayload> CODEC =
@@ -49,11 +51,14 @@ public record CitizenViewPayload(
         buf.writeUtf(work);
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, heldItem);
         ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, inventory);
+        BuildingViewPayload.writeList(buf, skills, (b, level) -> b.writeVarInt(level));
+        buf.writeVarInt(primarySkill + 1);
     }
 
     private static CitizenViewPayload read(RegistryFriendlyByteBuf buf) {
         return new CitizenViewPayload(buf.readVarInt(), buf.readUtf(), buf.readUtf(), buf.readFloat(), buf.readFloat(),
                 buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readUtf(), buf.readUtf(), buf.readUtf(),
-                ItemStack.OPTIONAL_STREAM_CODEC.decode(buf), ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(buf));
+                ItemStack.OPTIONAL_STREAM_CODEC.decode(buf), ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(buf),
+                BuildingViewPayload.readList(buf, b -> b.readVarInt()), buf.readVarInt() - 1);
     }
 }

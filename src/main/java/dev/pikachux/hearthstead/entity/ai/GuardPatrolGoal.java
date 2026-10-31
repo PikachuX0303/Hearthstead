@@ -45,7 +45,18 @@ public class GuardPatrolGoal extends WorkGoal {
         patrol(tower);
     }
 
+    /** Guards who can shoot keep a quiver of arrows from their tower. */
+    private void restockArrows(BlockPos tower) {
+        var data = citizen.data();
+        if (data != null && data.skill(dev.pikachux.hearthstead.colony.Skill.MARKSMANSHIP) >= GuardRangedGoal.MIN_MARKSMANSHIP
+                && citizen.inventory().countItem(net.minecraft.world.item.Items.ARROW) < 8
+                && citizen.blockPosition().closerToCenterThan(tower.getCenter(), 4)) {
+            takeFromHut(s -> s.is(net.minecraft.world.item.Items.ARROW), 16);
+        }
+    }
+
     private void patrol(BlockPos tower) {
+        restockArrows(tower);
         citizen.setStatus("Patrolling");
         if (patrolTarget == null || walkTo(patrolTarget, 2) || --timer <= 0) {
             int radius = 6 + (building() == null ? 0 : building().level() * 3);

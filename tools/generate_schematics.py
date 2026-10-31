@@ -104,6 +104,9 @@ STYLES = {
     "hospital":   ("white_concrete",   "birch_log",    "smooth_quartz",       "birch"),
     "quarry":     ("cobblestone",      "oak_log",      "andesite",            "oak"),
     "stash":      ("oak_planks",       "oak_log",      "oak_planks",          "oak"),
+    "library":    ("dark_oak_planks",  "dark_oak_log", "spruce_planks",       "dark_oak"),
+    "combatacademy": ("stone_bricks",  "spruce_log",   "coarse_dirt",         "spruce"),
+    "archery":    ("spruce_planks",    "oak_log",      "oak_planks",          "spruce"),
 }
 
 # Architectural styles. "classic" uses the per-hut palette above; the others give every
@@ -313,7 +316,10 @@ def build(hut, level, style="classic"):
              "barracks": block("target", power=0),
              "hospital": block("white_carpet"),
              "quarry": block("stonecutter", facing="north"),
-             "stash": block("barrel", facing="up", open=False)}
+             "stash": block("barrel", facing="up", open=False),
+             "library": block("bookshelf"),
+             "combatacademy": block("hay_block", axis="y"),
+             "archery": block("target", power=0)}
     if hut in decor:
         put(c + 1, 1, c + 1, decor[hut])
 

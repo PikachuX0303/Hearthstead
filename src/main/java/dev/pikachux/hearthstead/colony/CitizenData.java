@@ -38,6 +38,8 @@ public class CitizenData {
     private double saturation = MAX_SATURATION;
     private double happiness = 5.0;
     private String status = "Idle";
+    private final int[] skillLevels = new int[Skill.values().length];
+    private final double[] skillExperience = new double[Skill.values().length];
     /** Game time at which the entity last reported in. */
     private transient long lastSeen;
 
@@ -50,6 +52,10 @@ public class CitizenData {
         data.name = FIRST_NAMES[random.nextInt(FIRST_NAMES.length)] + " " + LAST_NAMES[random.nextInt(LAST_NAMES.length)];
         data.female = random.nextBoolean();
         data.skin = random.nextInt(9);
+        // Settlers arrive with a little of everything; Marksmanship is only learned at the Archery.
+        for (Skill skill : Skill.values()) {
+            data.skillLevels[skill.ordinal()] = skill == Skill.MARKSMANSHIP ? 1 : 1 + random.nextInt(10);
+        }
         return data;
     }
 
@@ -141,6 +147,37 @@ public class CitizenData {
         return saturation < MAX_SATURATION / 2;
     }
 
+    public int skill(Skill skill) {
+        return Math.max(1, skillLevels[skill.ordinal()]);
+    }
+
+    public void setSkill(Skill skill, int level) {
+        skillLevels[skill.ordinal()] = Math.max(1, Math.min(Skill.MAX_LEVEL, level));
+        skillExperience[skill.ordinal()] = 0;
+    }
+
+    /** Experience towards the next level of a skill, from 0 to 1. */
+    public double skillProgress(Skill skill) {
+        int level = skill(skill);
+        return level >= Skill.MAX_LEVEL ? 1 : skillExperience[skill.ordinal()] / Skill.experienceFor(level);
+    }
+
+    /** Adds experience to a skill; returns true if it went up a level. */
+    public boolean addExperience(Skill skill, double amount) {
+        int index = skill.ordinal();
+        int before = skill(skill);
+        skillLevels[index] = before;
+        skillExperience[index] += amount;
+        while (skillLevels[index] < Skill.MAX_LEVEL && skillExperience[index] >= Skill.experienceFor(skillLevels[index])) {
+            skillExperience[index] -= Skill.experienceFor(skillLevels[index]);
+            skillLevels[index]++;
+        }
+        if (skillLevels[index] >= Skill.MAX_LEVEL) {
+            skillExperience[index] = 0;
+        }
+        return skillLevels[index] > before;
+    }
+
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
         tag.putInt("id", id);
@@ -159,6 +196,12 @@ public class CitizenData {
         }
         tag.putDouble("saturation", saturation);
         tag.putDouble("happiness", happiness);
+        CompoundTag skills = new CompoundTag();
+        for (Skill skill : Skill.values()) {
+            skills.putInt(skill.id(), skill(skill));
+            skills.putDouble(skill.id() + "_xp", skillExperience[skill.ordinal()]);
+        }
+        tag.put("skills", skills);
         return tag;
     }
 
@@ -173,6 +216,12 @@ public class CitizenData {
         tag.getLong("home").ifPresent(l -> data.homePos = BlockPos.of(l));
         data.saturation = tag.getDoubleOr("saturation", MAX_SATURATION);
         data.happiness = tag.getDoubleOr("happiness", 5.0);
+        // Citizens from before skills existed start at a middling 5 in everything.
+        CompoundTag skills = tag.getCompoundOrEmpty("skills");
+        for (Skill skill : Skill.values()) {
+            data.skillLevels[skill.ordinal()] = skills.getIntOr(skill.id(), skill == Skill.MARKSMANSHIP ? 1 : 5);
+            data.skillExperience[skill.ordinal()] = skills.getDoubleOr(skill.id() + "_xp", 0);
+        }
         return data;
     }
 }

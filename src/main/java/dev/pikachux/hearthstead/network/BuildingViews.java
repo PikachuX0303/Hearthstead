@@ -205,7 +205,10 @@ public final class BuildingViews {
         ServerPlayNetworking.send(player, new CitizenViewPayload(entity.getId(), data.name(), data.job().displayName(),
                 entity.getHealth(), entity.getMaxHealth(), (float) data.saturation(), (float) CitizenData.MAX_SATURATION,
                 (float) data.happiness(), data.status(), describe(entity.colony(), data.homePos()),
-                describe(entity.colony(), data.workPos()), entity.getMainHandItem().copy(), inventory));
+                describe(entity.colony(), data.workPos()), entity.getMainHandItem().copy(), inventory,
+                java.util.Arrays.stream(dev.pikachux.hearthstead.colony.Skill.values()).map(data::skill).toList(),
+                dev.pikachux.hearthstead.colony.Skill.primary(data.job()) == null ? -1
+                        : dev.pikachux.hearthstead.colony.Skill.primary(data.job()).ordinal()));
     }
 
     private static String describe(Colony colony, BlockPos pos) {

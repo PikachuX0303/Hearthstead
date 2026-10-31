@@ -162,6 +162,7 @@ public class ScreenshotClientTest implements FabricClientGameTest {
 
             singleplayer.getServer().runOnServer(this::openCitizen);
             context.waitForScreen(CitizenScreen.class);
+            context.getInput().setCursorPos(0, 0); // keep the skill tooltips out of the picture
             context.waitTicks(5);
             context.takeScreenshot("citizen");
             context.setScreen(() -> null);
