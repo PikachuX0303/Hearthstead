@@ -8,8 +8,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
+import dev.pikachux.hearthstead.colony.ColonyRequests;
+import dev.pikachux.hearthstead.network.BuildingViewPayload;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Base for the mod's screens: a vanilla-styled panel with helpers for text,
@@ -146,6 +152,85 @@ public abstract class ColonyScreen extends Screen {
             g.fill(x + w - 5, y + 1, x + w - 1, y + h - 1, 0xFF2A1C12);
             g.fill(x + w - 5, thumbY, x + w - 1, thumbY + thumbHeight, 0xFFC8A46A);
         }
+    }
+
+    // ---------------------------------------------------------------- requests
+
+    private static final int REQUEST_ROW = 22;
+    private static final int GIVE_WIDTH = 34;
+    private static final Identifier BUTTON = Hearthstead.id("button");
+    private static final Identifier BUTTON_HOVER = Hearthstead.id("button_highlighted");
+
+    protected static Component buildingName(String type) {
+        return Component.translatable("block.hearthstead.blockhut" + type.replace("_", ""));
+    }
+
+    /**
+     * Draws a summary line at {@code y} and below it a scrollable list of requests with their status
+     * and a Give button where the player carries matching items.
+     */
+    protected void renderRequestList(GuiGraphics g, int x, int y, int w, int bottom, List<BuildingViewPayload.RequestEntry> requests,
+                                     boolean showBuilding, int mouseX, int mouseY) {
+        if (requests.isEmpty()) {
+            wrapped(g, Component.translatable("gui.hearthstead.requests.none"), x, y, w, TEXT_LIGHT);
+            return;
+        }
+        long needYou = requests.stream().filter(r -> r.status() == ColonyRequests.Status.NEEDS_PLAYER).count();
+        text(g, Component.translatable("gui.hearthstead.requests.summary", requests.size(), needYou), x, y, needYou > 0 ? BAD : TEXT);
+        int listTop = y + 12;
+        renderList(g, x, listTop, w, bottom - listTop, REQUEST_ROW, requests.size(), (gr, i, rx, ry, rw) -> {
+            BuildingViewPayload.RequestEntry request = requests.get(i);
+            ItemStack icon = new ItemStack(request.icon());
+            gr.renderItem(icon, rx, ry + 2);
+            int textWidth = rw - 22 - GIVE_WIDTH - 4;
+            gr.drawString(font, font.plainSubstrByWidth(request.count() + "x " + request.description(), textWidth),
+                    rx + 20, ry, 0xFFFFFFFF, true);
+            Component status = Component.translatable("gui.hearthstead.requests.status." + request.status().name().toLowerCase(Locale.ROOT));
+            int color = switch (request.status()) {
+                case DELIVERING -> 0xFF8BE38B;
+                case NEEDS_DELIVERYMAN -> 0xFFFFD27F;
+                case NEEDS_PLAYER -> 0xFFFF8A80;
+            };
+            Component line = showBuilding ? buildingName(request.buildingType()).copy().append(" · ").append(status) : status;
+            gr.drawString(font, font.plainSubstrByWidth(line.getString(), textWidth), rx + 20, ry + 10, color, false);
+            if (request.playerHas() > 0) {
+                int bx = rx + rw - GIVE_WIDTH;
+                boolean hover = mouseX >= bx && mouseX < bx + GIVE_WIDTH && mouseY >= ry + 2 && mouseY < ry + 18;
+                gr.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? BUTTON_HOVER : BUTTON, bx, ry + 2, GIVE_WIDTH, 16);
+                Component give = Component.translatable("gui.hearthstead.requests.give");
+                gr.drawString(font, give, bx + GIVE_WIDTH / 2 - font.width(give) / 2, ry + 6, 0xFFFFFFFF, true);
+                if (hover) {
+                    gr.setTooltipForNextFrame(font, Component.translatable("gui.hearthstead.requests.give.tooltip",
+                            Math.min(request.playerHas(), request.count())), mouseX, mouseY);
+                }
+            }
+            if (mouseX >= rx && mouseX < rx + 16 && mouseY >= ry + 2 && mouseY < ry + 18) {
+                gr.setTooltipForNextFrame(font, icon.getHoverName(), mouseX, mouseY);
+            }
+        });
+    }
+
+    /** The request whose Give button is at the mouse, for a list drawn by {@link #renderRequestList}. */
+    @Nullable
+    protected BuildingViewPayload.RequestEntry requestGiveAt(double mouseX, double mouseY, int x, int y, int w, int bottom,
+                                                            List<BuildingViewPayload.RequestEntry> requests) {
+        int listTop = y + 12;
+        if (mouseY < listTop + 3 || mouseY >= bottom - 1) {
+            return null;
+        }
+        int index = scroll + (int) ((mouseY - listTop - 3) / REQUEST_ROW);
+        if (index < 0 || index >= requests.size()) {
+            return null;
+        }
+        int ry = listTop + 3 + (index - scroll) * REQUEST_ROW;
+        int bx = x + 3 + (w - 10) - GIVE_WIDTH;
+        BuildingViewPayload.RequestEntry request = requests.get(index);
+        boolean onButton = mouseX >= bx && mouseX < bx + GIVE_WIDTH && mouseY >= ry + 2 && mouseY < ry + 18;
+        return request.playerHas() > 0 && onButton ? request : null;
+    }
+
+    protected void playClick() {
+        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     protected void resetList() {

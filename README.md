@@ -137,6 +137,9 @@ Each hut is 8 planks around a center item:
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
 
+The **Clipboard** is a stick on the left, right and bottom, paper in the middle and an iron
+nugget on top.
+
 All huts are also in the **Hearthstead** creative tab.
 
 ### Commands (`/hearthstead` or `/hs`)
@@ -231,6 +234,10 @@ colony, with the hut that asked. Each request shows who it is waiting on:
 If you carry something that fits a request, press **Give** next to it to hand it in straight
 from your inventory (up to the amount asked for). From the town hall you can hand in items for
 any hut of the colony.
+
+The **Clipboard** shows the same list as the town hall from anywhere: use it (right-click) to
+see what your colony needs, and press **Give** to hand items in without walking back. It shows
+the colony you own or are an officer of.
 
 ## Research
 

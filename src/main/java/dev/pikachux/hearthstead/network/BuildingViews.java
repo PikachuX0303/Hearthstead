@@ -93,14 +93,8 @@ public final class BuildingViews {
         }
 
         // The town hall shows every open request in the colony, other huts their own.
-        var playerItems = player.getInventory().getNonEquipmentItems();
-        List<BuildingViewPayload.RequestEntry> requests = ColonyRequests.list(level, colony,
-                        type == BuildingType.TOWN_HALL ? null : building).stream()
-                .map(e -> new BuildingViewPayload.RequestEntry(e.building().pos(), e.building().type().id(), e.icon(),
-                        e.request().count(), e.request().description(), e.status(),
-                        playerItems.stream().filter(s -> !s.isEmpty() && e.request().matcher().test(s))
-                                .mapToInt(ItemStack::getCount).sum()))
-                .toList();
+        List<BuildingViewPayload.RequestEntry> requests = requests(player, level, colony,
+                type == BuildingType.TOWN_HALL ? null : building);
 
         BuildingViewPayload.ColonyInfo info = BuildingViewPayload.ColonyInfo.NONE;
         if (type == BuildingType.TOWN_HALL) {
@@ -175,6 +169,24 @@ public final class BuildingViews {
             }
         }
         return count;
+    }
+
+    /** Open requests of one building (or the whole colony when {@code only} is null), as seen by the player. */
+    static List<BuildingViewPayload.RequestEntry> requests(ServerPlayer player, ServerLevel level, Colony colony,
+                                                           @org.jetbrains.annotations.Nullable BuildingData only) {
+        var playerItems = player.getInventory().getNonEquipmentItems();
+        return ColonyRequests.list(level, colony, only).stream()
+                .map(e -> new BuildingViewPayload.RequestEntry(e.building().pos(), e.building().type().id(), e.icon(),
+                        e.request().count(), e.request().description(), e.status(),
+                        playerItems.stream().filter(s -> !s.isEmpty() && e.request().matcher().test(s))
+                                .mapToInt(ItemStack::getCount).sum()))
+                .toList();
+    }
+
+    /** Opens (or refreshes) the clipboard's list of the colony's requests. */
+    public static void sendRequests(ServerPlayer player, Colony colony, boolean updateOnly) {
+        ServerPlayNetworking.send(player, new RequestsViewPayload(colony.name(),
+                requests(player, player.level(), colony, null), updateOnly));
     }
 
     public static void sendCitizen(ServerPlayer player, CitizenEntity entity, CitizenData data) {

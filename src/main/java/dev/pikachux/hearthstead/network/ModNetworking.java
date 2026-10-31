@@ -10,12 +10,14 @@ import dev.pikachux.hearthstead.colony.ColonyManager;
 import dev.pikachux.hearthstead.colony.ColonyRequests;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.WorkOrder;
+import dev.pikachux.hearthstead.registry.ModItems;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Registers the mod's packets and handles button presses from the hut screen.
@@ -30,10 +32,14 @@ public final class ModNetworking {
         PayloadTypeRegistry.playS2C().register(BuildingViewPayload.TYPE, BuildingViewPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(CitizenViewPayload.TYPE, CitizenViewPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BlueprintPayload.TYPE, BlueprintPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(RequestsViewPayload.TYPE, RequestsViewPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(ClipboardActionPayload.TYPE, ClipboardActionPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(HutActionPayload.TYPE, HutActionPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BlueprintRequestPayload.TYPE, BlueprintRequestPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(PlaceHutPayload.TYPE, PlaceHutPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(HutActionPayload.TYPE, (payload, context) -> handle(context.player(), payload));
+        ServerPlayNetworking.registerGlobalReceiver(ClipboardActionPayload.TYPE,
+                (payload, context) -> handleClipboard(context.player(), payload));
         ServerPlayNetworking.registerGlobalReceiver(BlueprintRequestPayload.TYPE,
                 (payload, context) -> BuildToolHandler.sendBlueprint(context.player(), payload));
         ServerPlayNetworking.registerGlobalReceiver(PlaceHutPayload.TYPE,
@@ -94,26 +100,9 @@ public final class ModNetworking {
                     colony.markDirty();
                 }
             }
-            case FULFILL_REQUEST -> {
-                int split = payload.argument().indexOf('|');
-                if (split < 0) {
-                    return;
-                }
-                BlockPos target;
-                try {
-                    target = BlockPos.of(Long.parseLong(payload.argument().substring(0, split)));
-                } catch (NumberFormatException e) {
-                    return;
-                }
-                // Huts hand in their own requests; the town hall hands in any request of the colony.
-                if (!target.equals(building.pos()) && building.type() != BuildingType.TOWN_HALL) {
-                    return;
-                }
-                int moved = ColonyRequests.fulfill(player.level(), colony, player, target, payload.argument().substring(split + 1));
-                player.displayClientMessage(moved > 0
-                        ? Component.translatable("message.hearthstead.request_fulfilled", moved).withStyle(ChatFormatting.GREEN)
-                        : Component.translatable("message.hearthstead.request_nothing").withStyle(ChatFormatting.RED), true);
-            }
+            // Huts hand in their own requests; the town hall hands in any request of the colony.
+            case FULFILL_REQUEST -> handIn(player, colony, payload.argument(),
+                    building.type() == BuildingType.TOWN_HALL ? null : building.pos());
             case RENAME_COLONY -> {
                 String name = payload.argument().strip();
                 if (building.type() == BuildingType.TOWN_HALL && colony.owner().equals(player.getUUID())
@@ -123,5 +112,41 @@ public final class ModNetworking {
             }
         }
         BuildingViews.updateBuilding(player, colony, building);
+    }
+
+    /** Buttons on the clipboard, which shows the requests of the player's own colony from anywhere. */
+    private static void handleClipboard(ServerPlayer player, ClipboardActionPayload payload) {
+        Colony colony = ColonyManager.get(player.level().getServer()).colonyOf(player);
+        if (colony == null || !(player.getMainHandItem().is(ModItems.CLIPBOARD) || player.getOffhandItem().is(ModItems.CLIPBOARD))) {
+            return;
+        }
+        if (payload.action() == ClipboardActionPayload.Action.FULFILL_REQUEST) {
+            handIn(player, colony, payload.argument(), null);
+        }
+        BuildingViews.sendRequests(player, colony, true);
+    }
+
+    /**
+     * Hands in items for the request named in {@code argument} ({@link HutActionPayload#requestArgument}).
+     * When {@code onlyTarget} is set, only that building's requests may be handed in.
+     */
+    private static void handIn(ServerPlayer player, Colony colony, String argument, @Nullable BlockPos onlyTarget) {
+        int split = argument.indexOf('|');
+        if (split < 0) {
+            return;
+        }
+        BlockPos target;
+        try {
+            target = BlockPos.of(Long.parseLong(argument.substring(0, split)));
+        } catch (NumberFormatException e) {
+            return;
+        }
+        if (onlyTarget != null && !onlyTarget.equals(target)) {
+            return;
+        }
+        int moved = ColonyRequests.fulfill(player.level(), colony, player, target, argument.substring(split + 1));
+        player.displayClientMessage(moved > 0
+                ? Component.translatable("message.hearthstead.request_fulfilled", moved).withStyle(ChatFormatting.GREEN)
+                : Component.translatable("message.hearthstead.request_nothing").withStyle(ChatFormatting.RED), true);
     }
 }

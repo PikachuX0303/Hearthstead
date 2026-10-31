@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Draws the mod's textures: the barbarian skins (64x64, standard humanoid layout) and
-the build tool icon (16x16).
+the build tool and clipboard icons (16x16).
 
 Output: src/main/resources/assets/hearthstead/textures/entity/barbarian/<kind>.png
         src/main/resources/assets/hearthstead/textures/item/build_tool.png
+        src/main/resources/assets/hearthstead/textures/item/clipboard.png
 """
 import os
 import random
@@ -162,9 +163,40 @@ def build_tool():
     return img
 
 
+def clipboard():
+    """16x16 item icon: a wooden board with a sheet of notes held by a metal clip."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    rng = random.Random(7)
+    wood, wood_dark = (156, 108, 62), (104, 70, 38)
+    for x in range(2, 14):                  # the board
+        for y in range(2, 16):
+            edge = x in (2, 13) or y == 15
+            img.putpixel((x, y), shade(wood_dark if edge else wood, rng, 8))
+    paper, paper_shadow, ink = (236, 230, 214), (200, 192, 172), (96, 88, 84)
+    for x in range(4, 12):                  # the sheet
+        for y in range(4, 14):
+            img.putpixel((x, y), shade(paper_shadow if y == 13 or x == 11 else paper, rng, 4))
+    for y in (6, 8, 10, 12):                # lines of writing, one of them ticked off
+        length = 5 if y != 10 else 3
+        for x in range(5, 5 + length):
+            img.putpixel((x, y), shade(ink, rng, 10))
+    img.putpixel((9, 10), (70, 150, 60, 255))
+    img.putpixel((10, 9), (70, 150, 60, 255))
+    metal, metal_dark = (196, 200, 206), (120, 124, 132)
+    for x in range(5, 11):                  # the clip
+        img.putpixel((x, 2), shade(metal, rng, 6))
+        img.putpixel((x, 3), shade(metal_dark, rng, 6))
+    for x in (6, 9):
+        img.putpixel((x, 1), shade(metal_dark, rng, 6))
+    for x in (7, 8):
+        img.putpixel((x, 1), shade(metal, rng, 6))
+    return img
+
+
 def main():
     os.makedirs(ITEM_OUT, exist_ok=True)
     build_tool().save(os.path.join(ITEM_OUT, "build_tool.png"))
+    clipboard().save(os.path.join(ITEM_OUT, "clipboard.png"))
     os.makedirs(OUT, exist_ok=True)
     for name, make in (("barbarian", barbarian), ("archer_barbarian", archer), ("chief_barbarian", chief)):
         make().img.save(os.path.join(OUT, name + ".png"))

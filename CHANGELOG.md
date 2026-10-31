@@ -5,6 +5,13 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.21.0-alpha] - 2026-10-31
+
+### Added
+- **Clipboard.** Use it to see every open request of your colony from anywhere, and hand items
+  in with **Give** without walking back to the town hall. Crafted from sticks, paper and an
+  iron nugget; also in the creative tab.
+
 ## [0.20.0-alpha] - 2026-10-31
 
 ### Added

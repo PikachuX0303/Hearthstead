@@ -105,6 +105,35 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             }
             context.setScreen(() -> null);
 
+            // The clipboard shows the same requests from anywhere.
+            singleplayer.getServer().runOnServer(server -> {
+                ServerPlayer player = player(server);
+                // Eat up the bread handed in above, so the residents ask for food again.
+                ((HutBlockEntity) player.level().getBlockEntity(townHall)).clearContent();
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                        new ItemStack(dev.pikachux.hearthstead.registry.ModItems.CLIPBOARD));
+                player.getInventory().add(new ItemStack(Items.BREAD, 5));
+                dev.pikachux.hearthstead.network.BuildingViews.sendRequests(player,
+                        ColonyManager.get(server).colonyOf(player), false);
+            });
+            context.waitForScreen(dev.pikachux.hearthstead.client.gui.ClipboardScreen.class);
+            context.waitTicks(5);
+            context.takeScreenshot("clipboard");
+            context.runOnClient(client -> {
+                var screen = client.screen;
+                int left = (screen.width - 260) / 2;
+                int top = (screen.height - 220) / 2;
+                screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(left + 219, top + 47,
+                        new net.minecraft.client.input.MouseButtonInfo(0, 0)), false);
+            });
+            context.waitTicks(10);
+            int handedIn = singleplayer.getServer().computeOnServer(server ->
+                    ((HutBlockEntity) player(server).level().getBlockEntity(townHall)).countItem(Items.BREAD));
+            if (handedIn != 5) {
+                throw new AssertionError("Give on the clipboard should hand the 5 bread to the town hall, found " + handedIn);
+            }
+            context.setScreen(() -> null);
+
             singleplayer.getServer().runOnServer(server -> open(server, residence));
             context.waitForScreen(BuildingScreen.class);
             context.waitTicks(5);

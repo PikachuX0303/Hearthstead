@@ -3,8 +3,10 @@ package dev.pikachux.hearthstead.client;
 import dev.pikachux.hearthstead.client.buildtool.BuildToolClient;
 import dev.pikachux.hearthstead.client.gui.BuildingScreen;
 import dev.pikachux.hearthstead.client.gui.CitizenScreen;
+import dev.pikachux.hearthstead.client.gui.ClipboardScreen;
 import dev.pikachux.hearthstead.network.BuildingViewPayload;
 import dev.pikachux.hearthstead.network.CitizenViewPayload;
+import dev.pikachux.hearthstead.network.RequestsViewPayload;
 import dev.pikachux.hearthstead.registry.ModEntities;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -26,6 +28,13 @@ public class HearthsteadClient implements ClientModInitializer {
                 screen.update(payload);
             } else if (!payload.updateOnly()) {
                 context.client().setScreen(new BuildingScreen(payload));
+            }
+        });
+        ClientPlayNetworking.registerGlobalReceiver(RequestsViewPayload.TYPE, (payload, context) -> {
+            if (context.client().screen instanceof ClipboardScreen screen) {
+                screen.update(payload);
+            } else if (!payload.updateOnly()) {
+                context.client().setScreen(new ClipboardScreen(payload));
             }
         });
         ClientPlayNetworking.registerGlobalReceiver(CitizenViewPayload.TYPE,

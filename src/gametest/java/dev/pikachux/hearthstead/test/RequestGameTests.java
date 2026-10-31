@@ -55,6 +55,16 @@ public class RequestGameTests {
         helper.succeed();
     }
 
+    /** The clipboard can be crafted and makes the expected item. */
+    @GameTest
+    public void clipboardRecipeExists(GameTestHelper helper) {
+        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE,
+                dev.pikachux.hearthstead.Hearthstead.id("clipboard"));
+        var recipe = helper.getLevel().getServer().getRecipeManager().byKey(key);
+        check(helper, recipe.isPresent(), "a clipboard recipe");
+        helper.succeed();
+    }
+
     private static ColonyRequests.Entry find(GameTestHelper helper, List<ColonyRequests.Entry> requests, String description) {
         return requests.stream().filter(e -> e.request().description().equals(description)).findFirst()
                 .orElseThrow(() -> helper.assertionException("Expected a request for " + description + " in "

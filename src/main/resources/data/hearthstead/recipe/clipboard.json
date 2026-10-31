@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": [
+    " N ",
+    "SPS",
+    " S "
+  ],
+  "key": {
+    "N": "minecraft:iron_nugget",
+    "P": "minecraft:paper",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "hearthstead:clipboard",
+    "count": 1
+  }
+}

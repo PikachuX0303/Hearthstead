@@ -117,15 +117,7 @@ public record BuildingViewPayload(
         buf.writeBoolean(needsBuilder);
         buf.writeUtf(builderJob);
         buf.writeUtf(style);
-        writeList(buf, requests, (b, r) -> {
-            b.writeBlockPos(r.target());
-            b.writeUtf(r.buildingType());
-            ITEM_CODEC.encode(b, r.icon());
-            b.writeVarInt(r.count());
-            b.writeUtf(r.description());
-            b.writeEnum(r.status());
-            b.writeVarInt(r.playerHas());
-        });
+        writeList(buf, requests, BuildingViewPayload::writeRequest);
         writeList(buf, research, (b, r) -> {
             b.writeUtf(r.id());
             b.writeVarInt(r.branch());
@@ -186,8 +178,7 @@ public record BuildingViewPayload(
         boolean needsBuilder = buf.readBoolean();
         String builderJob = buf.readUtf();
         String style = buf.readUtf();
-        List<RequestEntry> requests = readList(buf, b -> new RequestEntry(b.readBlockPos(), b.readUtf(), ITEM_CODEC.decode(b),
-                b.readVarInt(), b.readUtf(), b.readEnum(ColonyRequests.Status.class), b.readVarInt()));
+        List<RequestEntry> requests = readList(buf, BuildingViewPayload::readRequest);
         List<ResearchEntry> research = readList(buf, b -> new ResearchEntry(b.readUtf(), b.readVarInt(), b.readVarInt(),
                 b.readEnum(ResearchEntry.State.class), b.readFloat(),
                 readList(b, b2 -> new Cost(ITEM_CODEC.decode(b2), b2.readVarInt(), b2.readVarInt())),
@@ -212,6 +203,21 @@ public record BuildingViewPayload(
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
                 orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, updateOnly);
+    }
+
+    static void writeRequest(RegistryFriendlyByteBuf buf, RequestEntry request) {
+        buf.writeBlockPos(request.target());
+        buf.writeUtf(request.buildingType());
+        ITEM_CODEC.encode(buf, request.icon());
+        buf.writeVarInt(request.count());
+        buf.writeUtf(request.description());
+        buf.writeEnum(request.status());
+        buf.writeVarInt(request.playerHas());
+    }
+
+    static RequestEntry readRequest(RegistryFriendlyByteBuf buf) {
+        return new RequestEntry(buf.readBlockPos(), buf.readUtf(), ITEM_CODEC.decode(buf), buf.readVarInt(), buf.readUtf(),
+                buf.readEnum(ColonyRequests.Status.class), buf.readVarInt());
     }
 
     static <T> void writeList(RegistryFriendlyByteBuf buf, List<T> list, BiConsumer<RegistryFriendlyByteBuf, T> writer) {
