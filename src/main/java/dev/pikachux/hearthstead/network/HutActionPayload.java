@@ -15,7 +15,16 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
             CustomPacketPayload.codec(HutActionPayload::write, HutActionPayload::read);
 
     public enum Action {
-        REFRESH, OPEN_INVENTORY, UPGRADE, CANCEL_ORDER, RENAME_COLONY, TOGGLE_RAIDS, START_RESEARCH, CYCLE_STYLE
+        REFRESH, OPEN_INVENTORY, UPGRADE, CANCEL_ORDER, RENAME_COLONY, TOGGLE_RAIDS, START_RESEARCH, CYCLE_STYLE,
+        /** Hand in items for a request; the argument is {@link #requestArgument}. */
+        FULFILL_REQUEST
+    }
+
+    private static final int MAX_ARGUMENT = 256;
+
+    /** The argument of {@link Action#FULFILL_REQUEST}: the requesting hut and the request's description. */
+    public static String requestArgument(BlockPos target, String description) {
+        return target.asLong() + "|" + description;
     }
 
     public HutActionPayload(BlockPos pos, Action action) {
@@ -30,10 +39,10 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
     private void write(RegistryFriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeEnum(action);
-        buf.writeUtf(argument, 64);
+        buf.writeUtf(argument, MAX_ARGUMENT);
     }
 
     private static HutActionPayload read(RegistryFriendlyByteBuf buf) {
-        return new HutActionPayload(buf.readBlockPos(), buf.readEnum(Action.class), buf.readUtf(64));
+        return new HutActionPayload(buf.readBlockPos(), buf.readEnum(Action.class), buf.readUtf(MAX_ARGUMENT));
     }
 }

@@ -1,6 +1,7 @@
 package dev.pikachux.hearthstead.network;
 
 import dev.pikachux.hearthstead.Hearthstead;
+import dev.pikachux.hearthstead.colony.ColonyRequests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -38,7 +39,7 @@ public record BuildingViewPayload(
         String builderJob,
         String style,
         ColonyInfo colony,
-        List<String> requests,
+        List<RequestEntry> requests,
         List<ResearchEntry> research,
         boolean updateOnly
 ) implements CustomPacketPayload {
@@ -61,6 +62,14 @@ public record BuildingViewPayload(
     }
 
     public record Cost(Item item, int count, int have) {
+    }
+
+    /**
+     * An open request: what the hut at {@code target} waits for, who it waits on, and how many
+     * matching items the viewing player carries. The town hall lists the whole colony's requests.
+     */
+    public record RequestEntry(BlockPos target, String buildingType, Item icon, int count, String description,
+                               ColonyRequests.Status status, int playerHas) {
     }
 
     /** One node of the research tree as seen from the university. */
@@ -108,7 +117,15 @@ public record BuildingViewPayload(
         buf.writeBoolean(needsBuilder);
         buf.writeUtf(builderJob);
         buf.writeUtf(style);
-        writeList(buf, requests, (b, r) -> b.writeUtf(r));
+        writeList(buf, requests, (b, r) -> {
+            b.writeBlockPos(r.target());
+            b.writeUtf(r.buildingType());
+            ITEM_CODEC.encode(b, r.icon());
+            b.writeVarInt(r.count());
+            b.writeUtf(r.description());
+            b.writeEnum(r.status());
+            b.writeVarInt(r.playerHas());
+        });
         writeList(buf, research, (b, r) -> {
             b.writeUtf(r.id());
             b.writeVarInt(r.branch());
@@ -169,7 +186,8 @@ public record BuildingViewPayload(
         boolean needsBuilder = buf.readBoolean();
         String builderJob = buf.readUtf();
         String style = buf.readUtf();
-        List<String> requests = readList(buf, b -> b.readUtf());
+        List<RequestEntry> requests = readList(buf, b -> new RequestEntry(b.readBlockPos(), b.readUtf(), ITEM_CODEC.decode(b),
+                b.readVarInt(), b.readUtf(), b.readEnum(ColonyRequests.Status.class), b.readVarInt()));
         List<ResearchEntry> research = readList(buf, b -> new ResearchEntry(b.readUtf(), b.readVarInt(), b.readVarInt(),
                 b.readEnum(ResearchEntry.State.class), b.readFloat(),
                 readList(b, b2 -> new Cost(ITEM_CODEC.decode(b2), b2.readVarInt(), b2.readVarInt())),

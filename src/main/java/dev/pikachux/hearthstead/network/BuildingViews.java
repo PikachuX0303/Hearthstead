@@ -9,6 +9,7 @@ import dev.pikachux.hearthstead.colony.BuildingInfo;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.Colony;
+import dev.pikachux.hearthstead.colony.ColonyRequests;
 import dev.pikachux.hearthstead.colony.ColonyResearch;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.Storage;
@@ -91,8 +92,14 @@ public final class BuildingViews {
                     .orElse("");
         }
 
-        List<String> requests = Logistics.requests(level, colony, building).stream()
-                .map(r -> r.count() + "x " + r.description())
+        // The town hall shows every open request in the colony, other huts their own.
+        var playerItems = player.getInventory().getNonEquipmentItems();
+        List<BuildingViewPayload.RequestEntry> requests = ColonyRequests.list(level, colony,
+                        type == BuildingType.TOWN_HALL ? null : building).stream()
+                .map(e -> new BuildingViewPayload.RequestEntry(e.building().pos(), e.building().type().id(), e.icon(),
+                        e.request().count(), e.request().description(), e.status(),
+                        playerItems.stream().filter(s -> !s.isEmpty() && e.request().matcher().test(s))
+                                .mapToInt(ItemStack::getCount).sum()))
                 .toList();
 
         BuildingViewPayload.ColonyInfo info = BuildingViewPayload.ColonyInfo.NONE;

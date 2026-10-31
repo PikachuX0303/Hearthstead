@@ -33,7 +33,7 @@ raids. Things that are **not there yet** (some of which MineColonies has):
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Hut-specific settings pages (for example, choosing which crops a farmer plants).
 - Some jobs: no Enchanter, Alchemist, Mechanic, Planter, Netherworker, and so on.
-- Most of the original research tree, pirates and other raider cultures, request system, colony events, permissions GUI.
+- Most of the original research tree, pirates and other raider cultures, colony events, permissions GUI.
 
 ## Features
 
@@ -79,7 +79,7 @@ links to the releases and the changelog.
 | **Raids** | See [Raids](#raids) below. |
 | **Research** | See [Research](#research) below. |
 | **Warehouse** | The colony's central storage. Its building is lined with barrels, and the hut plus every chest and barrel inside the building count as storage. Citizens can eat from it. |
-| **Deliveryman** | Carries items between the Warehouse and the huts. Brings builders their missing materials, workers their tools (axe, hoe, pickaxe, sword, fishing rod), seeds and torches, homes their food and the cook raw food and coal. Also empties worker huts into the Warehouse. Needs a Warehouse. The hut window shows what each hut is waiting for. |
+| **Deliveryman** | Carries items between the Warehouse and the huts. Brings builders their missing materials, workers their tools (axe, hoe, pickaxe, sword, fishing rod), seeds and torches, homes their food and the cook raw food and coal. Also empties worker huts into the Warehouse. Needs a Warehouse. The **Requests** tab shows what each hut is waiting for. |
 | **Cook** | Loads the smokers inside the kitchen (one per hut level) with raw food (beef, pork, chicken, mutton, rabbit, cod, salmon, potatoes, kelp) and coal or charcoal from the hut, and stores the meals in the hut. Citizens eat there too, and prefer cooked meals. |
 | **Baker** | Turns wheat stored in the Bakery into bread: 3 wheat per loaf, one loaf per hut level each batch. Citizens eat there too. |
 | **Smelter** | Runs the furnaces inside the Smeltery (one per hut level), smelting ores, raw metals and sand into ingots and glass with coal or charcoal from the hut. |
@@ -217,6 +217,20 @@ previews its next level, with an **Order Upgrade** button.
 | | |
 |---|---|
 | ![Choosing a hut](docs/screenshots/build_tool_select.png) | ![Building preview](docs/screenshots/build_tool_preview.png) |
+
+## Requests
+
+Every hut window has a **Requests** tab listing what that hut is waiting for: building
+materials, tools, seeds, fuel, food and so on. The town hall's tab lists every open request in the
+colony, with the hut that asked. Each request shows who it is waiting on:
+
+- **Being delivered** (green): the Warehouse has it and the deliveryman will bring it.
+- **In the warehouse - needs a deliveryman** (yellow): build a Deliveryman's Hut.
+- **Needs you** (red): nothing in the colony can supply it, so it is up to you. These are listed first.
+
+If you carry something that fits a request, press **Give** next to it to hand it in straight
+from your inventory (up to the amount asked for). From the town hall you can hand in items for
+any hut of the colony.
 
 ## Research
 

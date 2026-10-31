@@ -5,6 +5,19 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.20.0-alpha] - 2026-10-31
+
+### Added
+- **Requests.** A new **Requests** tab in every hut window lists what the hut is waiting for,
+  with item icons and who the request is waiting on: *Being delivered*, *In the warehouse - needs
+  a deliveryman* or *Needs you*. The town hall lists every open request in the colony, with the
+  hut that asked, requests that need you first.
+- **Give** button on each request you carry matching items for: hands them in from your
+  inventory, up to the amount asked for. The town hall can hand in items for any hut.
+
+### Changed
+- Hut window tabs share the width according to their names, so five tabs fit in the town hall.
+
 ## [0.19.0-alpha] - 2026-10-31
 
 ### Added

@@ -11,7 +11,8 @@
       "dev.pikachux.hearthstead.test.RaidGameTests",
       "dev.pikachux.hearthstead.test.ResearchGameTests",
       "dev.pikachux.hearthstead.test.UpdaterGameTests",
-      "dev.pikachux.hearthstead.test.ConfigGameTests"
+      "dev.pikachux.hearthstead.test.ConfigGameTests",
+      "dev.pikachux.hearthstead.test.RequestGameTests"
     ],
     "fabric-client-gametest": [
       "dev.pikachux.hearthstead.test.ScreenshotClientTest"

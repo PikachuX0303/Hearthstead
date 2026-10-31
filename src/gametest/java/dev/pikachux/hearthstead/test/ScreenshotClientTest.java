@@ -82,6 +82,27 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.clickScreenButton("gui.hearthstead.tab.colony");
             context.waitTicks(2);
             context.takeScreenshot("townhall_colony");
+            // Carry some bread, so the requests tab offers to hand it in for the residents.
+            singleplayer.getServer().runCommand("give @a minecraft:bread 8");
+            context.clickScreenButton("gui.hearthstead.tab.requests");
+            context.waitTicks(50);
+            context.takeScreenshot("townhall_requests");
+            // Press Give on the first request (the residents' food) and check the bread arrives.
+            context.runOnClient(client -> {
+                var screen = client.screen;
+                int left = (screen.width - 292) / 2;
+                int top = (screen.height - 220) / 2;
+                double x = left + 10 + 3 + (292 - 20 - 10) - 34 + 10;
+                double y = top + 58 + 3 + 2 + 6;
+                screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(x, y,
+                        new net.minecraft.client.input.MouseButtonInfo(0, 0)), false);
+            });
+            context.waitTicks(10);
+            int bread = singleplayer.getServer().computeOnServer(server ->
+                    ((HutBlockEntity) player(server).level().getBlockEntity(townHall)).countItem(Items.BREAD));
+            if (bread != 8) {
+                throw new AssertionError("Give should hand the 8 bread to the town hall, found " + bread);
+            }
             context.setScreen(() -> null);
 
             singleplayer.getServer().runOnServer(server -> open(server, residence));

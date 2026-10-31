@@ -1,6 +1,7 @@
 package dev.pikachux.hearthstead.client.gui;
 
 import dev.pikachux.hearthstead.blueprint.Styles;
+import dev.pikachux.hearthstead.colony.ColonyRequests;
 import dev.pikachux.hearthstead.network.BuildingViewPayload;
 import dev.pikachux.hearthstead.network.HutActionPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -25,6 +26,7 @@ public class BuildingScreen extends ColonyScreen {
     private enum Tab {
         OVERVIEW("gui.hearthstead.tab.overview"),
         CONSTRUCTION("gui.hearthstead.tab.construction"),
+        REQUESTS("gui.hearthstead.tab.requests"),
         RESEARCH("gui.hearthstead.tab.research"),
         CITIZENS("gui.hearthstead.tab.citizens"),
         COLONY("gui.hearthstead.tab.colony");
@@ -71,7 +73,7 @@ public class BuildingScreen extends ColonyScreen {
     }
 
     private List<Tab> tabs() {
-        List<Tab> tabs = new ArrayList<>(List.of(Tab.OVERVIEW, Tab.CONSTRUCTION));
+        List<Tab> tabs = new ArrayList<>(List.of(Tab.OVERVIEW, Tab.CONSTRUCTION, Tab.REQUESTS));
         if (!view.research().isEmpty()) {
             tabs.add(Tab.RESEARCH);
         }
@@ -91,17 +93,28 @@ public class BuildingScreen extends ColonyScreen {
         super.init();
         nameField = null;
 
+        // Tabs share the width in proportion to their labels, so long names still fit.
         List<Tab> tabs = tabs();
-        int tabWidth = (panelWidth - 16) / tabs.size();
+        int available = panelWidth - 16 - 2 * (tabs.size() - 1);
+        int[] widths = new int[tabs.size()];
+        int labels = 0;
+        for (int i = 0; i < tabs.size(); i++) {
+            widths[i] = font.width(Component.translatable(tabs.get(i).key)) + 6;
+            labels += widths[i];
+        }
+        int extra = Math.max(0, available - labels);
+        int tabX = left + 8;
         for (int i = 0; i < tabs.size(); i++) {
             Tab t = tabs.get(i);
+            int width = widths[i] + extra / tabs.size() + (i < extra % tabs.size() ? 1 : 0);
             Button button = ColonyButton.themed(Component.translatable(t.key), b -> {
                 tab = t;
                 resetList();
                 rebuildWidgets();
-            }).bounds(left + 8 + i * tabWidth, top + 22, tabWidth - 2, 18).build().selected(t == tab);
+            }).bounds(tabX, top + 22, width, 18).build().selected(t == tab);
             button.active = t != tab;
             addRenderableWidget(button);
+            tabX += width + 2;
         }
 
         int buttonY = top + panelHeight - 28;
@@ -179,6 +192,7 @@ public class BuildingScreen extends ColonyScreen {
         switch (tab) {
             case OVERVIEW -> renderOverview(g, x, y, w, listBottom);
             case CONSTRUCTION -> renderConstruction(g, x, y, w, listBottom, mouseX, mouseY);
+            case REQUESTS -> renderRequests(g, x, y, w, listBottom, mouseX, mouseY);
             case CITIZENS -> renderCitizens(g, x, y, w, listBottom);
             case COLONY -> renderColony(g, x, y, w, listBottom);
             case RESEARCH -> renderResearch(g, x, y, w, mouseX, mouseY);
@@ -226,9 +240,12 @@ public class BuildingScreen extends ColonyScreen {
                 y += 12;
             }
         }
-        if (!view.requests().isEmpty()) {
-            String waiting = String.join(", ", view.requests());
-            y = wrapped(g, Component.translatable("gui.hearthstead.waiting_for", waiting), x, y, w, BAD);
+        List<String> waiting = view.requests().stream()
+                .filter(r -> r.target().equals(view.pos()))
+                .map(r -> r.count() + "x " + r.description())
+                .toList();
+        if (!waiting.isEmpty()) {
+            y = wrapped(g, Component.translatable("gui.hearthstead.waiting_for", String.join(", ", waiting)), x, y, w, BAD);
         }
         if (!view.builderJob().isEmpty()) {
             y = wrapped(g, Component.translatable("gui.hearthstead.current_job", view.builderJob()), x, y, w, TEXT);
@@ -316,6 +333,83 @@ public class BuildingScreen extends ColonyScreen {
             gr.drawString(font, font.plainSubstrByWidth(order.description(), rw), rx, ry,
                     order.assigned() ? 0xFF8BE38B : 0xFFFFFFFF, true);
         });
+    }
+
+    // ---------------------------------------------------------------- requests tab
+
+    private static final int REQUEST_ROW = 22;
+    private static final int GIVE_WIDTH = 34;
+    private static final net.minecraft.resources.Identifier BUTTON = dev.pikachux.hearthstead.Hearthstead.id("button");
+    private static final net.minecraft.resources.Identifier BUTTON_HOVER = dev.pikachux.hearthstead.Hearthstead.id("button_highlighted");
+
+    private int requestListTop() {
+        return top + 46 + 12;
+    }
+
+    private void renderRequests(GuiGraphics g, int x, int y, int w, int bottom, int mouseX, int mouseY) {
+        List<BuildingViewPayload.RequestEntry> requests = view.requests();
+        if (requests.isEmpty()) {
+            wrapped(g, Component.translatable("gui.hearthstead.requests.none"), x, y, w, TEXT_LIGHT);
+            return;
+        }
+        long needYou = requests.stream().filter(r -> r.status() == ColonyRequests.Status.NEEDS_PLAYER).count();
+        text(g, Component.translatable("gui.hearthstead.requests.summary", requests.size(), needYou), x, y, needYou > 0 ? BAD : TEXT);
+        boolean townHall = view.colony().present();
+        renderList(g, x, requestListTop(), w, bottom - requestListTop(), REQUEST_ROW, requests.size(), (gr, i, rx, ry, rw) -> {
+            BuildingViewPayload.RequestEntry request = requests.get(i);
+            ItemStack icon = new ItemStack(request.icon());
+            gr.renderItem(icon, rx, ry + 2);
+            int textWidth = rw - 22 - GIVE_WIDTH - 4;
+            gr.drawString(font, font.plainSubstrByWidth(request.count() + "x " + request.description(), textWidth),
+                    rx + 20, ry, 0xFFFFFFFF, true);
+            Component status = Component.translatable("gui.hearthstead.requests.status." + request.status().name().toLowerCase(java.util.Locale.ROOT));
+            int color = switch (request.status()) {
+                case DELIVERING -> 0xFF8BE38B;
+                case NEEDS_DELIVERYMAN -> 0xFFFFD27F;
+                case NEEDS_PLAYER -> 0xFFFF8A80;
+            };
+            Component line = townHall ? buildingName(request.buildingType()).copy().append(" · ").append(status) : status;
+            gr.drawString(font, font.plainSubstrByWidth(line.getString(), textWidth), rx + 20, ry + 10, color, false);
+            if (request.playerHas() > 0) {
+                int bx = rx + rw - GIVE_WIDTH;
+                boolean hover = mouseX >= bx && mouseX < bx + GIVE_WIDTH && mouseY >= ry + 2 && mouseY < ry + 18;
+                gr.blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, hover ? BUTTON_HOVER : BUTTON, bx, ry + 2, GIVE_WIDTH, 16);
+                Component give = Component.translatable("gui.hearthstead.requests.give");
+                gr.drawString(font, give, bx + GIVE_WIDTH / 2 - font.width(give) / 2, ry + 6, 0xFFFFFFFF, true);
+                if (hover) {
+                    gr.setTooltipForNextFrame(font, Component.translatable("gui.hearthstead.requests.give.tooltip",
+                            Math.min(request.playerHas(), request.count())), mouseX, mouseY);
+                }
+            }
+            if (mouseX >= rx && mouseX < rx + 16 && mouseY >= ry + 2 && mouseY < ry + 18) {
+                gr.setTooltipForNextFrame(font, icon.getHoverName(), mouseX, mouseY);
+            }
+        });
+    }
+
+    /** Handles a click on a Give button in the requests list. */
+    private boolean clickRequest(double mouseX, double mouseY) {
+        int x = left + 10;
+        int w = panelWidth - 20;
+        int listTop = requestListTop();
+        int listBottom = top + panelHeight - 34;
+        if (mouseY < listTop + 3 || mouseY >= listBottom - 1) {
+            return false;
+        }
+        int index = scroll + (int) ((mouseY - listTop - 3) / REQUEST_ROW);
+        if (index < 0 || index >= view.requests().size()) {
+            return false;
+        }
+        int ry = listTop + 3 + (index - scroll) * REQUEST_ROW;
+        int bx = x + 3 + (w - 10) - GIVE_WIDTH;
+        BuildingViewPayload.RequestEntry request = view.requests().get(index);
+        if (request.playerHas() <= 0 || mouseX < bx || mouseX >= bx + GIVE_WIDTH || mouseY < ry + 2 || mouseY >= ry + 18) {
+            return false;
+        }
+        minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        send(HutActionPayload.Action.FULFILL_REQUEST, HutActionPayload.requestArgument(request.target(), request.description()));
+        return true;
     }
 
     // ---------------------------------------------------------------- research tab
@@ -423,6 +517,9 @@ public class BuildingScreen extends ColonyScreen {
 
     @Override
     public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+        if (tab == Tab.REQUESTS && event.button() == 0 && clickRequest(event.x(), event.y())) {
+            return true;
+        }
         if (tab == Tab.RESEARCH) {
             int x = left + 10;
             int y = top + 46;
