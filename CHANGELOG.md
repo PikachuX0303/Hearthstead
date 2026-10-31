@@ -5,6 +5,23 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.28.0-alpha] - 2026-10-31
+
+### Added
+- **Crusher's Hut.** Crushes cobblestone into gravel or sand (hut setting) and makes the sand
+  other huts are short of.
+- **Sifter's Hut.** Sifts gravel, sand or dirt (hut setting) for flint, nuggets, clay, seeds,
+  saplings and more; rarer finds (raw metals, emeralds, diamonds, glowstone, prismarine) need a
+  higher hut level.
+- **Mechanic's Workshop.** Crafts redstone parts, rails, iron doors, trapdoors and bars,
+  lanterns, torches, buckets, shears and flint and steel with the game's recipes, for whatever
+  huts are short of, such as the miners' torches.
+- **Nether Mine.** The netherworker goes on expeditions to the Nether with a sword and food, and
+  comes back with netherrack, quartz, soul sand and gold, plus nether wart, glowstone, magma
+  cream, blaze rods and ghast tears at higher levels.
+- Blueprints in all five styles, workbench models, job signs and recipes for the four huts.
+- The Crusher and Mechanic join the crafting chain ("Being crafted at the ...").
+
 ## [0.27.0-alpha] - 2026-10-31
 
 ### Added

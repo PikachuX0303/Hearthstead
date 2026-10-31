@@ -27,7 +27,14 @@ import java.util.function.Predicate;
 public final class Crafters {
     /** Huts that craft whatever other huts are short of, in the order they are asked. */
     public static final List<BuildingType> TYPES = List.of(BuildingType.SAWMILL, BuildingType.STONEMASON,
-            BuildingType.DYER, BuildingType.GLASSBLOWER);
+            BuildingType.DYER, BuildingType.GLASSBLOWER, BuildingType.CRUSHER, BuildingType.MECHANIC);
+
+    /** What the mechanic makes: redstone parts, rails, iron fittings, lights and a few tools. */
+    public static final Set<Item> MECHANISMS = Set.of(Items.REPEATER, Items.COMPARATOR, Items.PISTON, Items.STICKY_PISTON,
+            Items.OBSERVER, Items.DISPENSER, Items.DROPPER, Items.HOPPER, Items.LEVER, Items.REDSTONE_TORCH, Items.RAIL,
+            Items.POWERED_RAIL, Items.DETECTOR_RAIL, Items.ACTIVATOR_RAIL, Items.TRIPWIRE_HOOK, Items.DAYLIGHT_DETECTOR,
+            Items.REDSTONE_LAMP, Items.NOTE_BLOCK, Items.IRON_DOOR, Items.IRON_TRAPDOOR, Items.IRON_BARS, Items.LANTERN,
+            Items.TORCH, Items.BUCKET, Items.SHEARS, Items.FLINT_AND_STEEL);
 
     private static RecipeManager cachedRecipes;
     private static Set<Item> cachedMasonry = Set.of();
@@ -43,6 +50,8 @@ public final class Crafters {
             case STONEMASON -> masonry(level)::contains;
             case DYER -> Crafters::isDyerProduct;
             case GLASSBLOWER -> Crafters::isGlassProduct;
+            case CRUSHER -> item -> item == Items.GRAVEL || item == Items.SAND;
+            case MECHANIC -> MECHANISMS::contains;
             default -> null;
         };
     }

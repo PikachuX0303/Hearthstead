@@ -474,4 +474,91 @@ public class JobGameTests {
             }
         });
     }
+
+    /** The crusher crushes cobblestone into gravel. */
+    @GameTest(environment = "hearthstead-gametest:crusher", structure = PLATFORM, maxTicks = 1500, skyAccess = true)
+    public void crusherMakesGravel(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.CRUSHER, 1);
+        TestColonies.give(helper, hut, Items.COBBLESTONE, 4);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.GRAVEL) == 0) {
+                throw helper.assertionException("No gravel yet (" + citizen.status() + ")");
+            }
+        });
+    }
+
+    /** The sifter sifts gravel and turns up flint, nuggets or coal. */
+    @GameTest(environment = "hearthstead-gametest:sifter", structure = PLATFORM, maxTicks = 3000, skyAccess = true)
+    public void sifterFindsThings(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.SIFTER, 1);
+        TestColonies.give(helper, hut, Items.GRAVEL, 64);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        var finds = dev.pikachux.hearthstead.entity.ai.SifterGoal.FINDS.get(Items.GRAVEL);
+        helper.succeedWhen(() -> {
+            var storage = Storage.containers(helper.getLevel(), hut);
+            if (Storage.count(storage, s -> finds.stream().anyMatch(f -> s.is(f.item()))) == 0) {
+                throw helper.assertionException("Nothing found yet (" + citizen.status() + ")");
+            }
+            if (TestColonies.count(helper, hut, Items.GRAVEL) >= 64) {
+                throw helper.assertionException("Sifting should use up gravel");
+            }
+        });
+    }
+
+    /** The mechanic makes the torches a mine is asking for, from sticks and coal. */
+    @GameTest(environment = "hearthstead-gametest:mechanic", structure = PLATFORM, maxTicks = 1500, skyAccess = true)
+    public void mechanicMakesTorchesForTheMine(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.MECHANIC, 1);
+        TestColonies.hut(helper, colony, new BlockPos(4, 1, 4), BuildingType.MINER, 0);
+        TestColonies.give(helper, hut, Items.STICK, 4);
+        TestColonies.give(helper, hut, Items.COAL, 4);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.TORCH) == 0) {
+                throw helper.assertionException("No torches yet (" + citizen.status() + ")");
+            }
+        });
+    }
+
+    /** The netherworker sets out with a sword and food and comes back with netherrack. */
+    @GameTest(environment = "hearthstead-gametest:netherworker", structure = PLATFORM, maxTicks = 4000, skyAccess = true)
+    public void netherworkerReturnsWithLoot(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.NETHERWORKER, 1);
+        TestColonies.give(helper, hut, Items.IRON_SWORD, 1);
+        TestColonies.give(helper, hut, Items.BREAD, 8);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.NETHERRACK) == 0) {
+                throw helper.assertionException("No netherrack yet (" + citizen.status() + ")");
+            }
+            if (TestColonies.count(helper, hut, Items.BREAD) != 0) {
+                throw helper.assertionException("The food should be eaten on the expedition");
+            }
+            var entity = helper.getLevel().getEntity(citizen.entityUuid());
+            if (entity == null || entity.isInvisible()) {
+                throw helper.assertionException("The netherworker should be back in sight");
+            }
+        });
+    }
+
+    /** Recipe crafting from storage: three iron ingots in a container become a bucket. */
+    @GameTest
+    public void craftsWithGameRecipes(GameTestHelper helper) {
+        var container = new net.minecraft.world.SimpleContainer(9);
+        container.setItem(0, new ItemStack(Items.IRON_INGOT, 5));
+        ItemStack made = dev.pikachux.hearthstead.colony.Crafting.craftFromStorage(helper.getLevel(), java.util.List.of(container), Items.BUCKET);
+        if (!made.is(Items.BUCKET) || container.countItem(Items.IRON_INGOT) != 2 || container.countItem(Items.BUCKET) != 1) {
+            throw helper.assertionException("Expected a bucket for 3 iron ingots, got " + made + " and "
+                    + container.countItem(Items.IRON_INGOT) + " ingots left");
+        }
+        if (!dev.pikachux.hearthstead.colony.Crafting.craftFromStorage(helper.getLevel(), java.util.List.of(container), Items.BUCKET).isEmpty()) {
+            throw helper.assertionException("Two ingots should not be enough for another bucket");
+        }
+        helper.succeed();
+    }
 }

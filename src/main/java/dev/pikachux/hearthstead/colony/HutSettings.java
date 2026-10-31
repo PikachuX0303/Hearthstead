@@ -27,6 +27,8 @@ public final class HutSettings {
     public static final Setting COOK = new Setting("cook", List.of("all", "meat", "fish", "vegetables"));
     public static final Setting HERD_SIZE = new Setting("herd_size", List.of("auto", "2", "4", "6", "8", "12", "16", "24"));
     public static final Setting BREED = new Setting("breed", List.of("on", "off"));
+    public static final Setting CRUSH = new Setting("crush", List.of("gravel", "sand"));
+    public static final Setting SIFT = new Setting("sift", List.of("gravel", "sand", "dirt"));
 
     private HutSettings() {
     }
@@ -40,6 +42,8 @@ public final class HutSettings {
             case SMELTER -> List.of(SMELT);
             case COOK -> List.of(COOK);
             case SHEPHERD, COWHAND, CHICKEN_HERDER, SWINEHERD, RABBIT_HERDER -> List.of(HERD_SIZE, BREED);
+            case CRUSHER -> List.of(CRUSH);
+            case SIFTER -> List.of(SIFT);
             default -> List.of();
         };
     }
@@ -127,6 +131,15 @@ public final class HutSettings {
             case "fish" -> "Raw fish";
             case "vegetables" -> "Potatoes or kelp";
             default -> "Raw food";
+        };
+    }
+
+    /** The block the sifter sifts. */
+    public static net.minecraft.world.item.Item sifterInput(@Nullable BuildingData building) {
+        return switch (get(building, SIFT)) {
+            case "sand" -> Items.SAND;
+            case "dirt" -> Items.DIRT;
+            default -> Items.GRAVEL;
         };
     }
 

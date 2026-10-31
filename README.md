@@ -27,12 +27,12 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 30 huts and jobs, five building styles, research and
+Hearthstead has the core colony loop, 34 huts and jobs, five building styles, research and
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
-- Some jobs: no Mechanic, Netherworker, Crusher, Sifter, and so on.
+- Some jobs: no Fletcher, Blacksmith, Combat Academy, Hospital, and so on.
 - More raider cultures (barbarians and pirates so far), more colony events, permissions GUI.
 
 ## Features
@@ -99,6 +99,10 @@ links to the releases and the changelog.
 | **Planter** | Looks after the sugar cane, cactus and bamboo you plant around the hut: cuts them down to their base when they grow (so they grow back) and spreads each kind to free spots next to it, up to 8 plants at level 1 and 24 at level 5. Keeps a few cuttings for planting and brings the rest to the hut. |
 | **Alchemist** | Fills glass bottles with water, brews awkward potions with nether wart and finishes them with the brewing ingredients in the hut (sugar for swiftness, glistering melon for healing, ...), three bottles at a time. One blaze powder fuels 20 batches. You choose the potions by the ingredients you supply. |
 | **Enchanter** | Enchants books with lapis lazuli, like an enchanting table. Higher hut levels give stronger enchantments (power 9 at level 1 up to 30 at level 5) and use more lapis (1 to 3 per book). |
+| **Crusher** | Crushes cobblestone into gravel or sand (a hut setting); makes sand whenever another hut (Glassblower, Concrete Mixer) is short of it. Asks for cobblestone. |
+| **Sifter** | Sifts gravel, sand or dirt (a hut setting): gravel turns up flint, nuggets, coal and, at higher levels, raw copper and iron, emeralds and diamonds; sand gives clay, gold, cactus, glowstone and prismarine shards; dirt gives seeds, potatoes, carrots, bones and saplings. Higher hut levels find more. |
+| **Mechanic** | Crafts redstone parts, rails, iron doors, trapdoors and bars, lanterns, torches, buckets, shears and flint and steel with the game's recipes, for whatever huts are short of (the miners' torches, a builder's lanterns, the cowhand's buckets). Asks for iron, redstone, coal, sticks and cobblestone. |
+| **Netherworker** | Goes on expeditions to the Nether through the portal in the Nether Mine: with a sword and 8 food they are away for about two minutes and come back with netherrack, quartz, soul sand and gold nuggets; nether wart and glowstone from level 2, magma cream from 3, blaze rods from 4 and ghast tears at level 5. Only sets out early enough to be back by nightfall. |
 | **Fisherman** | Needs a **fishing rod** in the hut. Finds open water near the hut, fishes from the shore using the vanilla fishing loot, and brings the catch home. |
 | **Builder** | Every hut is built from a blueprint (schematic) by a **Builder**. A placed hut starts at level 0 and gets a work order for level 1. The builder takes building materials from the **Builder's Hut** inventory and places the blueprint block by block, clearing whatever is in the way. Open a hut to see progress and the materials still needed. |
 | **Upgrades** | Huts go up to level 5, and each level has a bigger building. Open a hut and click **Upgrade** to create a work order. Other huts can't exceed the Town Hall's level, and a builder can only build up to its own hut's level (level 1 is always possible). |
@@ -139,6 +143,10 @@ Each hut is 8 planks around a center item:
 | Planter's Hut | sugar cane |
 | Alchemist's Hut | brewing stand |
 | Enchanter's Hut | lapis lazuli |
+| Crusher's Hut | grindstone |
+| Sifter's Hut | iron bars |
+| Mechanic's Workshop | redstone dust |
+| Nether Mine | flint and steel |
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
@@ -258,6 +266,8 @@ value; the worker and the hut's requests follow it right away.
 | Farmer | Crop | any seeds, wheat, carrots, potatoes, beetroot |
 | Lumberjack | Replant saplings | yes / no |
 | Miner | Place torches | yes / no (no torches are requested when off) |
+| Crusher | Crush into | gravel, sand |
+| Sifter | Sift | gravel, sand, dirt |
 | Smeltery | Smelt | everything, ores & metals, sand only |
 | Cook's Hut | Cook | all raw food, meat, fish, vegetables |
 | Shepherd, Cowhand, Chicken Herder, Swineherd, Rabbit Hutch | Herd size | auto (grows with the hut level), 2 to 24 |
@@ -273,7 +283,7 @@ colony, with the hut that asked. Each request shows who it is waiting on:
 
 - **Being delivered** (green): the Warehouse has it and the deliveryman will bring it.
 - **Being crafted at the ...** (blue): the Warehouse has none, but one of the colony's crafting
-  huts (Sawmill, Stonemason, Dyer or Glassblower) has a worker and makes it. The deliveryman
+  huts (Sawmill, Stonemason, Dyer, Glassblower, Crusher or Mechanic) has a worker and makes it. The deliveryman
   fetches it from the crafter as soon as it is made.
 - **In the warehouse - needs a deliveryman** (yellow): build a Deliveryman's Hut.
 - **Needs you** (red): nothing in the colony can supply it, so it is up to you. These are listed first.

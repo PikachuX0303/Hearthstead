@@ -16,7 +16,11 @@ import dev.pikachux.hearthstead.entity.ai.CitizenEatGoal;
 import dev.pikachux.hearthstead.entity.ai.ComposterGoal;
 import dev.pikachux.hearthstead.entity.ai.AlchemistGoal;
 import dev.pikachux.hearthstead.entity.ai.ConcreteMixerGoal;
+import dev.pikachux.hearthstead.entity.ai.CrusherGoal;
 import dev.pikachux.hearthstead.entity.ai.EnchanterGoal;
+import dev.pikachux.hearthstead.entity.ai.MechanicGoal;
+import dev.pikachux.hearthstead.entity.ai.NetherworkerGoal;
+import dev.pikachux.hearthstead.entity.ai.SifterGoal;
 import dev.pikachux.hearthstead.entity.ai.PlanterGoal;
 import dev.pikachux.hearthstead.entity.ai.CowhandGoal;
 import dev.pikachux.hearthstead.entity.ai.DyerGoal;
@@ -165,6 +169,10 @@ public class CitizenEntity extends PathfinderMob {
         goalSelector.addGoal(6, new PlanterGoal(this));
         goalSelector.addGoal(6, new AlchemistGoal(this));
         goalSelector.addGoal(6, new EnchanterGoal(this));
+        goalSelector.addGoal(6, new CrusherGoal(this));
+        goalSelector.addGoal(6, new SifterGoal(this));
+        goalSelector.addGoal(6, new MechanicGoal(this));
+        goalSelector.addGoal(6, new NetherworkerGoal(this));
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
         goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 6.0F));
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));
@@ -249,6 +257,10 @@ public class CitizenEntity extends PathfinderMob {
             return;
         }
         data.setLastSeen(level.getGameTime());
+        if (isInvisible() && data.job() != JobType.NETHERWORKER) {
+            // Only a netherworker on an expedition is ever out of sight.
+            setInvisible(false);
+        }
         if (data.job() != job() && data.job() == JobType.UNEMPLOYED) {
             setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         }

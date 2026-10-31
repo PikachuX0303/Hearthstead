@@ -39,7 +39,7 @@ ICON_COLORS = {
     "y": (226, 186, 60), "Y": (170, 128, 30), "b": (120, 80, 44), "B": (84, 54, 28),
     "r": (196, 52, 44), "R": (130, 30, 26), "e": (70, 150, 60), "E": (40, 100, 40),
     "u": (70, 120, 200), "U": (40, 70, 140), "p": (232, 150, 160), "o": (230, 130, 40),
-    "s": (190, 190, 170), "c": (150, 210, 230),
+    "s": (190, 190, 170), "c": (150, 210, 230), "v": (140, 70, 200), "V": (200, 140, 240),
 }
 ICONS = {
     "townhall": ["....yy....", "...yyyy...", "...yYYy...", "..yyyyyy..", "..yYyyYy..",
@@ -99,6 +99,10 @@ ICONS = {
     "planter": ["..e....e..", "..E..e.E..", "..e..E.e..", "..E..e.E..", "..e..E.e..", ".eE..e.E..", "..e..E.e.e", "..E..e.EE.", "..e..E.e..", "bbbbbbbbbb"],
     "alchemist": ["....ww....", "....bb....", "....cc....", "...c..c...", "..c....c..", ".cuuuuuuc.", ".cuwuuuuc.", ".cuuuuuuc.", "..cuuuuc..", "...cccc..."],
     "enchanter": ["y.......y.", "....y.....", "..........", ".RRRRRRRR.", ".Rwwwwwwr.", ".Rwkkkkwr.", ".Rwwwwwwr.", ".Rwkkkwwr.", ".Rwwwwwwr.", ".RRRRRRRR."],
+    "crusher": ["..GGGG....", "..GGGG....", "...bb.....", "...bb.....", "...bb.....", "...bb.....", "..........", ".g.gg.g...", "gGggGggGg.", "gggggggggg"],
+    "sifter": ["..........", "bbbbbbbbbb", "bGgGgGgGgb", "bgGgGgGgGb", "bbbbbbbbbb", "...y..o...", "....y...o.", "..o...y...", ".....o....", ".........."],
+    "mechanic": ["....GG....", ".G.GGGG.G.", "..GGGGGG..", ".GGGrrGGG.", "GGGrRRrGGG", "GGGrRRrGGG", ".GGGrrGGG.", "..GGGGGG..", ".G.GGGG.G.", "....GG...."],
+    "netherworker": ["kkkkkkkk..", "kvvvvvvk..", "kvVvvvvk..", "kvvvVvvk..", "kvvvvvvk..", "kvVvvvvk..", "kvvvvVvk..", "kvvvvvvk..", "kkkkkkkk..", ".........."],
 }
 
 
@@ -157,12 +161,17 @@ PROPS = {
     "planter": [box(3, 12, 3, 13, 15, 13, V + "coarse_dirt"), box(5, 15, 5, 11, 22, 11, V + "bamboo_block", V + "bamboo_block_top")],
     "alchemist": [box(4, 12, 4, 12, 14, 12, V + "polished_blackstone"), box(6, 14, 6, 10, 19, 10, V + "amethyst_block")],
     "enchanter": [box(3, 12, 3, 13, 15, 13, V + "obsidian"), box(5, 15, 5, 11, 17, 11, V + "lapis_block")],
+    "crusher": [box(3, 12, 3, 13, 15, 13, V + "cobblestone"), box(5, 15, 5, 11, 18, 11, V + "gravel")],
+    "sifter": [box(3, 12, 3, 13, 14, 13, V + "oak_planks"), box(4, 14, 4, 12, 16, 12, V + "sand")],
+    "mechanic": [box(4, 12, 4, 12, 15, 12, V + "iron_block"), box(6, 15, 6, 10, 18, 10, V + "redstone_block")],
+    "netherworker": [box(3, 12, 3, 13, 15, 13, V + "netherrack"), box(5, 15, 5, 11, 19, 11, V + "nether_bricks")],
 }
 
 # Workbench wood per hut: (planks for the top and shelf, stripped log for the legs).
 WOODS = {"townhall": ("dark_oak", "dark_oak"), "university": ("dark_oak", "dark_oak"),
          "guardtower": ("spruce", "spruce"), "miner": ("spruce", "spruce"), "smelter": ("spruce", "spruce"),
-         "planter": ("jungle", "jungle"), "alchemist": ("dark_oak", "dark_oak"), "enchanter": ("dark_oak", "dark_oak")}
+         "planter": ("jungle", "jungle"), "alchemist": ("dark_oak", "dark_oak"), "enchanter": ("dark_oak", "dark_oak"),
+         "mechanic": ("spruce", "spruce"), "netherworker": ("dark_oak", "dark_oak")}
 
 
 def cube(frm, to, faces):

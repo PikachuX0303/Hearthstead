@@ -28,7 +28,11 @@ public enum JobType {
     CONCRETE_MIXER("concrete_mixer", "Concrete Mixer"),
     PLANTER("planter", "Planter"),
     ALCHEMIST("alchemist", "Alchemist"),
-    ENCHANTER("enchanter", "Enchanter");
+    ENCHANTER("enchanter", "Enchanter"),
+    CRUSHER("crusher", "Crusher"),
+    SIFTER("sifter", "Sifter"),
+    MECHANIC("mechanic", "Mechanic"),
+    NETHERWORKER("netherworker", "Netherworker");
 
     private final String id;
     private final String displayName;

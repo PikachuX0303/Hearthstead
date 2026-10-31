@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:flint_and_steel"
+  },
+  "result": {
+    "id": "hearthstead:blockhutnetherworker",
+    "count": 1
+  }
+}

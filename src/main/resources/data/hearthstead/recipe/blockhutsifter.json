@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:iron_bars"
+  },
+  "result": {
+    "id": "hearthstead:blockhutsifter",
+    "count": 1
+  }
+}

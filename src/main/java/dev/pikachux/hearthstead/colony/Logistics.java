@@ -147,6 +147,10 @@ public final class Logistics {
             case PLANTER -> s -> false;
             case ALCHEMIST -> dev.pikachux.hearthstead.entity.ai.AlchemistGoal::isMaterial;
             case ENCHANTER -> s -> s.is(Items.BOOK) || s.is(Items.LAPIS_LAZULI);
+            case CRUSHER -> s -> s.is(Items.COBBLESTONE);
+            case SIFTER -> s -> s.is(Items.GRAVEL) || s.is(Items.SAND) || s.is(Items.DIRT);
+            case MECHANIC -> s -> !Crafters.MECHANISMS.contains(s.getItem());
+            case NETHERWORKER -> s -> isMeal(s) || s.is(ItemTags.SWORDS);
             default -> s -> true;
         };
     }
@@ -156,7 +160,8 @@ public final class Logistics {
         return switch (type) {
             case LUMBERJACK, FARMER, MINER, FISHERMAN, COOK, SMELTER, BAKER, SHEPHERD, COWHAND, COMPOSTER, SAWMILL,
                  CHICKEN_HERDER, SWINEHERD, STONEMASON, FLORIST, DYER, BEEKEEPER,
-                 RABBIT_HERDER, GLASSBLOWER, CONCRETE_MIXER, PLANTER, ALCHEMIST, ENCHANTER -> true;
+                 RABBIT_HERDER, GLASSBLOWER, CONCRETE_MIXER, PLANTER, ALCHEMIST, ENCHANTER,
+                 CRUSHER, SIFTER, MECHANIC, NETHERWORKER -> true;
             default -> false;
         };
     }
@@ -319,6 +324,32 @@ public final class Logistics {
                     int lapis = dev.pikachux.hearthstead.entity.ai.EnchanterGoal.lapisCost(building.level());
                     restock(building, storage, s -> s.is(Items.BOOK), 1, 4, "Books", requests);
                     restock(building, storage, s -> s.is(Items.LAPIS_LAZULI), lapis, lapis * 4, "Lapis Lazuli", requests);
+                }
+            }
+            case CRUSHER -> {
+                if (building.level() > 0) {
+                    restock(building, storage, s -> s.is(Items.COBBLESTONE), 16, 64, "Cobblestone", requests);
+                }
+            }
+            case SIFTER -> {
+                if (building.level() > 0) {
+                    Item input = HutSettings.sifterInput(building);
+                    restock(building, storage, s -> s.is(input), 16, 64, input.getDefaultInstance().getHoverName().getString(), requests);
+                }
+            }
+            case MECHANIC -> {
+                if (building.level() > 0) {
+                    restock(building, storage, s -> s.is(Items.IRON_INGOT), 4, 16, "Iron Ingots", requests);
+                    restock(building, storage, s -> s.is(Items.REDSTONE), 4, 16, "Redstone", requests);
+                    restock(building, storage, s -> s.is(Items.COAL) || s.is(Items.CHARCOAL), 4, 16, "Coal or charcoal", requests);
+                    restock(building, storage, s -> s.is(Items.STICK), 4, 16, "Sticks", requests);
+                    restock(building, storage, s -> s.is(Items.COBBLESTONE), 8, 32, "Cobblestone", requests);
+                }
+            }
+            case NETHERWORKER -> {
+                tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
+                if (building.level() > 0) {
+                    restock(building, storage, Logistics::isMeal, 8, 16, "Food for the expedition", requests);
                 }
             }
             case TOWN_HALL, RESIDENCE -> {

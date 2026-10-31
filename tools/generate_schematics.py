@@ -93,6 +93,10 @@ STYLES = {
     "planter":    ("jungle_planks",    "jungle_log",   "coarse_dirt",         "jungle"),
     "alchemist":  ("deepslate_bricks", "dark_oak_log", "polished_deepslate",  "dark_oak"),
     "enchanter":  ("stone_bricks",     "birch_log",    "dark_oak_planks",     "dark_oak"),
+    "crusher":    ("cobblestone",      "spruce_log",   "andesite",            "spruce"),
+    "sifter":     ("birch_planks",     "oak_log",      "sandstone",           "oak"),
+    "mechanic":   ("bricks",           "dark_oak_log", "polished_andesite",   "dark_oak"),
+    "netherworker": ("nether_bricks",  "crimson_stem", "blackstone",          "crimson"),
 }
 
 # Architectural styles. "classic" uses the per-hut palette above; the others give every
@@ -291,7 +295,11 @@ def build(hut, level, style="classic"):
              "concretemixer": block("water_cauldron", level=3),
              "planter": block("potted_cactus"),
              "alchemist": block("brewing_stand", has_bottle_0=False, has_bottle_1=False, has_bottle_2=False),
-             "enchanter": block("enchanting_table")}
+             "enchanter": block("enchanting_table"),
+             "crusher": block("grindstone", face="floor", facing="north"),
+             "sifter": block("barrel", facing="up", open=False),
+             "mechanic": block("smithing_table"),
+             "netherworker": block("crying_obsidian")}
     if hut in decor:
         put(c + 1, 1, c + 1, decor[hut])
 
