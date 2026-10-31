@@ -37,3 +37,11 @@ All art is original; do not copy textures from MineColonies or other mods.
 
 Never put a Claude session link (`claude.ai/code/session_...`, `Claude-Session:` trailer)
 in commit messages, PR descriptions, comments, release notes or any file.
+
+Commits are authored by `PikachuX0303 <136934106+PikachuX0303@users.noreply.github.com>`:
+run `git config author.name PikachuX0303` and
+`git config author.email 136934106+PikachuX0303@users.noreply.github.com` before committing
+(leave the committer as configured, so commits stay signed and verified).
+
+Push to `https://github.com/PikachuX0303/Hearthstead.git` (the session may reset `origin` to
+the old MineColonies-Fabric-Port-UNOFFICIAL repo).
