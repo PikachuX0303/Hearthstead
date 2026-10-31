@@ -46,6 +46,7 @@ public class Colony {
     private final List<WorkOrder> workOrders = new ArrayList<>();
     private final ColonyRaid raid = new ColonyRaid();
     private final ColonyHappenings happenings = new ColonyHappenings();
+    private final ColonyPermissions permissions = new ColonyPermissions(this);
     private final ColonyResearch research = new ColonyResearch();
     /** Style given to newly placed huts. */
     private String style = dev.pikachux.hearthstead.blueprint.Styles.CLASSIC;
@@ -180,6 +181,11 @@ public class Colony {
                 .filter(b -> b.type() == type)
                 .min(Comparator.comparingDouble(b -> b.pos().distSqr(from)))
                 .orElse(null);
+    }
+
+    /** Who may do what in the colony. */
+    public ColonyPermissions permissions() {
+        return permissions;
     }
 
     /** Colony events: merchant visits and festivals. */
@@ -436,6 +442,7 @@ public class Colony {
         tag.put("workOrders", orderList);
         tag.put("raid", raid.save());
         tag.put("events", happenings.save());
+        tag.put("permissions", permissions.save());
         tag.put("research", research.save());
         tag.putString("style", style);
         tag.putInt("nextCitizenId", nextCitizenId);
@@ -454,6 +461,7 @@ public class Colony {
         tag.getListOrEmpty("citizens").compoundStream().map(CitizenData::load).forEach(c -> colony.citizens.put(c.id(), c));
         colony.raid.load(tag.getCompoundOrEmpty("raid"));
         colony.happenings.load(tag.getCompoundOrEmpty("events"));
+        colony.permissions.load(tag.getCompoundOrEmpty("permissions"));
         colony.research.load(tag.getCompoundOrEmpty("research"));
         colony.style = tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
         tag.getListOrEmpty("workOrders").compoundStream().map(WorkOrder::load).forEach(colony.workOrders::add);

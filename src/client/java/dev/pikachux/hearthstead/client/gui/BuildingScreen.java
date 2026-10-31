@@ -161,6 +161,12 @@ public class BuildingScreen extends ColonyScreen {
             }
         }
 
+        if (tab == Tab.COLONY) {
+            addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.permissions.open"),
+                            b -> send(HutActionPayload.Action.OPEN_PERMISSIONS, ""))
+                    .bounds(left + panelWidth - 98, top + 88, 90, 18).build());
+        }
+
         if (tab == Tab.COLONY && view.colony().isOwner()) {
             nameField = new EditBox(font, left + 10, top + 108, panelWidth - 92, 18, Component.translatable("gui.hearthstead.colony_name"));
             nameField.setMaxLength(32);

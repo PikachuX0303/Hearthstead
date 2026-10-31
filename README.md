@@ -33,7 +33,7 @@ raids. Things that are **not there yet** (some of which MineColonies has):
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
 - Some jobs: no Fletcher, Blacksmith, Combat Academy, Hospital, and so on.
-- More raider cultures (barbarians and pirates so far), more colony events, permissions GUI.
+- More raider cultures (barbarians and pirates so far), more colony events.
 
 ## Features
 
@@ -66,7 +66,7 @@ links to the releases and the changelog.
 | Feature | Details |
 |---|---|
 | **Colonies** | Place a **Town Hall** to found a colony (one per player). It claims a 129×129 area. Colonies must be at least 144 blocks apart. |
-| **Protection** | Non-members can't break blocks or interact with blocks inside a colony. Creative-mode operators can bypass this. |
+| **Protection** | Inside a colony, players can only do what its [permissions](#permissions) allow them. Creative-mode operators can bypass this. |
 | **Citizens** | New citizens arrive every minute while there is free housing. Each one has a name, a skin, saturation and happiness. If a citizen goes missing (for example, unloaded), the colony respawns them at the town hall. If one dies, the owner is notified. |
 | **Housing** | Town Hall: 4 settlers per level (also 4 before it is built). Residence: 2 beds per level. |
 | **Food** | Citizens get hungry. They eat food stored in their home, the Town Hall, a Residence or a Warehouse. Starving citizens become unhappy and take damage. |
@@ -162,7 +162,7 @@ All huts are also in the **Hearthstead** creative tab.
 - `citizens`: lists citizens with job, food, happiness and status
 - `list`: lists all colonies on the server
 - `rename <name>`: renames your colony (owner only)
-- `addofficer <player>` / `removeofficer <player>`: officers can build in and manage the colony
+- `addofficer <player>` / `removeofficer <player>`: officers can build in and manage the colony (also on the Permissions screen)
 - `upgrade <x y z>`: creates a work order to build or upgrade a hut (same as the **Build** / **Upgrade** button in the hut window)
 - `cancel <x y z>`: cancels a hut's work order
 - `workorders`: lists the colony's open work orders
@@ -255,6 +255,29 @@ previews its next level, with an **Order Upgrade** button.
 | | |
 |---|---|
 | ![Choosing a hut](docs/screenshots/build_tool_select.png) | ![Building preview](docs/screenshots/build_tool_preview.png) |
+
+## Permissions
+
+Open the **Town Hall**, go to the **Colony** tab and press **Permissions**. Players have one of
+four ranks:
+
+- **Owner** and **Officers** may do everything, including managing huts and the colony.
+- **Friends** and **Visitors** (everyone else) may do what the owner allows:
+
+| Permission | Friends by default | Visitors by default |
+| --- | --- | --- |
+| Break blocks (hut blocks always need an officer) | no | no |
+| Place blocks and change them with items (hoes, axes, buckets, bone meal, ...) | no | no |
+| Use doors, trapdoors, gates, buttons, levers, bells, beds and crafting tables | yes | no |
+| Open chests, barrels, furnaces and other containers, and hut inventories | yes | no |
+| Hurt citizens and animals | no | no |
+| View hut windows and hand in items for requests | yes | no |
+
+The owner adds a player (who must be online) as a friend or officer by name, switches members
+between officer and friend with ⇅, removes them with ✕, and clicks Yes/No to change what friends
+and visitors may do. Officers can open the screen to look but not change it.
+
+![Permissions](docs/screenshots/permissions.png)
 
 ## Hut settings
 

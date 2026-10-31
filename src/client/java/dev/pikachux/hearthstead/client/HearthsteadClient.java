@@ -40,6 +40,13 @@ public class HearthsteadClient implements ClientModInitializer {
                 context.client().setScreen(new ClipboardScreen(payload));
             }
         });
+        ClientPlayNetworking.registerGlobalReceiver(dev.pikachux.hearthstead.network.PermissionsViewPayload.TYPE, (payload, context) -> {
+            if (context.client().screen instanceof dev.pikachux.hearthstead.client.gui.PermissionsScreen screen) {
+                screen.update(payload);
+            } else if (!payload.updateOnly()) {
+                context.client().setScreen(new dev.pikachux.hearthstead.client.gui.PermissionsScreen(payload));
+            }
+        });
         ClientPlayNetworking.registerGlobalReceiver(CitizenViewPayload.TYPE,
                 (payload, context) -> context.client().setScreen(new CitizenScreen(payload)));
     }

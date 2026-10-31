@@ -19,7 +19,9 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
         /** Hand in items for a request; the argument is {@link #requestArgument}. */
         FULFILL_REQUEST,
         /** Moves a hut setting to its next value; the argument is the setting's id. */
-        CHANGE_SETTING
+        CHANGE_SETTING,
+        /** Opens the colony's permissions screen (town hall only). */
+        OPEN_PERMISSIONS
     }
 
     private static final int MAX_ARGUMENT = 256;

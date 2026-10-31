@@ -184,7 +184,11 @@ public class HutBlock extends BaseEntityBlock {
         if (colony == null || building == null) {
             return InteractionResult.PASS;
         }
-        if (!colony.isMember(player)) {
+        var permissions = colony.permissions();
+        boolean allowed = player.isShiftKeyDown()
+                ? permissions.allows(player, dev.pikachux.hearthstead.colony.ColonyPermissions.Action.CONTAINERS)
+                : permissions.allows(player, dev.pikachux.hearthstead.colony.ColonyPermissions.Action.HUT_WINDOWS);
+        if (!allowed) {
             player.displayClientMessage(Component.translatable("message.hearthstead.no_permission").withStyle(ChatFormatting.RED), true);
             return InteractionResult.FAIL;
         }

@@ -82,6 +82,23 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.clickScreenButton("gui.hearthstead.tab.colony");
             context.waitTicks(2);
             context.takeScreenshot("townhall_colony");
+            // The permissions screen: let friends break blocks, then back to the town hall.
+            context.clickScreenButton("gui.hearthstead.permissions.open");
+            context.waitForScreen(dev.pikachux.hearthstead.client.gui.PermissionsScreen.class);
+            context.waitTicks(5);
+            context.takeScreenshot("permissions");
+            context.clickScreenButton("gui.hearthstead.permissions.no");
+            context.waitTicks(10);
+            boolean friendsBreak = singleplayer.getServer().computeOnServer(server -> ColonyManager.get(server)
+                    .colonyAt(player(server).level().dimension(), townHall).permissions()
+                    .rules(dev.pikachux.hearthstead.colony.ColonyPermissions.Rank.FRIEND)
+                    .contains(dev.pikachux.hearthstead.colony.ColonyPermissions.Action.BREAK));
+            if (!friendsBreak) {
+                throw new AssertionError("The first toggle should allow friends to break blocks");
+            }
+            singleplayer.getServer().runOnServer(server -> open(server, townHall));
+            context.waitForScreen(BuildingScreen.class);
+            context.waitTicks(5);
             // Carry some bread, so the requests tab offers to hand it in for the residents.
             singleplayer.getServer().runCommand("give @a minecraft:bread 8");
             context.clickScreenButton("gui.hearthstead.tab.requests");

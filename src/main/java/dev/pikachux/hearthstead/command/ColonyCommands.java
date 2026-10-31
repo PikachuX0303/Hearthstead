@@ -182,12 +182,9 @@ public final class ColonyCommands {
             return 0;
         }
         ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
-        if (add) {
-            colony.officers().add(target.getUUID());
-        } else {
-            colony.officers().remove(target.getUUID());
-        }
-        colony.markDirty();
+        colony.permissions().setRank(target.getUUID(), target.getName().getString(),
+                add ? dev.pikachux.hearthstead.colony.ColonyPermissions.Rank.OFFICER
+                        : dev.pikachux.hearthstead.colony.ColonyPermissions.Rank.VISITOR);
         ctx.getSource().sendSuccess(() -> Component.literal(target.getName().getString()
                 + (add ? " is now an officer of " : " is no longer an officer of ") + colony.name()), false);
         return 1;

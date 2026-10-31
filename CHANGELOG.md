@@ -5,6 +5,22 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.29.0-alpha] - 2026-10-31
+
+### Added
+- **Permissions screen**, opened from the town hall's Colony tab. Add online players as
+  **friends** or officers, switch or remove members, and choose what friends and visitors may do:
+  break blocks, place and change blocks, use doors and levers, open containers, hurt citizens and
+  animals, and view hut windows.
+- Friends may by default use doors, open containers and view hut windows; visitors may do nothing,
+  as before. Owners and officers may always do everything.
+
+### Changed
+- Colony protection now checks each kind of action separately instead of only membership, and
+  also protects citizens and animals from players who may not hurt them.
+- Friends (and visitors, if allowed) can open hut windows and hand in items for requests;
+  changing anything in a hut still needs an officer.
+
 ## [0.28.0-alpha] - 2026-10-31
 
 ### Added
