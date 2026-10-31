@@ -97,6 +97,9 @@ STYLES = {
     "sifter":     ("birch_planks",     "oak_log",      "sandstone",           "oak"),
     "mechanic":   ("bricks",           "dark_oak_log", "polished_andesite",   "dark_oak"),
     "netherworker": ("nether_bricks",  "crimson_stem", "blackstone",          "crimson"),
+    "blacksmith": ("stone_bricks",     "spruce_log",   "cobblestone",         "spruce"),
+    "fletcher":   ("birch_planks",     "spruce_log",   "oak_planks",          "birch"),
+    "stonesmeltery": ("cobblestone",   "stripped_spruce_log", "stone_bricks", "spruce"),
 }
 
 # Architectural styles. "classic" uses the per-hut palette above; the others give every
@@ -238,8 +241,8 @@ def build(hut, level, style="classic"):
         for i in range(level):
             put(2 + i, 1, s - 2, block("smoker", facing="north", lit=False))
 
-    # furnaces along the back wall of the smeltery and the glassblower's workshop: one per level
-    if hut in ("smelter", "glassblower"):
+    # furnaces along the back wall of the smelteries and the glassblower's workshop: one per level
+    if hut in ("smelter", "glassblower", "stonesmeltery"):
         for i in range(level):
             put(2 + i, 1, s - 2, block("furnace", facing="north", lit=False))
 
@@ -299,7 +302,10 @@ def build(hut, level, style="classic"):
              "crusher": block("grindstone", face="floor", facing="north"),
              "sifter": block("barrel", facing="up", open=False),
              "mechanic": block("smithing_table"),
-             "netherworker": block("crying_obsidian")}
+             "netherworker": block("crying_obsidian"),
+             "blacksmith": block("anvil", facing="north"),
+             "fletcher": block("fletching_table"),
+             "stonesmeltery": block("crafting_table")}
     if hut in decor:
         put(c + 1, 1, c + 1, decor[hut])
 

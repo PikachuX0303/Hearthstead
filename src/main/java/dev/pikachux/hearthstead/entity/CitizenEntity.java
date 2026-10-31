@@ -173,6 +173,9 @@ public class CitizenEntity extends PathfinderMob {
         goalSelector.addGoal(6, new SifterGoal(this));
         goalSelector.addGoal(6, new MechanicGoal(this));
         goalSelector.addGoal(6, new NetherworkerGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.BlacksmithGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.FletcherGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.StoneSmelterGoal(this));
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
         goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 6.0F));
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));

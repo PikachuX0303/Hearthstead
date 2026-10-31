@@ -116,6 +116,14 @@ public final class Logistics {
         return BREWING_INGREDIENTS.contains(stack.getItem());
     }
 
+    /** What the stone smeltery puts in its furnaces (not stone itself, which is what it makes). */
+    public static final Set<Item> STONE_SMELTABLES = Set.of(Items.COBBLESTONE, Items.CLAY_BALL, Items.CLAY, Items.NETHERRACK,
+            Items.COBBLED_DEEPSLATE, Items.SANDSTONE, Items.RED_SANDSTONE, Items.QUARTZ_BLOCK, Items.BASALT);
+
+    public static boolean isStoneSmeltable(ItemStack stack) {
+        return STONE_SMELTABLES.contains(stack.getItem());
+    }
+
     public static boolean isFishingRod(ItemStack stack) {
         return stack.is(Items.FISHING_ROD);
     }
@@ -151,6 +159,9 @@ public final class Logistics {
             case SIFTER -> s -> s.is(Items.GRAVEL) || s.is(Items.SAND) || s.is(Items.DIRT);
             case MECHANIC -> s -> !Crafters.MECHANISMS.contains(s.getItem());
             case NETHERWORKER -> s -> isMeal(s) || s.is(ItemTags.SWORDS);
+            case BLACKSMITH -> s -> !Crafters.isSmithing(s.getItem());
+            case FLETCHER -> s -> !Crafters.FLETCHING.contains(s.getItem());
+            case STONE_SMELTERY -> s -> isStoneSmeltable(s) || isCookFuel(s);
             default -> s -> true;
         };
     }
@@ -161,7 +172,7 @@ public final class Logistics {
             case LUMBERJACK, FARMER, MINER, FISHERMAN, COOK, SMELTER, BAKER, SHEPHERD, COWHAND, COMPOSTER, SAWMILL,
                  CHICKEN_HERDER, SWINEHERD, STONEMASON, FLORIST, DYER, BEEKEEPER,
                  RABBIT_HERDER, GLASSBLOWER, CONCRETE_MIXER, PLANTER, ALCHEMIST, ENCHANTER,
-                 CRUSHER, SIFTER, MECHANIC, NETHERWORKER -> true;
+                 CRUSHER, SIFTER, MECHANIC, NETHERWORKER, BLACKSMITH, FLETCHER, STONE_SMELTERY -> true;
             default -> false;
         };
     }
@@ -344,6 +355,26 @@ public final class Logistics {
                     restock(building, storage, s -> s.is(Items.COAL) || s.is(Items.CHARCOAL), 4, 16, "Coal or charcoal", requests);
                     restock(building, storage, s -> s.is(Items.STICK), 4, 16, "Sticks", requests);
                     restock(building, storage, s -> s.is(Items.COBBLESTONE), 8, 32, "Cobblestone", requests);
+                }
+            }
+            case BLACKSMITH -> {
+                if (building.level() > 0) {
+                    restock(building, storage, s -> s.is(Items.IRON_INGOT), 6, 24, "Iron Ingots", requests);
+                    restock(building, storage, s -> s.is(Items.STICK), 4, 16, "Sticks", requests);
+                }
+            }
+            case FLETCHER -> {
+                if (building.level() > 0) {
+                    restock(building, storage, s -> s.is(Items.STICK), 4, 16, "Sticks", requests);
+                    restock(building, storage, s -> s.is(Items.STRING), 4, 16, "String", requests);
+                    restock(building, storage, s -> s.is(Items.FLINT), 2, 8, "Flint", requests);
+                    restock(building, storage, s -> s.is(Items.FEATHER), 2, 8, "Feathers", requests);
+                }
+            }
+            case STONE_SMELTERY -> {
+                if (building.level() > 0) {
+                    restock(building, storage, s -> s.is(Items.COBBLESTONE), 16, 64, "Cobblestone", requests);
+                    restock(building, storage, Logistics::isCookFuel, 8, 16, "Coal or charcoal", requests);
                 }
             }
             case NETHERWORKER -> {

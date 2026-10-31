@@ -332,6 +332,9 @@
   "block.hearthstead.blockhutsifter": "Sifter's Hut",
   "block.hearthstead.blockhutmechanic": "Mechanic's Workshop",
   "block.hearthstead.blockhutnetherworker": "Nether Mine",
+  "block.hearthstead.blockhutblacksmith": "Blacksmith's Hut",
+  "block.hearthstead.blockhutfletcher": "Fletcher's Hut",
+  "block.hearthstead.blockhutstonesmeltery": "Stone Smeltery",
   "block.hearthstead.rope_fence": "Rope Fence",
   "style.hearthstead.timber": "Timber"
 }

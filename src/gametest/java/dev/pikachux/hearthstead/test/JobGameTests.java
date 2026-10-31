@@ -561,4 +561,51 @@ public class JobGameTests {
         }
         helper.succeed();
     }
+
+    /** The blacksmith forges the axe a lumberjack's hut is asking for, in iron. */
+    @GameTest(environment = "hearthstead-gametest:blacksmith", structure = PLATFORM, maxTicks = 1500, skyAccess = true)
+    public void blacksmithForgesRequestedAxe(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.BLACKSMITH, 1);
+        TestColonies.hut(helper, colony, new BlockPos(4, 1, 4), BuildingType.LUMBERJACK, 0);
+        TestColonies.give(helper, hut, Items.IRON_INGOT, 3);
+        TestColonies.give(helper, hut, Items.STICK, 2);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.IRON_AXE) == 0) {
+                throw helper.assertionException("No iron axe yet (" + citizen.status() + ")");
+            }
+        });
+    }
+
+    /** The fletcher makes the fishing rod a fisherman's hut is asking for. */
+    @GameTest(environment = "hearthstead-gametest:fletcher", structure = PLATFORM, maxTicks = 1500, skyAccess = true)
+    public void fletcherMakesFishingRod(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.FLETCHER, 1);
+        TestColonies.hut(helper, colony, new BlockPos(4, 1, 4), BuildingType.FISHERMAN, 0);
+        TestColonies.give(helper, hut, Items.STICK, 3);
+        TestColonies.give(helper, hut, Items.STRING, 2);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.FISHING_ROD) == 0) {
+                throw helper.assertionException("No fishing rod yet (" + citizen.status() + ")");
+            }
+        });
+    }
+
+    /** The stone smeltery smelts cobblestone into stone in its furnace. */
+    @GameTest(environment = "hearthstead-gametest:stonesmeltery", structure = PLATFORM, maxTicks = 2400, skyAccess = true)
+    public void stoneSmelteryMakesStone(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.STONE_SMELTERY, 1);
+        TestColonies.give(helper, hut, Items.COBBLESTONE, 4);
+        TestColonies.give(helper, hut, Items.COAL, 2);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.STONE) == 0) {
+                throw helper.assertionException("No stone yet (" + citizen.status() + ")");
+            }
+        });
+    }
 }

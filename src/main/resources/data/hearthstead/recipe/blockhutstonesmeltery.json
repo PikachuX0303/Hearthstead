@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:blast_furnace"
+  },
+  "result": {
+    "id": "hearthstead:blockhutstonesmeltery",
+    "count": 1
+  }
+}

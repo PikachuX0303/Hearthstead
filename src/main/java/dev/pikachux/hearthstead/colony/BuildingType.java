@@ -39,7 +39,10 @@ public enum BuildingType {
     CRUSHER("crusher", "Crusher's Hut", JobType.CRUSHER, 0),
     SIFTER("sifter", "Sifter's Hut", JobType.SIFTER, 0),
     MECHANIC("mechanic", "Mechanic's Workshop", JobType.MECHANIC, 0),
-    NETHERWORKER("netherworker", "Nether Mine", JobType.NETHERWORKER, 0);
+    NETHERWORKER("netherworker", "Nether Mine", JobType.NETHERWORKER, 0),
+    BLACKSMITH("blacksmith", "Blacksmith's Hut", JobType.BLACKSMITH, 0),
+    FLETCHER("fletcher", "Fletcher's Hut", JobType.FLETCHER, 0),
+    STONE_SMELTERY("stonesmeltery", "Stone Smeltery", JobType.STONE_SMELTER, 0);
 
     public static final int MAX_LEVEL = 5;
 

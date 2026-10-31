@@ -263,9 +263,9 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 ServerPlayer player = player(server);
                 ServerLevel level = player.level();
                 BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, townHall.offset(-14, 0, -24));
-                BuildingType[] shown = {BuildingType.TOWN_HALL, BuildingType.BUILDER, BuildingType.PLANTER,
-                        BuildingType.ALCHEMIST, BuildingType.ENCHANTER, BuildingType.CRUSHER,
-                        BuildingType.SIFTER, BuildingType.MECHANIC, BuildingType.NETHERWORKER};
+                BuildingType[] shown = {BuildingType.TOWN_HALL, BuildingType.BLACKSMITH, BuildingType.FLETCHER,
+                        BuildingType.STONE_SMELTERY, BuildingType.CRUSHER, BuildingType.SIFTER,
+                        BuildingType.MECHANIC, BuildingType.NETHERWORKER, BuildingType.ENCHANTER};
                 for (int i = 0; i < shown.length; i++) {
                     level.setBlockAndUpdate(base.offset(i - 2, 0, 0), ModBlocks.HUTS.get(shown[i]).defaultBlockState()
                             .setValue(HutBlock.FACING, Direction.NORTH));

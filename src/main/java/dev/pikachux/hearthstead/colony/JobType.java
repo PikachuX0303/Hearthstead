@@ -32,7 +32,10 @@ public enum JobType {
     CRUSHER("crusher", "Crusher"),
     SIFTER("sifter", "Sifter"),
     MECHANIC("mechanic", "Mechanic"),
-    NETHERWORKER("netherworker", "Netherworker");
+    NETHERWORKER("netherworker", "Netherworker"),
+    BLACKSMITH("blacksmith", "Blacksmith"),
+    FLETCHER("fletcher", "Fletcher"),
+    STONE_SMELTER("stone_smelter", "Stone Smelter");
 
     private final String id;
     private final String displayName;

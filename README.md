@@ -27,12 +27,12 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 34 huts and jobs, five building styles, research and
+Hearthstead has the core colony loop, 37 huts and jobs, five building styles, research and
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
-- Some jobs: no Fletcher, Blacksmith, Combat Academy, Hospital, and so on.
+- Some jobs: no Combat Academy, Archery, Hospital, Library, School, Tavern, Quarry, and so on.
 - More raider cultures (barbarians and pirates so far), more colony events.
 
 ## Features
@@ -103,6 +103,9 @@ links to the releases and the changelog.
 | **Sifter** | Sifts gravel, sand or dirt (a hut setting): gravel turns up flint, nuggets, coal and, at higher levels, raw copper and iron, emeralds and diamonds; sand gives clay, gold, cactus, glowstone and prismarine shards; dirt gives seeds, potatoes, carrots, bones and saplings. Higher hut levels find more. |
 | **Mechanic** | Crafts redstone parts, rails, iron doors, trapdoors and bars, lanterns, torches, buckets, shears and flint and steel with the game's recipes, for whatever huts are short of (the miners' torches, a builder's lanterns, the cowhand's buckets). Asks for iron, redstone, coal, sticks and cobblestone. |
 | **Netherworker** | Goes on expeditions to the Nether through the portal in the Nether Mine: with a sword and 8 food they are away for about two minutes and come back with netherrack, quartz, soul sand and gold nuggets; nether wart and glowstone from level 2, magma cream from 3, blaze rods from 4 and ghast tears at level 5. Only sets out early enough to be back by nightfall. |
+| **Blacksmith** | Forges the tools and weapons huts ask for (axes, hoes, pickaxes, shovels, swords), plus iron armour and shields, with the game's recipes. Prefers iron, then stone; diamond gear from hut level 3. Asks for iron ingots and sticks. |
+| **Fletcher** | Makes bows, crossbows, arrows, fishing rods and leads for the huts that ask for them, such as the fisherman's rod. Asks for sticks, string, flint and feathers. |
+| **Stone Smelter** | Runs the furnaces of the Stone Smeltery (one per level): cobblestone into stone, clay into bricks and terracotta, netherrack into nether bricks, cobbled deepslate into deepslate, sandstone, quartz and basalt into their smooth forms. Asks for cobblestone and fuel. |
 | **Fisherman** | Needs a **fishing rod** in the hut. Finds open water near the hut, fishes from the shore using the vanilla fishing loot, and brings the catch home. |
 | **Builder** | Every hut is built from a blueprint (schematic) by a **Builder**. A placed hut starts at level 0 and gets a work order for level 1. The builder takes building materials from the **Builder's Hut** inventory and places the blueprint block by block, clearing whatever is in the way. Open a hut to see progress and the materials still needed. |
 | **Upgrades** | Huts go up to level 5, and each level has a bigger building. Open a hut and click **Upgrade** to create a work order. Other huts can't exceed the Town Hall's level, and a builder can only build up to its own hut's level (level 1 is always possible). |
@@ -147,6 +150,9 @@ Each hut is 8 planks around a center item:
 | Sifter's Hut | iron bars |
 | Mechanic's Workshop | redstone dust |
 | Nether Mine | flint and steel |
+| Blacksmith's Hut | anvil |
+| Fletcher's Hut | fletching table |
+| Stone Smeltery | blast furnace |
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
@@ -306,7 +312,8 @@ colony, with the hut that asked. Each request shows who it is waiting on:
 
 - **Being delivered** (green): the Warehouse has it and the deliveryman will bring it.
 - **Being crafted at the ...** (blue): the Warehouse has none, but one of the colony's crafting
-  huts (Sawmill, Stonemason, Dyer, Glassblower, Crusher or Mechanic) has a worker and makes it. The deliveryman
+  huts (Sawmill, Stonemason, Dyer, Glassblower, Crusher, Mechanic, Blacksmith, Fletcher or Stone
+  Smeltery) has a worker and makes it. The deliveryman
   fetches it from the crafter as soon as it is made.
 - **In the warehouse - needs a deliveryman** (yellow): build a Deliveryman's Hut.
 - **Needs you** (red): nothing in the colony can supply it, so it is up to you. These are listed first.

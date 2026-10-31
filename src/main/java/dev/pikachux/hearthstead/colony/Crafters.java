@@ -27,7 +27,15 @@ import java.util.function.Predicate;
 public final class Crafters {
     /** Huts that craft whatever other huts are short of, in the order they are asked. */
     public static final List<BuildingType> TYPES = List.of(BuildingType.SAWMILL, BuildingType.STONEMASON,
-            BuildingType.DYER, BuildingType.GLASSBLOWER, BuildingType.CRUSHER, BuildingType.MECHANIC);
+            BuildingType.DYER, BuildingType.GLASSBLOWER, BuildingType.CRUSHER, BuildingType.MECHANIC,
+            BuildingType.BLACKSMITH, BuildingType.FLETCHER, BuildingType.STONE_SMELTERY);
+
+    /** What the fletcher makes. */
+    public static final Set<Item> FLETCHING = Set.of(Items.BOW, Items.CROSSBOW, Items.ARROW, Items.FISHING_ROD, Items.LEAD);
+
+    /** What the stone smeltery's furnaces turn its materials into. */
+    public static final Set<Item> STONEWORK = Set.of(Items.STONE, Items.BRICK, Items.TERRACOTTA, Items.NETHER_BRICK,
+            Items.DEEPSLATE, Items.SMOOTH_SANDSTONE, Items.SMOOTH_RED_SANDSTONE, Items.SMOOTH_QUARTZ, Items.SMOOTH_BASALT);
 
     /** What the mechanic makes: redstone parts, rails, iron fittings, lights and a few tools. */
     public static final Set<Item> MECHANISMS = Set.of(Items.REPEATER, Items.COMPARATOR, Items.PISTON, Items.STICKY_PISTON,
@@ -52,6 +60,9 @@ public final class Crafters {
             case GLASSBLOWER -> Crafters::isGlassProduct;
             case CRUSHER -> item -> item == Items.GRAVEL || item == Items.SAND;
             case MECHANIC -> MECHANISMS::contains;
+            case BLACKSMITH -> Crafters::isSmithing;
+            case FLETCHER -> FLETCHING::contains;
+            case STONE_SMELTERY -> STONEWORK::contains;
             default -> null;
         };
     }
@@ -62,6 +73,18 @@ public final class Crafters {
         return stack.is(ItemTags.PLANKS) || stack.is(ItemTags.WOODEN_STAIRS) || stack.is(ItemTags.WOODEN_SLABS)
                 || stack.is(ItemTags.WOODEN_DOORS) || stack.is(ItemTags.WOODEN_TRAPDOORS) || stack.is(ItemTags.WOODEN_FENCES)
                 || stack.is(ItemTags.FENCE_GATES) || stack.is(Items.STICK) || stack.is(ModBlocks.ROPE_FENCE.asItem());
+    }
+
+    /** Stone, iron and diamond tools and weapons, iron and diamond armour, and shields. */
+    public static boolean isSmithing(Item item) {
+        ItemStack stack = item.getDefaultInstance();
+        String path = BuiltInRegistries.ITEM.getKey(item).getPath();
+        boolean tool = stack.is(ItemTags.AXES) || stack.is(ItemTags.HOES) || stack.is(ItemTags.PICKAXES)
+                || stack.is(ItemTags.SHOVELS) || stack.is(ItemTags.SWORDS);
+        boolean armor = stack.is(ItemTags.HEAD_ARMOR) || stack.is(ItemTags.CHEST_ARMOR) || stack.is(ItemTags.LEG_ARMOR)
+                || stack.is(ItemTags.FOOT_ARMOR);
+        boolean iron = path.startsWith("iron_") || path.startsWith("diamond_");
+        return (tool && (iron || path.startsWith("stone_"))) || (armor && iron) || item == Items.SHIELD;
     }
 
     /** Beds, wool and dyes. */

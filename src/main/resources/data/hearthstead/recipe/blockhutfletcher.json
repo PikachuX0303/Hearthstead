@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:fletching_table"
+  },
+  "result": {
+    "id": "hearthstead:blockhutfletcher",
+    "count": 1
+  }
+}

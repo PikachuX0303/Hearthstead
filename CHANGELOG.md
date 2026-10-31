@@ -5,6 +5,18 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.30.0-alpha] - 2026-10-31
+
+### Added
+- **Blacksmith's Hut.** Forges the tools and weapons huts ask for, plus iron armour and shields;
+  prefers iron, then stone, with diamond gear from hut level 3.
+- **Fletcher's Hut.** Makes bows, crossbows, arrows, fishing rods and leads, such as the
+  fisherman's rod.
+- **Stone Smeltery.** Smelts cobblestone into stone, clay into bricks and terracotta, netherrack
+  into nether bricks and more in its furnaces.
+- All three join the crafting chain, so tool and stone requests can be filled inside the colony.
+- Blueprints in all five styles, workbench models, job signs and recipes for the three huts.
+
 ## [0.29.0-alpha] - 2026-10-31
 
 ### Added
