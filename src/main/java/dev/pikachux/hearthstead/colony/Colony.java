@@ -167,8 +167,9 @@ public class Colony {
     /** Citizens a building houses, including research bonuses. */
     public int housing(BuildingData building) {
         int housing = building.type().housing(building.level());
-        if (building.type() == BuildingType.RESIDENCE && building.level() > 0 && research.has(Research.COMFORTABLE_HOMES)) {
-            housing++;
+        if (building.type() == BuildingType.RESIDENCE && building.level() > 0) {
+            housing += research.has(Research.COMFORTABLE_HOMES) ? 1 : 0;
+            housing += research.has(Research.SPACIOUS_HOMES) ? 1 : 0;
         }
         return housing;
     }
@@ -290,7 +291,7 @@ public class Colony {
         raid.tick(server, this, level);
         happenings.tick(server, this, level);
 
-        if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get()) {
+        if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get() / (research.has(Research.WELCOME_WAGONS) ? 2 : 1)) {
             spawnTimer = 0;
             addNewCitizen(level);
         }

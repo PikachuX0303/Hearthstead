@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
@@ -104,7 +105,7 @@ public class LumberjackGoal extends WorkGoal {
                 citizen.setStatus("Chopping a tree");
                 BlockPos next = logs.get(logs.size() - 1);
                 citizen.getLookControl().setLookAt(next.getCenter());
-                if (++timer >= breakDelay(20)) {
+                if (++timer >= breakDelay(researched(Research.SKILLED_LUMBERJACKS) ? 13 : 20)) {
                     timer = 0;
                     logs.remove(logs.size() - 1);
                     if (level().getBlockState(next).is(BlockTags.LOGS)) {

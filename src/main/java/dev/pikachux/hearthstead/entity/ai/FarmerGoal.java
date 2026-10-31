@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
@@ -180,6 +181,9 @@ public class FarmerGoal extends WorkGoal {
             case HARVEST -> {
                 if (state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state)) {
                     harvest(pos);
+                    if (researched(Research.BOUNTIFUL_HARVEST) && citizen.getRandom().nextFloat() < 0.25F) {
+                        bonusDrop(state, pos);
+                    }
                     task = Task.PLANT;
                     perform(pos);
                 }

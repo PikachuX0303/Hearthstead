@@ -33,7 +33,7 @@ raids. Things that are **not there yet** (some of which MineColonies has):
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
 - Some jobs: no Mechanic, Netherworker, Crusher, Sifter, and so on.
-- Most of the original research tree, more raider cultures (pirates are in), more colony events, permissions GUI.
+- More raider cultures (barbarians and pirates so far), more colony events, permissions GUI.
 
 ## Features
 
@@ -296,14 +296,38 @@ and what it costs, put the materials into the University's inventory and press
 **Start Research**. One research runs at a time. A research needs its parent research and a
 University of at least its tier.
 
-| Branch | Tier 1 | Tier 2 | Tier 3 |
-|---|---|---|---|
-| Civilian | **Community Spirit**: +1 happiness (16 bread) | **Comfortable Homes**: +1 resident per Residence (16 white wool, 4 books) | **Feast Days**: hunger 30% slower (32 bread, 1 cake, 8 books) |
-| Technology | **Apprenticeship**: +10% work speed (8 paper) | **Swift Construction**: builders ~40% faster (16 iron ingots, 4 books) | **Master Craftsmen**: +15% work speed (8 gold ingots, 1 diamond, 8 books) |
-| Combat | **Militia Drills**: guards +2 damage (8 iron ingots) | **Chainmail Training**: guards +4 armour (24 iron ingots, 4 books) | **Stone Walls**: raids 25% smaller (64 stone bricks, 8 books) |
+Each branch has two paths. The research tree, with what each costs:
 
-Research takes 300, 900 and 2400 points for tiers 1, 2 and 3 (about 5, 15 and 40 minutes
-with one researcher).
+| Branch | Research (tier) | Effect | Cost |
+|---|---|---|---|
+| Civilian | **Community Spirit** (1) | +1 happiness | 16 bread |
+| | **Comfortable Homes** (2, after Community Spirit) | +1 resident per Residence | 16 white wool, 4 books |
+| | **Feast Days** (3) | hunger 30% slower | 32 bread, 1 cake, 8 books |
+| | **Spacious Homes** (4) | another +1 resident per Residence | 64 oak planks, 4 white beds, 12 books |
+| | **Golden Age** (5) | another +1 happiness | 2 gold blocks, 8 emeralds, 16 books |
+| | **Herbal Remedies** (2, after Community Spirit) | well-fed citizens heal twice as fast | 8 poppies, 16 sweet berries, 4 books |
+| | **Welcome Wagons** (3) | new settlers arrive twice as often | 1 oak boat, 4 chests, 8 books |
+| | **Market Days** (4) | wandering merchants visit 3x as often | 4 emeralds, 4 barrels, 12 books |
+| Technology | **Apprenticeship** (1) | +10% work speed | 8 paper |
+| | **Swift Construction** (2, after Apprenticeship) | builders ~40% faster | 16 iron ingots, 4 books |
+| | **Master Craftsmen** (3) | +15% work speed | 8 gold ingots, 1 diamond, 8 books |
+| | **Delivery Carts** (4) | deliverymen walk 30% faster | 2 minecarts, 1 saddle, 12 books |
+| | **Masterwork** (5) | +20% work speed | 4 diamonds, 1 anvil, 16 books |
+| | **Bountiful Harvest** (2, after Apprenticeship) | 1 in 4 harvests gives an extra crop | 32 bone meal, 4 books |
+| | **Skilled Lumberjacks** (3) | trees felled about a third faster | 2 iron axes, 8 books |
+| | **Prospectors** (4) | 1 in 5 mined ores gives an extra drop | 2 iron pickaxes, 1 map, 12 books |
+| Combat | **Militia Drills** (1) | guards +2 damage | 8 iron ingots |
+| | **Chainmail Training** (2, after Militia Drills) | guards +4 armour | 24 iron ingots, 4 books |
+| | **Stone Walls** (3) | raids 25% smaller | 64 stone bricks, 8 books |
+| | **Plate Armour** (4) | guards +6 armour | 4 iron blocks, 12 books |
+| | **Fortified Colony** (5) | raids another 25% smaller and half as frequent | 16 obsidian, 4 iron blocks, 16 books |
+| | **First Aid** (2, after Militia Drills) | guards +10 health | 1 golden apple, 16 paper, 4 books |
+| | **Swift Patrols** (3) | guards move 20% faster | 4 leather boots, 32 sugar, 8 books |
+| | **Veteran Guards** (4) | guards +3 damage | 4 iron swords, 2 shields, 12 books |
+
+Each research needs the one above it in its path. Research takes 300, 900, 2400, 4800 and 9000
+points for tiers 1 to 5 (about 5, 15, 40, 80 and 150 minutes with one researcher; more
+researchers and happier ones are faster).
 
 | | |
 |---|---|

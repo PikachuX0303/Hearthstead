@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.block.HutBlockEntity;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -262,6 +263,26 @@ public abstract class WorkGoal extends Goal {
                 item.setItem(rest);
             }
         }
+    }
+
+    /** Whether the citizen's colony has finished a research. */
+    protected boolean researched(Research research) {
+        var colony = citizen.colony();
+        return colony != null && colony.research().has(research);
+    }
+
+    /**
+     * Adds one more of the block's main drop to the citizen's inventory: the largest stack it
+     * would drop, so the produce rather than seeds or a sapling. Used by yield research.
+     */
+    protected void bonusDrop(BlockState state, BlockPos pos) {
+        List<ItemStack> drops = Block.getDrops(state, level(), pos, null);
+        drops.stream().max(java.util.Comparator.comparingInt(ItemStack::getCount)).ifPresent(drop -> {
+            ItemStack rest = citizen.inventory().addItem(drop.copyWithCount(1));
+            if (!rest.isEmpty()) {
+                citizen.spawnAtLocation(level(), rest);
+            }
+        });
     }
 
     /** Ticks needed to break a block, scaled by citizen happiness. */

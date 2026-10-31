@@ -134,8 +134,8 @@ public class ColonyRaid {
         if (enabled && HearthsteadConfig.RAIDS_ENABLED.get() && timeOfDay >= DUSK && timeOfDay < DUSK + 1000 && night != lastNight) {
             lastNight = night;
             colony.markDirty();
-            if (canBeRaided(colony, level) && level.getRandom().nextDouble() < HearthsteadConfig.RAID_CHANCE.get()
-                    + HearthsteadConfig.RAID_CHANCE_INCREASE.get() * quietNights) {
+            if (canBeRaided(colony, level) && level.getRandom().nextDouble() < (HearthsteadConfig.RAID_CHANCE.get()
+                    + HearthsteadConfig.RAID_CHANCE_INCREASE.get() * quietNights) * (colony.research().has(Research.FORTIFIED_COLONY) ? 0.5 : 1)) {
                 start(server, colony, level);
             } else {
                 quietNights++;
@@ -176,6 +176,9 @@ public class ColonyRaid {
         int citizens = colony.citizens().size();
         int size = Math.min(HearthsteadConfig.RAID_MAX_RAIDERS.get(), 2 + citizens / 2);
         if (colony.research().has(Research.STONE_WALLS)) {
+            size = Math.max(1, size * 3 / 4);
+        }
+        if (colony.research().has(Research.FORTIFIED_COLONY)) {
             size = Math.max(1, size * 3 / 4);
         }
         int archers = citizens >= 6 ? size / 3 : 0;

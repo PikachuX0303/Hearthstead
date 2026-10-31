@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
@@ -102,7 +103,12 @@ public class MinerGoal extends WorkGoal {
                     return;
                 }
                 timer = 0;
+                BlockState mined = level().getBlockState(target);
                 harvest(target);
+                if (mined.is(net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags.ORES)
+                        && researched(Research.PROSPECTORS) && citizen.getRandom().nextFloat() < 0.2F) {
+                    bonusDrop(mined, target);
+                }
                 placeTorch(hut, facing, target);
                 target = null;
                 if (inventoryFull()) {

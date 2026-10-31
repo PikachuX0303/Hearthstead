@@ -5,6 +5,21 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.27.0-alpha] - 2026-10-31
+
+### Added
+- **15 new research**, growing the tree to 24 with two paths per branch up to tier 5 (a level 5
+  University):
+  - Civilian: Spacious Homes (+1 resident per Residence), Golden Age (+1 happiness), Herbal
+    Remedies (citizens heal twice as fast), Welcome Wagons (settlers arrive twice as often),
+    Market Days (merchants visit three times as often).
+  - Technology: Delivery Carts (deliverymen 30% faster), Masterwork (+20% work speed),
+    Bountiful Harvest (extra crops), Skilled Lumberjacks (faster felling), Prospectors (extra
+    ore drops).
+  - Combat: Plate Armour (+6 guard armour), Fortified Colony (smaller, rarer raids), First Aid
+    (+10 guard health), Swift Patrols (guards 20% faster), Veteran Guards (+3 guard damage).
+- The README lists the whole tree with effects and costs.
+
 ## [0.26.0-alpha] - 2026-10-31
 
 ### Added

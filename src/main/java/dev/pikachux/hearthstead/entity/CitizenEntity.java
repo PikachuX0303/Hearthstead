@@ -90,6 +90,8 @@ public class CitizenEntity extends PathfinderMob {
             SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.STRING);
 
     private static final Identifier GUARD_HEALTH = Hearthstead.id("guard_health");
+    private static final Identifier GUARD_SPEED = Hearthstead.id("guard_speed");
+    private static final Identifier DELIVERY_SPEED = Hearthstead.id("delivery_speed");
     private static final Identifier GUARD_ARMOR = Hearthstead.id("guard_armor");
     private static final Identifier GUARD_ATTACK = Hearthstead.id("guard_attack");
 
@@ -221,6 +223,8 @@ public class CitizenEntity extends PathfinderMob {
     private void syncFromData(CitizenData data) {
         Colony colony = colony();
         updateGuardTraining(data.job() == JobType.GUARD, colony == null ? null : colony.research());
+        apply(Attributes.MOVEMENT_SPEED, DELIVERY_SPEED, 0.3, AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                data.job() == JobType.DELIVERYMAN && colony != null && colony.research().has(Research.DELIVERY_CARTS));
         entityData.set(DATA_SKIN, data.skin());
         entityData.set(DATA_JOB, data.job().id());
         Component name = Component.literal(data.name())
@@ -255,6 +259,7 @@ public class CitizenEntity extends PathfinderMob {
         happiness += data.homePos() != null ? 2 : -2;
         happiness += data.job() != JobType.UNEMPLOYED ? 1 : 0;
         happiness += colony.research().has(Research.COMMUNITY_SPIRIT) ? 1 : 0;
+        happiness += colony.research().has(Research.GOLDEN_AGE) ? 1 : 0;
         happiness += colony.happenings().festival(level().getGameTime()) ? dev.pikachux.hearthstead.colony.ColonyHappenings.FESTIVAL_HAPPINESS : 0;
         happiness += data.saturation() > CitizenData.MAX_SATURATION / 2 ? 2 : (data.saturation() <= 0 ? -3 : 0);
         data.setHappiness(happiness);
@@ -262,29 +267,49 @@ public class CitizenEntity extends PathfinderMob {
         if (data.saturation() <= 0 && level.getGameTime() % 200 == 0) {
             hurtServer(level, damageSources().starve(), 1.0F);
         } else if (getHealth() < getMaxHealth() && data.saturation() > CitizenData.MAX_SATURATION / 2) {
-            heal(0.5F);
+            heal(colony.research().has(Research.HERBAL_REMEDIES) ? 1.0F : 0.5F);
         }
     }
 
     /** Guards are trained fighters: more health, armour and attack while they hold the job (more with research). */
     private void updateGuardTraining(boolean guard, @Nullable ColonyResearch research) {
-        boolean drills = research != null && research.has(Research.MILITIA_DRILLS);
-        boolean chainmail = research != null && research.has(Research.CHAINMAIL_TRAINING);
-        apply(Attributes.MAX_HEALTH, GUARD_HEALTH, 20.0, guard);
-        apply(Attributes.ARMOR, GUARD_ARMOR, chainmail ? 10.0 : 6.0, guard);
-        apply(Attributes.ATTACK_DAMAGE, GUARD_ATTACK, drills ? 4.0 : 2.0, guard);
+        boolean drills = has(research, Research.MILITIA_DRILLS);
+        boolean veterans = has(research, Research.VETERAN_GUARDS);
+        apply(Attributes.MAX_HEALTH, GUARD_HEALTH, guardHealth(research), guard);
+        apply(Attributes.ARMOR, GUARD_ARMOR, guardArmor(research), guard);
+        apply(Attributes.ATTACK_DAMAGE, GUARD_ATTACK, 2.0 + (drills ? 2.0 : 0) + (veterans ? 3.0 : 0), guard);
+        apply(Attributes.MOVEMENT_SPEED, GUARD_SPEED, 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                guard && has(research, Research.SWIFT_PATROLS));
         if (getHealth() > getMaxHealth()) {
             setHealth(getMaxHealth());
         }
     }
 
+    private static boolean has(@Nullable ColonyResearch research, Research node) {
+        return research != null && research.has(node);
+    }
+
+    /** Extra health a guard gets: 20, plus 10 with First Aid. */
+    public static double guardHealth(@Nullable ColonyResearch research) {
+        return 20.0 + (has(research, Research.FIRST_AID) ? 10.0 : 0);
+    }
+
+    /** Armour a guard gets: 6, plus 4 with Chainmail Training and 6 with Plate Armour. */
+    public static double guardArmor(@Nullable ColonyResearch research) {
+        return 6.0 + (has(research, Research.CHAINMAIL_TRAINING) ? 4.0 : 0) + (has(research, Research.PLATE_ARMOR) ? 6.0 : 0);
+    }
+
     private void apply(Holder<Attribute> attribute, Identifier id, double amount, boolean active) {
+        apply(attribute, id, amount, AttributeModifier.Operation.ADD_VALUE, active);
+    }
+
+    private void apply(Holder<Attribute> attribute, Identifier id, double amount, AttributeModifier.Operation operation, boolean active) {
         AttributeInstance instance = getAttribute(attribute);
         if (instance == null) {
             return;
         }
         if (active) {
-            instance.addOrUpdateTransientModifier(new AttributeModifier(id, amount, AttributeModifier.Operation.ADD_VALUE));
+            instance.addOrUpdateTransientModifier(new AttributeModifier(id, amount, operation));
         } else {
             instance.removeModifier(id);
         }
@@ -303,6 +328,9 @@ public class CitizenEntity extends PathfinderMob {
         }
         if (colony.research().has(Research.MASTER_CRAFTSMEN)) {
             speed *= 1.15;
+        }
+        if (colony.research().has(Research.MASTERWORK)) {
+            speed *= 1.20;
         }
         return speed;
     }

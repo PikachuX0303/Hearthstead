@@ -56,4 +56,58 @@ public class ResearchGameTests {
             }
         });
     }
+
+    /**
+     * The tree is well formed: 24 nodes, each child one tier above its parent in the same branch
+     * and listed after it, and every branch reaching tier 5.
+     */
+    @GameTest
+    public void researchTreeIsConsistent(GameTestHelper helper) {
+        Research[] all = Research.values();
+        if (all.length != 24) {
+            throw helper.assertionException("Expected 24 research nodes, got " + all.length);
+        }
+        for (Research research : all) {
+            Research parent = research.parent();
+            if (research.tier() < 1 || research.tier() > 5) {
+                throw helper.assertionException(research + " has tier " + research.tier());
+            }
+            if (parent == null ? research.tier() != 1
+                    : parent.branch() != research.branch() || parent.tier() != research.tier() - 1 || parent.ordinal() > research.ordinal()) {
+                throw helper.assertionException(research + " does not follow its parent " + parent);
+            }
+        }
+        for (Research.Branch branch : Research.Branch.values()) {
+            if (java.util.Arrays.stream(all).noneMatch(r -> r.branch() == branch && r.tier() == 5)) {
+                throw helper.assertionException("The " + branch + " branch has no tier 5 research");
+            }
+        }
+        helper.succeed();
+    }
+
+    /** Housing and guard training follow the finished research. */
+    @GameTest(structure = PLATFORM)
+    public void researchEffectsApply(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData home = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.RESIDENCE, 1);
+        int base = colony.housing(home);
+        colony.research().complete(Research.COMFORTABLE_HOMES, colony);
+        colony.research().complete(Research.SPACIOUS_HOMES, colony);
+        if (colony.housing(home) != base + 2) {
+            throw helper.assertionException("Expected 2 more residents, got " + colony.housing(home) + " from " + base);
+        }
+        var research = colony.research();
+        if (dev.pikachux.hearthstead.entity.CitizenEntity.guardArmor(research) != 6.0
+                || dev.pikachux.hearthstead.entity.CitizenEntity.guardHealth(research) != 20.0) {
+            throw helper.assertionException("Untrained guards should have 6 armour and 20 extra health");
+        }
+        research.complete(Research.CHAINMAIL_TRAINING, colony);
+        research.complete(Research.PLATE_ARMOR, colony);
+        research.complete(Research.FIRST_AID, colony);
+        if (dev.pikachux.hearthstead.entity.CitizenEntity.guardArmor(research) != 16.0
+                || dev.pikachux.hearthstead.entity.CitizenEntity.guardHealth(research) != 30.0) {
+            throw helper.assertionException("Trained guards should have 16 armour and 30 extra health");
+        }
+        helper.succeed();
+    }
 }

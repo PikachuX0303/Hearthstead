@@ -55,7 +55,8 @@ public class ColonyHappenings {
                 if (interval > 0 && day > 0 && day % interval == 0) {
                     startFestival(server, colony, level);
                 }
-                if (level.getRandom().nextDouble() < HearthsteadConfig.MERCHANT_CHANCE.get()) {
+                double merchant = HearthsteadConfig.MERCHANT_CHANCE.get() * (colony.research().has(Research.MARKET_DAYS) ? 3 : 1);
+                if (level.getRandom().nextDouble() < merchant) {
                     sendMerchant(server, colony, level);
                 }
             }
