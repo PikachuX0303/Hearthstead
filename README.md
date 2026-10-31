@@ -85,16 +85,16 @@ links to the releases and the changelog.
 | **Smelter** | Runs the furnaces inside the Smeltery (one per hut level), smelting ores, raw metals and sand into ingots and glass with coal or charcoal from the hut. |
 | **Shepherd** | Needs **shears** in the hut. Shears the sheep around the hut and breeds them with wheat while the flock is smaller than 2 + 2 × hut level. Build a pen near the hut so the sheep stay in range. |
 | **Composter** | Fills the composters in its building (two per hut level) with plant waste such as leaves and saplings, and collects the bone meal. Farmers use bone meal on growing crops. |
-| **Sawmill** | Saws logs into what builders are waiting for and the warehouse can't supply: planks, sticks, slabs, stairs, doors, trapdoors, fences and fence gates of every wood type. Otherwise it keeps 64 planks in the warehouse. |
+| **Sawmill** | Saws logs into what builders and other huts are waiting for and the warehouse can't supply: planks, sticks, slabs, stairs, doors, trapdoors, fences and fence gates of every wood type. Otherwise it keeps 64 planks in the warehouse. |
 | **Cowhand** | Needs **buckets** in the hut. Milks the cows around the hut (each cow every few minutes) and breeds them with wheat while the herd is smaller than 2 + 2 × hut level. Keep the cows in a pen near the hut. |
 | **Chicken Herder** | Breeds the chickens around the hut with seeds and gathers the eggs and feathers they leave lying around. |
 | **Swineherd** | Needs a **sword or axe** in the hut. Breeds the pigs around the hut with carrots, potatoes or beetroot; once the herd reaches 2 + 2 × hut level, it butchers an adult pig for pork. |
-| **Stonemason** | Cuts stone, cobblestone, sandstone, deepslate, bricks and more into the stone parts builders are waiting for and the warehouse can't supply (stone bricks, stairs, slabs, walls, cut and polished blocks). |
+| **Stonemason** | Cuts stone, cobblestone, sandstone, deepslate, bricks and more into the stone parts huts are waiting for and the warehouse can't supply (stone bricks, stairs, slabs, walls, cut and polished blocks). |
 | **Florist** | Needs **bone meal** in the hut. Uses it on the grass around its building so flowers grow, and picks the flowers. |
-| **Dyer** | Makes the dyes, coloured wool and beds builders are waiting for (flowers into dyes, white wool into coloured wool, wool and planks into beds). Otherwise turns flowers into dyes. |
+| **Dyer** | Makes the dyes, coloured wool and beds huts are waiting for (for example the Concrete Mixer's dyes) (flowers into dyes, white wool into coloured wool, wool and planks into beds). Otherwise turns flowers into dyes. |
 | **Beekeeper** | Harvests the full beehives in the Apiary (one per level) and bee nests nearby: honey bottles when it has glass bottles, honeycomb with **shears** otherwise. Bees are not angered. Bring your own bees. |
 | **Rabbit Herder** | Needs a **sword or axe** in the hut. Breeds the rabbits around the hutch with carrots or dandelions; once the warren reaches 2 + 2 × hut level, takes an adult rabbit for meat and hide. |
-| **Glassblower** | Smelts sand into glass in the furnaces of its workshop (one per hut level) with coal or charcoal, and makes the glass panes and stained glass builders are waiting for. |
+| **Glassblower** | Smelts sand into glass in the furnaces of its workshop (one per hut level) with coal or charcoal, and makes the glass panes and stained glass huts are waiting for. |
 | **Concrete Mixer** | Mixes 4 sand, 4 gravel and a dye into 8 concrete powder and sets the powder into concrete. |
 | **Planter** | Looks after the sugar cane, cactus and bamboo you plant around the hut: cuts them down to their base when they grow (so they grow back) and spreads each kind to free spots next to it, up to 8 plants at level 1 and 24 at level 5. Keeps a few cuttings for planting and brings the rest to the hut. |
 | **Alchemist** | Fills glass bottles with water, brews awkward potions with nether wart and finishes them with the brewing ingredients in the hut (sugar for swiftness, glistering melon for healing, ...), three bottles at a time. One blaze powder fuels 20 batches. You choose the potions by the ingredients you supply. |
@@ -272,6 +272,9 @@ materials, tools, seeds, fuel, food and so on. The town hall's tab lists every o
 colony, with the hut that asked. Each request shows who it is waiting on:
 
 - **Being delivered** (green): the Warehouse has it and the deliveryman will bring it.
+- **Being crafted at the ...** (blue): the Warehouse has none, but one of the colony's crafting
+  huts (Sawmill, Stonemason, Dyer or Glassblower) has a worker and makes it. The deliveryman
+  fetches it from the crafter as soon as it is made.
 - **In the warehouse - needs a deliveryman** (yellow): build a Deliveryman's Hut.
 - **Needs you** (red): nothing in the colony can supply it, so it is up to you. These are listed first.
 

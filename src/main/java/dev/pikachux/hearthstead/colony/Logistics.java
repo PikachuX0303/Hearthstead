@@ -162,23 +162,23 @@ public final class Logistics {
     }
 
     /**
-     * Items builders are waiting for that the warehouse cannot supply, limited to the
-     * candidates a crafting job can make.
+     * Items the colony's huts are waiting for that neither the warehouse nor {@code ownStock} (the
+     * crafter's own storage, holding what it already made) can supply, limited to the candidates a
+     * crafting job can make. Builders' needs come first.
      */
-    public static List<Item> builderShortages(ServerLevel level, Colony colony, Predicate<Item> candidates) {
-        List<Container> warehouse = new ArrayList<>();
+    public static List<Item> shortages(ServerLevel level, Colony colony, Predicate<Item> candidates, List<Container> ownStock) {
+        List<Container> available = new ArrayList<>(ownStock);
         for (BuildingData building : colony.buildings()) {
             if (building.type() == BuildingType.WAREHOUSE) {
-                warehouse.addAll(Storage.containers(level, building));
+                available.addAll(Storage.containers(level, building));
             }
         }
+        List<BuildingData> buildings = new ArrayList<>(colony.buildings());
+        buildings.sort(java.util.Comparator.comparing(b -> b.type() != BuildingType.BUILDER));
         List<Item> wanted = new ArrayList<>();
-        for (BuildingData building : colony.buildings()) {
-            if (building.type() != BuildingType.BUILDER) {
-                continue;
-            }
+        for (BuildingData building : buildings) {
             for (Request request : requests(level, colony, building)) {
-                if (Storage.count(warehouse, request.matcher()) > 0) {
+                if (Storage.count(available, request.matcher()) > 0) {
                     continue;
                 }
                 for (Item item : BuiltInRegistries.ITEM) {

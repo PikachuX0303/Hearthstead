@@ -74,7 +74,7 @@ public record BuildingViewPayload(
      * matching items the viewing player carries. The town hall lists the whole colony's requests.
      */
     public record RequestEntry(BlockPos target, String buildingType, Item icon, int count, String description,
-                               ColonyRequests.Status status, int playerHas) {
+                               ColonyRequests.Status status, int playerHas, String crafterType) {
     }
 
     /** One node of the research tree as seen from the university. */
@@ -227,11 +227,12 @@ public record BuildingViewPayload(
         buf.writeUtf(request.description());
         buf.writeEnum(request.status());
         buf.writeVarInt(request.playerHas());
+        buf.writeUtf(request.crafterType());
     }
 
     static RequestEntry readRequest(RegistryFriendlyByteBuf buf) {
         return new RequestEntry(buf.readBlockPos(), buf.readUtf(), ITEM_CODEC.decode(buf), buf.readVarInt(), buf.readUtf(),
-                buf.readEnum(ColonyRequests.Status.class), buf.readVarInt());
+                buf.readEnum(ColonyRequests.Status.class), buf.readVarInt(), buf.readUtf());
     }
 
     static <T> void writeList(RegistryFriendlyByteBuf buf, List<T> list, BiConsumer<RegistryFriendlyByteBuf, T> writer) {

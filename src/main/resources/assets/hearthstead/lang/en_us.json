@@ -91,6 +91,8 @@
   "gui.hearthstead.requests.none": "Nothing is needed right now.",
   "gui.hearthstead.requests.summary": "%s open, %s need you",
   "gui.hearthstead.requests.status.delivering": "Being delivered",
+  "gui.hearthstead.requests.status.being_crafted": "Being crafted",
+  "gui.hearthstead.requests.status.being_crafted_at": "Being crafted at the %s",
   "gui.hearthstead.requests.status.needs_deliveryman": "In the warehouse - needs a deliveryman",
   "gui.hearthstead.requests.status.needs_player": "Needs you",
   "gui.hearthstead.requests.give": "Give",

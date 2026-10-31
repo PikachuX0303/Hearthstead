@@ -5,6 +5,22 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.26.0-alpha] - 2026-10-31
+
+### Added
+- **Crafting chain.** The Sawmill, Stonemason, Dyer and Glassblower now make what any hut is
+  waiting for, not only builders (builders still come first): for example the Dyer makes the
+  Concrete Mixer's dyes and the Sawmill cuts planks for the Dyer.
+- New request status **Being crafted at the ...** when the warehouse has none but a crafting hut
+  with a worker makes it.
+
+### Changed
+- The deliveryman fetches crafted goods another hut is waiting for right away, instead of
+  waiting until the crafting hut holds a full load.
+- Crafters no longer make another batch of something while their own last batch is still
+  waiting to be picked up.
+- The Stonemason only takes on what the stonecutter can really make from its stone.
+
 ## [0.25.0-alpha] - 2026-10-31
 
 ### Added

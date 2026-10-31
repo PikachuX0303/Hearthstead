@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -66,7 +67,7 @@ public class StonemasonGoal extends WorkGoal {
             return;
         }
         timer = 0;
-        for (Item wanted : Logistics.builderShortages(level(), colony, item -> item instanceof BlockItem)) {
+        for (Item wanted : Logistics.shortages(level(), colony, Crafters.masonry(level())::contains, storage)) {
             ItemStack made = Masonry.craft(level(), storage, wanted);
             if (!made.isEmpty()) {
                 citizen.setStatus("Cutting " + made.getHoverName().getString());

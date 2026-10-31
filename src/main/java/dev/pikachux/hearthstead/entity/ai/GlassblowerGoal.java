@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.Glasswork;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -27,17 +28,12 @@ public class GlassblowerGoal extends FurnaceWorkerGoal {
         if (colony == null) {
             return;
         }
-        for (Item wanted : Logistics.builderShortages(level(), colony, GlassblowerGoal::isGlassProduct)) {
+        for (Item wanted : Logistics.shortages(level(), colony, Crafters::isGlassProduct, storage)) {
             ItemStack made = Glasswork.craft(level(), storage, wanted);
             if (!made.isEmpty()) {
                 citizen.setStatus("Making " + made.getHoverName().getString());
                 return;
             }
         }
-    }
-
-    private static boolean isGlassProduct(Item item) {
-        String path = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getPath();
-        return item != Items.GLASS && (path.endsWith("glass") || path.endsWith("glass_pane"));
     }
 }

@@ -185,9 +185,12 @@ public abstract class ColonyScreen extends Screen {
             int textWidth = rw - 22 - GIVE_WIDTH - 4;
             gr.drawString(font, font.plainSubstrByWidth(request.count() + "x " + request.description(), textWidth),
                     rx + 20, ry, 0xFFFFFFFF, true);
-            Component status = Component.translatable("gui.hearthstead.requests.status." + request.status().name().toLowerCase(Locale.ROOT));
+            Component status = request.status() == ColonyRequests.Status.BEING_CRAFTED && !request.crafterType().isEmpty()
+                    ? Component.translatable("gui.hearthstead.requests.status.being_crafted_at", buildingName(request.crafterType()))
+                    : Component.translatable("gui.hearthstead.requests.status." + request.status().name().toLowerCase(Locale.ROOT));
             int color = switch (request.status()) {
                 case DELIVERING -> 0xFF8BE38B;
+                case BEING_CRAFTED -> 0xFF8AD8FF;
                 case NEEDS_DELIVERYMAN -> 0xFFFFD27F;
                 case NEEDS_PLAYER -> 0xFFFF8A80;
             };

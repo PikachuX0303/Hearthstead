@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -71,8 +72,7 @@ public class SawmillGoal extends WorkGoal {
         }
         timer = 0;
         ItemStack made = ItemStack.EMPTY;
-        for (Item wanted : Logistics.builderShortages(level(), colony,
-                item -> item.getDefaultInstance().is(ItemTags.PLANKS) || isWooden(item))) {
+        for (Item wanted : Logistics.shortages(level(), colony, Crafters::isWoodwork, storage)) {
             made = Woodworking.craft(level(), storage, wanted);
             if (!made.isEmpty()) {
                 break;
@@ -94,13 +94,6 @@ public class SawmillGoal extends WorkGoal {
         }
         citizen.setStatus("Sawing " + made.getHoverName().getString());
         level().playSound(null, hut, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 0.6F, 1.0F);
-    }
-
-    private static boolean isWooden(Item item) {
-        ItemStack stack = item.getDefaultInstance();
-        return stack.is(ItemTags.WOODEN_STAIRS) || stack.is(ItemTags.WOODEN_SLABS) || stack.is(ItemTags.WOODEN_DOORS)
-                || stack.is(ItemTags.WOODEN_TRAPDOORS) || stack.is(ItemTags.WOODEN_FENCES) || stack.is(ItemTags.FENCE_GATES)
-                || stack.is(net.minecraft.world.item.Items.STICK) || stack.is(ModBlocks.ROPE_FENCE.asItem());
     }
 
     private int warehousePlanks(Colony colony) {

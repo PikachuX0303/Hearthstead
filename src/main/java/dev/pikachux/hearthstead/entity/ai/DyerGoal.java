@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.Dyeing;
@@ -62,7 +63,7 @@ public class DyerGoal extends WorkGoal {
         timer = 0;
         List<Container> storage = Storage.containers(level(), building);
         ItemStack made = ItemStack.EMPTY;
-        for (Item wanted : Logistics.builderShortages(level(), colony, DyerGoal::isDyerProduct)) {
+        for (Item wanted : Logistics.shortages(level(), colony, Crafters::isDyerProduct, storage)) {
             made = Dyeing.craft(level(), storage, wanted);
             if (!made.isEmpty()) {
                 break;
@@ -84,11 +85,5 @@ public class DyerGoal extends WorkGoal {
         }
         citizen.setStatus("Making " + made.getHoverName().getString());
         level().playSound(null, hut, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 0.6F, 1.0F);
-    }
-
-    private static boolean isDyerProduct(Item item) {
-        ItemStack stack = item.getDefaultInstance();
-        return stack.is(ItemTags.BEDS) || stack.is(ItemTags.WOOL)
-                || stack.is(net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags.DYES);
     }
 }

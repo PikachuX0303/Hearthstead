@@ -24,13 +24,16 @@ public final class ColonyRequests {
     public enum Status {
         /** The warehouse has it and a deliveryman will bring it. */
         DELIVERING,
+        /** The warehouse has none, but a crafting hut of the colony is making it. */
+        BEING_CRAFTED,
         /** The warehouse has it, but the colony has no deliveryman to bring it. */
         NEEDS_DELIVERYMAN,
         /** Nothing in the colony can supply it: a player has to. */
         NEEDS_PLAYER
     }
 
-    public record Entry(Logistics.Request request, BuildingData building, Item icon, Status status) {
+    /** An open request; {@code crafter} is the hut making it when the status is {@link Status#BEING_CRAFTED}. */
+    public record Entry(Logistics.Request request, BuildingData building, Item icon, Status status, @Nullable BuildingData crafter) {
     }
 
     /** Icons for requests that match many items (seeds, food, ...), by description. */
@@ -49,9 +52,15 @@ public final class ColonyRequests {
                 continue;
             }
             for (Logistics.Request request : Logistics.requests(level, colony, building)) {
-                Status status = Storage.count(warehouse, request.matcher()) == 0 ? Status.NEEDS_PLAYER
-                        : deliveryman ? Status.DELIVERING : Status.NEEDS_DELIVERYMAN;
-                entries.add(new Entry(request, building, icon(request), status));
+                BuildingData crafter = null;
+                Status status;
+                if (Storage.count(warehouse, request.matcher()) > 0) {
+                    status = deliveryman ? Status.DELIVERING : Status.NEEDS_DELIVERYMAN;
+                } else {
+                    crafter = Crafters.crafterFor(level, colony, request);
+                    status = crafter != null ? Status.BEING_CRAFTED : Status.NEEDS_PLAYER;
+                }
+                entries.add(new Entry(request, building, icon(request), status, crafter));
             }
         }
         // Requests only a player can fulfil come first.

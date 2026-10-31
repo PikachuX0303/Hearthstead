@@ -186,7 +186,8 @@ public final class BuildingViews {
                 .map(e -> new BuildingViewPayload.RequestEntry(e.building().pos(), e.building().type().id(), e.icon(),
                         e.request().count(), e.request().description(), e.status(),
                         playerItems.stream().filter(s -> !s.isEmpty() && e.request().matcher().test(s))
-                                .mapToInt(ItemStack::getCount).sum()))
+                                .mapToInt(ItemStack::getCount).sum(),
+                        e.crafter() == null ? "" : e.crafter().type().id()))
                 .toList();
     }
 

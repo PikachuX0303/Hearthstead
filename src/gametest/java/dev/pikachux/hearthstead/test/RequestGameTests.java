@@ -55,6 +55,33 @@ public class RequestGameTests {
         helper.succeed();
     }
 
+    /**
+     * Crafting huts work for every hut, not only builders: a concrete mixer short of dye is on the
+     * dyer's list, and its request shows as being crafted once the colony has a staffed dyer.
+     */
+    @GameTest(structure = PLATFORM)
+    public void requestsAreCraftedForAnyHut(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        var level = helper.getLevel();
+        BuildingData mixer = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.CONCRETE_MIXER, 1);
+        var shortages = dev.pikachux.hearthstead.colony.Logistics.shortages(level, colony,
+                dev.pikachux.hearthstead.colony.Crafters::isDyerProduct, List.of());
+        check(helper, shortages.contains(Items.WHITE_DYE), "the mixer's dye on the dyer's list, got " + shortages);
+
+        check(helper, find(helper, ColonyRequests.list(level, colony, mixer), "Dyes").status() == ColonyRequests.Status.NEEDS_PLAYER,
+                "the dyes to need a player while there is no dyer");
+        BuildingData dyer = TestColonies.hut(helper, colony, new BlockPos(4, 1, 4), BuildingType.DYER, 1);
+        check(helper, find(helper, ColonyRequests.list(level, colony, mixer), "Dyes").status() == ColonyRequests.Status.NEEDS_PLAYER,
+                "the dyes to need a player while the dyer has no worker");
+        colony.addNewCitizen(level).assignJob(dev.pikachux.hearthstead.colony.JobType.DYER, dyer.pos());
+        ColonyRequests.Entry dyes = find(helper, ColonyRequests.list(level, colony, mixer), "Dyes");
+        check(helper, dyes.status() == ColonyRequests.Status.BEING_CRAFTED && dyes.crafter() == dyer,
+                "the dyes to be crafted at the dyer, got " + dyes.status());
+        check(helper, dev.pikachux.hearthstead.colony.Crafters.masonry(level).contains(Items.STONE_BRICK_STAIRS),
+                "stone brick stairs among the stonemason's products");
+        helper.succeed();
+    }
+
     /** The clipboard can be crafted and makes the expected item. */
     @GameTest
     public void clipboardRecipeExists(GameTestHelper helper) {

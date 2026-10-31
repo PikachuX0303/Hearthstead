@@ -169,7 +169,10 @@ public class DeliverymanGoal extends WorkGoal {
             }
             Predicate<ItemStack> keep = Logistics.keeps(building.type());
             List<Container> storage = Storage.containers(level(), building);
-            if (Storage.count(storage, s -> !keep.test(s)) >= Logistics.PICKUP_THRESHOLD || !Storage.hasSpace(storage)) {
+            // Crafted goods another hut is waiting for are fetched right away, not only once the hut fills up.
+            boolean wanted = dev.pikachux.hearthstead.colony.Crafters.TYPES.contains(building.type())
+                    && Storage.count(storage, s -> !keep.test(s) && requests.stream().anyMatch(r -> r.matcher().test(s))) > 0;
+            if (wanted || Storage.count(storage, s -> !keep.test(s)) >= Logistics.PICKUP_THRESHOLD || !Storage.hasSpace(storage)) {
                 target = building.pos();
                 state = State.COLLECT;
                 return;
