@@ -133,14 +133,16 @@ public class RaidGameTests {
                     || r instanceof dev.pikachux.hearthstead.entity.raider.PirateCaptainEntity)) {
                 throw helper.assertionException("Expected only pirates, got " + raiders.stream().map(r -> r.getType().toShortString()).toList());
             }
+            // Other tests' structures may stand in the water around this colony and count as shore too,
+            // so only check that every pirate is on dry land.
             for (AbstractBarbarian raider : raiders) {
-                int ring = Math.max(Math.abs(raider.getBlockX() - center.getX()), Math.abs(raider.getBlockZ() - center.getZ()));
-                if (ring >= 13 || !level.getFluidState(raider.blockPosition()).isEmpty()) {
-                    throw helper.assertionException("A pirate should stand on the shore, not at " + raider.blockPosition());
+                if (!level.getFluidState(raider.blockPosition()).isEmpty() || !level.getFluidState(raider.blockPosition().below()).isEmpty()) {
+                    throw helper.assertionException("A pirate should stand on dry land, not at " + raider.blockPosition());
                 }
             }
             var boats = level.getEntitiesOfClass(net.minecraft.world.entity.vehicle.boat.Boat.class, area);
-            if (boats.size() != 2) {
+            if (boats.size() != 2 || boats.stream().anyMatch(b -> level.getFluidState(b.blockPosition()).isEmpty()
+                    && level.getFluidState(b.blockPosition().below()).isEmpty())) {
                 throw helper.assertionException("Expected 2 boats on the water, found " + boats.size());
             }
             colony.raid().stop(level.getServer(), colony);
