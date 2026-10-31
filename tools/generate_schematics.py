@@ -90,6 +90,9 @@ STYLES = {
     "rabbitherder": ("spruce_planks",  "birch_log",    "oak_planks",          "birch"),
     "glassblower": ("sandstone",       "stripped_birch_log", "smooth_stone",  "birch"),
     "concretemixer": ("light_gray_concrete", "spruce_log", "gray_concrete",   "spruce"),
+    "planter":    ("jungle_planks",    "jungle_log",   "coarse_dirt",         "jungle"),
+    "alchemist":  ("deepslate_bricks", "dark_oak_log", "polished_deepslate",  "dark_oak"),
+    "enchanter":  ("stone_bricks",     "birch_log",    "dark_oak_planks",     "dark_oak"),
 }
 
 # Architectural styles. "classic" uses the per-hut palette above; the others give every
@@ -285,7 +288,10 @@ def build(hut, level, style="classic"):
              "beekeeper": block("campfire", facing="north", lit=False, signal_fire=False, waterlogged=False),
              "rabbitherder": block("hay_block", axis="y"),
              "glassblower": block("crafting_table"),
-             "concretemixer": block("water_cauldron", level=3)}
+             "concretemixer": block("water_cauldron", level=3),
+             "planter": block("potted_cactus"),
+             "alchemist": block("brewing_stand", has_bottle_0=False, has_bottle_1=False, has_bottle_2=False),
+             "enchanter": block("enchanting_table")}
     if hut in decor:
         put(c + 1, 1, c + 1, decor[hut])
 

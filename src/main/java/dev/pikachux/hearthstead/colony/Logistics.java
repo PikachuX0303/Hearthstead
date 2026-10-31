@@ -106,6 +106,16 @@ public final class Logistics {
         return stack.is(ItemTags.SWORDS) || stack.is(ItemTags.AXES);
     }
 
+    /** Ingredients a brewing stand accepts (the alchemist finishes awkward potions with them). */
+    public static final Set<Item> BREWING_INGREDIENTS = Set.of(Items.SUGAR, Items.RABBIT_FOOT, Items.GLISTERING_MELON_SLICE,
+            Items.SPIDER_EYE, Items.PUFFERFISH, Items.MAGMA_CREAM, Items.GOLDEN_CARROT, Items.BLAZE_POWDER, Items.GHAST_TEAR,
+            Items.TURTLE_HELMET, Items.PHANTOM_MEMBRANE, Items.FERMENTED_SPIDER_EYE, Items.BREEZE_ROD, Items.SLIME_BLOCK,
+            Items.COBWEB, Items.STONE, Items.NETHER_WART);
+
+    public static boolean isBrewingIngredient(ItemStack stack) {
+        return BREWING_INGREDIENTS.contains(stack.getItem());
+    }
+
     public static boolean isFishingRod(ItemStack stack) {
         return stack.is(Items.FISHING_ROD);
     }
@@ -134,6 +144,9 @@ public final class Logistics {
             case CONCRETE_MIXER -> s -> isSand(s) || s.is(Items.GRAVEL) || isDye(s) || isConcretePowder(s);
             case COMPOSTER -> Logistics::isCompostable;
             case SAWMILL -> s -> s.is(ItemTags.LOGS) || s.is(Items.STRING);
+            case PLANTER -> s -> false;
+            case ALCHEMIST -> dev.pikachux.hearthstead.entity.ai.AlchemistGoal::isMaterial;
+            case ENCHANTER -> s -> s.is(Items.BOOK) || s.is(Items.LAPIS_LAZULI);
             default -> s -> true;
         };
     }
@@ -143,7 +156,7 @@ public final class Logistics {
         return switch (type) {
             case LUMBERJACK, FARMER, MINER, FISHERMAN, COOK, SMELTER, BAKER, SHEPHERD, COWHAND, COMPOSTER, SAWMILL,
                  CHICKEN_HERDER, SWINEHERD, STONEMASON, FLORIST, DYER, BEEKEEPER,
-                 RABBIT_HERDER, GLASSBLOWER, CONCRETE_MIXER -> true;
+                 RABBIT_HERDER, GLASSBLOWER, CONCRETE_MIXER, PLANTER, ALCHEMIST, ENCHANTER -> true;
             default -> false;
         };
     }
@@ -289,6 +302,23 @@ public final class Logistics {
                     restock(building, storage, Logistics::isSand, 8, 32, "Sand", requests);
                     restock(building, storage, s -> s.is(Items.GRAVEL), 8, 32, "Gravel", requests);
                     restock(building, storage, Logistics::isDye, 2, 8, "Dyes", requests);
+                }
+            }
+            case ALCHEMIST -> {
+                if (building.level() > 0) {
+                    // Only ask for more bottles once the water and awkward potions are used up.
+                    if (Storage.count(storage, dev.pikachux.hearthstead.entity.ai.AlchemistGoal::isBasePotion) < 3) {
+                        restock(building, storage, s -> s.is(Items.GLASS_BOTTLE), 3, 9, "Glass Bottles", requests);
+                    }
+                    restock(building, storage, s -> s.is(Items.NETHER_WART), 3, 9, "Nether Wart", requests);
+                    restock(building, storage, s -> s.is(Items.BLAZE_POWDER), 1, 2, "Blaze Powder", requests);
+                }
+            }
+            case ENCHANTER -> {
+                if (building.level() > 0) {
+                    int lapis = dev.pikachux.hearthstead.entity.ai.EnchanterGoal.lapisCost(building.level());
+                    restock(building, storage, s -> s.is(Items.BOOK), 1, 4, "Books", requests);
+                    restock(building, storage, s -> s.is(Items.LAPIS_LAZULI), lapis, lapis * 4, "Lapis Lazuli", requests);
                 }
             }
             case TOWN_HALL, RESIDENCE -> {

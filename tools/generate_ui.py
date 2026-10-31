@@ -96,6 +96,9 @@ ICONS = {
                     ".c.cc...c.", ".c......c.", "..c....c..", "...cccc...", ".........."],
     "concretemixer": ["..........", ".GGGGGGGG.", ".GgGgGgGG.", ".GgggggGG.", ".GgGgGgGG.",
                       ".GGGGGGGG.", "..b....b..", "..b....b..", ".bb....bb.", ".........."],
+    "planter": ["..e....e..", "..E..e.E..", "..e..E.e..", "..E..e.E..", "..e..E.e..", ".eE..e.E..", "..e..E.e.e", "..E..e.EE.", "..e..E.e..", "bbbbbbbbbb"],
+    "alchemist": ["....ww....", "....bb....", "....cc....", "...c..c...", "..c....c..", ".cuuuuuuc.", ".cuwuuuuc.", ".cuuuuuuc.", "..cuuuuc..", "...cccc..."],
+    "enchanter": ["y.......y.", "....y.....", "..........", ".RRRRRRRR.", ".Rwwwwwwr.", ".Rwkkkkwr.", ".Rwwwwwwr.", ".Rwkkkwwr.", ".Rwwwwwwr.", ".RRRRRRRR."],
 }
 
 
@@ -151,11 +154,15 @@ PROPS = {
                      box(6, 15, 6, 10, 20, 10, V + "orange_terracotta")],
     "glassblower": [box(4, 12, 4, 12, 18, 12, V + "furnace_side", V + "furnace_top")],
     "concretemixer": [box(3, 12, 3, 13, 15, 13, V + "gray_concrete_powder"), box(5, 15, 5, 11, 18, 11, V + "white_concrete")],
+    "planter": [box(3, 12, 3, 13, 15, 13, V + "coarse_dirt"), box(5, 15, 5, 11, 22, 11, V + "bamboo_block", V + "bamboo_block_top")],
+    "alchemist": [box(4, 12, 4, 12, 14, 12, V + "polished_blackstone"), box(6, 14, 6, 10, 19, 10, V + "amethyst_block")],
+    "enchanter": [box(3, 12, 3, 13, 15, 13, V + "obsidian"), box(5, 15, 5, 11, 17, 11, V + "lapis_block")],
 }
 
 # Workbench wood per hut: (planks for the top and shelf, stripped log for the legs).
 WOODS = {"townhall": ("dark_oak", "dark_oak"), "university": ("dark_oak", "dark_oak"),
-         "guardtower": ("spruce", "spruce"), "miner": ("spruce", "spruce"), "smelter": ("spruce", "spruce")}
+         "guardtower": ("spruce", "spruce"), "miner": ("spruce", "spruce"), "smelter": ("spruce", "spruce"),
+         "planter": ("jungle", "jungle"), "alchemist": ("dark_oak", "dark_oak"), "enchanter": ("dark_oak", "dark_oak")}
 
 
 def cube(frm, to, faces):

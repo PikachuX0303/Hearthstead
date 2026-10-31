@@ -242,6 +242,9 @@
   "block.hearthstead.blockhutrabbitherder": "Rabbit Hutch",
   "block.hearthstead.blockhutglassblower": "Glassblower's Hut",
   "block.hearthstead.blockhutconcretemixer": "Concrete Mixer's Hut",
+  "block.hearthstead.blockhutplanter": "Planter's Hut",
+  "block.hearthstead.blockhutalchemist": "Alchemist's Hut",
+  "block.hearthstead.blockhutenchanter": "Enchanter's Hut",
   "block.hearthstead.rope_fence": "Rope Fence",
   "style.hearthstead.timber": "Timber"
 }

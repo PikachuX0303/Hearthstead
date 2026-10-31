@@ -27,12 +27,12 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 27 huts and jobs, five building styles, research and
+Hearthstead has the core colony loop, 30 huts and jobs, five building styles, research and
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
-- Some jobs: no Enchanter, Alchemist, Mechanic, Planter, Netherworker, and so on.
+- Some jobs: no Mechanic, Netherworker, Crusher, Sifter, and so on.
 - Most of the original research tree, pirates and other raider cultures, colony events, permissions GUI.
 
 ## Features
@@ -96,6 +96,9 @@ links to the releases and the changelog.
 | **Rabbit Herder** | Needs a **sword or axe** in the hut. Breeds the rabbits around the hutch with carrots or dandelions; once the warren reaches 2 + 2 × hut level, takes an adult rabbit for meat and hide. |
 | **Glassblower** | Smelts sand into glass in the furnaces of its workshop (one per hut level) with coal or charcoal, and makes the glass panes and stained glass builders are waiting for. |
 | **Concrete Mixer** | Mixes 4 sand, 4 gravel and a dye into 8 concrete powder and sets the powder into concrete. |
+| **Planter** | Looks after the sugar cane, cactus and bamboo you plant around the hut: cuts them down to their base when they grow (so they grow back) and spreads each kind to free spots next to it, up to 8 plants at level 1 and 24 at level 5. Keeps a few cuttings for planting and brings the rest to the hut. |
+| **Alchemist** | Fills glass bottles with water, brews awkward potions with nether wart and finishes them with the brewing ingredients in the hut (sugar for swiftness, glistering melon for healing, ...), three bottles at a time. One blaze powder fuels 20 batches. You choose the potions by the ingredients you supply. |
+| **Enchanter** | Enchants books with lapis lazuli, like an enchanting table. Higher hut levels give stronger enchantments (power 9 at level 1 up to 30 at level 5) and use more lapis (1 to 3 per book). |
 | **Fisherman** | Needs a **fishing rod** in the hut. Finds open water near the hut, fishes from the shore using the vanilla fishing loot, and brings the catch home. |
 | **Builder** | Every hut is built from a blueprint (schematic) by a **Builder**. A placed hut starts at level 0 and gets a work order for level 1. The builder takes building materials from the **Builder's Hut** inventory and places the blueprint block by block, clearing whatever is in the way. Open a hut to see progress and the materials still needed. |
 | **Upgrades** | Huts go up to level 5, and each level has a bigger building. Open a hut and click **Upgrade** to create a work order. Other huts can't exceed the Town Hall's level, and a builder can only build up to its own hut's level (level 1 is always possible). |
@@ -133,6 +136,9 @@ Each hut is 8 planks around a center item:
 | Rabbit Hutch | dandelion |
 | Glassblower's Hut | glass |
 | Concrete Mixer's Hut | cauldron |
+| Planter's Hut | sugar cane |
+| Alchemist's Hut | brewing stand |
+| Enchanter's Hut | lapis lazuli |
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.

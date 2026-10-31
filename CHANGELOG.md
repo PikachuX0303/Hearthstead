@@ -5,6 +5,20 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.24.0-alpha] - 2026-10-31
+
+### Added
+- **Planter's Hut.** The planter cuts the sugar cane, cactus and bamboo you plant around the
+  hut down to their base (so they grow back) and spreads each kind to free spots next to it,
+  up to 8 plants at level 1 and 24 at level 5.
+- **Alchemist's Hut.** The alchemist fills glass bottles with water, brews awkward potions with
+  nether wart and finishes them with the brewing ingredients you put in the hut, three bottles at
+  a time; blaze powder fuels the brewing. Asks for bottles, nether wart and blaze powder.
+- **Enchanter's Hut.** The enchanter enchants books with lapis lazuli; higher hut levels give
+  stronger enchantments and use more lapis. Asks for books and lapis lazuli.
+- Blueprints for the three huts in all five styles, original workbench models and job signs,
+  and recipes (8 planks around sugar cane, a brewing stand or lapis lazuli).
+
 ## [0.23.0-alpha] - 2026-10-31
 
 ### Added

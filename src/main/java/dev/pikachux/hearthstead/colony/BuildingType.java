@@ -32,7 +32,10 @@ public enum BuildingType {
     BEEKEEPER("beekeeper", "Apiary", JobType.BEEKEEPER, 0),
     RABBIT_HERDER("rabbitherder", "Rabbit Hutch", JobType.RABBIT_HERDER, 0),
     GLASSBLOWER("glassblower", "Glassblower's Hut", JobType.GLASSBLOWER, 0),
-    CONCRETE_MIXER("concretemixer", "Concrete Mixer's Hut", JobType.CONCRETE_MIXER, 0);
+    CONCRETE_MIXER("concretemixer", "Concrete Mixer's Hut", JobType.CONCRETE_MIXER, 0),
+    PLANTER("planter", "Planter's Hut", JobType.PLANTER, 0),
+    ALCHEMIST("alchemist", "Alchemist's Hut", JobType.ALCHEMIST, 0),
+    ENCHANTER("enchanter", "Enchanter's Hut", JobType.ENCHANTER, 0);
 
     public static final int MAX_LEVEL = 5;
 

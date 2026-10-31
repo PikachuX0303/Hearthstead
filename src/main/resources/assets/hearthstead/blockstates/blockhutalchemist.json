@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutalchemist"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutalchemist",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutalchemist",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutalchemist",
+      "y": 270
+    }
+  }
+}

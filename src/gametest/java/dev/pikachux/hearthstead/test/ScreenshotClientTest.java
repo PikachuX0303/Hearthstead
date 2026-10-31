@@ -247,7 +247,8 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 ServerLevel level = player.level();
                 BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, townHall.offset(-14, 0, -24));
                 BuildingType[] shown = {BuildingType.TOWN_HALL, BuildingType.LUMBERJACK, BuildingType.FARMER,
-                        BuildingType.MINER, BuildingType.BUILDER, BuildingType.COOK};
+                        BuildingType.MINER, BuildingType.BUILDER, BuildingType.COOK,
+                        BuildingType.PLANTER, BuildingType.ALCHEMIST, BuildingType.ENCHANTER};
                 for (int i = 0; i < shown.length; i++) {
                     level.setBlockAndUpdate(base.offset(i - 2, 0, 0), ModBlocks.HUTS.get(shown[i]).defaultBlockState()
                             .setValue(HutBlock.FACING, Direction.NORTH));
@@ -264,7 +265,7 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 residence.setLevel(2);
                 player.getAbilities().flying = true;
                 player.onUpdateAbilities();
-                player.teleportTo(level, base.getX() + 1.0, base.getY() + 2.5, base.getZ() - 4.5, java.util.Set.of(), 0, 35, false);
+                player.teleportTo(level, base.getX() + 2.5, base.getY() + 2.5, base.getZ() - 5.5, java.util.Set.of(), 0, 32, false);
             });
             context.waitTicks(40);
             context.takeScreenshot("hut_blocks");

@@ -411,4 +411,67 @@ public class JobGameTests {
             }
         });
     }
+
+    /** The planter cuts a tall cactus down to its base and keeps or stores the cuttings. */
+    @GameTest(environment = "hearthstead-gametest:planter", structure = PLATFORM, maxTicks = 2000, skyAccess = true)
+    public void planterHarvestsCactus(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.PLANTER, 1);
+        // The platform has no floor here, so the sand needs something to rest on.
+        helper.setBlock(new BlockPos(20, 0, 20), Blocks.STONE);
+        helper.setBlock(new BlockPos(20, 1, 20), Blocks.SAND);
+        for (int y = 2; y <= 4; y++) {
+            helper.setBlock(new BlockPos(20, y, 20), Blocks.CACTUS);
+        }
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            var entity = (dev.pikachux.hearthstead.entity.CitizenEntity) helper.getLevel().getEntity(citizen.entityUuid());
+            int cuttings = TestColonies.count(helper, hut, Items.CACTUS) + (entity == null ? 0 : entity.inventory().countItem(Items.CACTUS));
+            if (cuttings < 2 || !helper.getBlockState(new BlockPos(20, 3, 20)).isAir()) {
+                throw helper.assertionException("Cactus not harvested yet (" + citizen.status() + ")");
+            }
+            if (!helper.getBlockState(new BlockPos(20, 2, 20)).is(Blocks.CACTUS)) {
+                throw helper.assertionException("The base of the cactus should stay so it grows back");
+            }
+        });
+    }
+
+    /** The enchanter turns a book and lapis lazuli into an enchanted book. */
+    @GameTest(environment = "hearthstead-gametest:enchanter", structure = PLATFORM, maxTicks = 2000, skyAccess = true)
+    public void enchanterEnchantsBooks(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.ENCHANTER, 1);
+        TestColonies.give(helper, hut, Items.BOOK, 2);
+        TestColonies.give(helper, hut, Items.LAPIS_LAZULI, 4);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, hut, Items.ENCHANTED_BOOK) == 0) {
+                throw helper.assertionException("No enchanted book yet (" + citizen.status() + ")");
+            }
+            if (TestColonies.count(helper, hut, Items.LAPIS_LAZULI) > 3) {
+                throw helper.assertionException("Enchanting should use lapis lazuli");
+            }
+        });
+    }
+
+    /** The alchemist fills bottles, brews awkward potions with nether wart and finishes them with sugar. */
+    @GameTest(environment = "hearthstead-gametest:alchemist", structure = PLATFORM, maxTicks = 3000, skyAccess = true)
+    public void alchemistBrewsSwiftness(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.ALCHEMIST, 1);
+        TestColonies.give(helper, hut, Items.GLASS_BOTTLE, 3);
+        TestColonies.give(helper, hut, Items.NETHER_WART, 1);
+        TestColonies.give(helper, hut, Items.SUGAR, 1);
+        TestColonies.give(helper, hut, Items.BLAZE_POWDER, 1);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            int swiftness = Storage.count(Storage.containers(helper.getLevel(), hut), s -> {
+                var contents = s.get(net.minecraft.core.component.DataComponents.POTION_CONTENTS);
+                return s.is(Items.POTION) && contents != null && contents.is(net.minecraft.world.item.alchemy.Potions.SWIFTNESS);
+            });
+            if (swiftness < 3) {
+                throw helper.assertionException("Only " + swiftness + " swiftness potions so far (" + citizen.status() + ")");
+            }
+        });
+    }
 }
