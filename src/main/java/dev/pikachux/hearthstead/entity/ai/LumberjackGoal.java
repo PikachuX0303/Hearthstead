@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -70,7 +71,9 @@ public class LumberjackGoal extends WorkGoal {
                     timer = 200;
                     return;
                 }
-                takeFromHut(s -> s.is(ItemTags.SAPLINGS), 4);
+                if (HutSettings.isOn(building, HutSettings.REPLANT)) {
+                    takeFromHut(s -> s.is(ItemTags.SAPLINGS), 4);
+                }
                 state = State.SEARCH;
             }
             case SEARCH -> {
@@ -134,6 +137,9 @@ public class LumberjackGoal extends WorkGoal {
     }
 
     private void replant(BlockPos base) {
+        if (!HutSettings.isOn(building(), HutSettings.REPLANT)) {
+            return;
+        }
         if (!level().getBlockState(base).isAir() || !level().getBlockState(base.below()).is(BlockTags.DIRT)) {
             return;
         }

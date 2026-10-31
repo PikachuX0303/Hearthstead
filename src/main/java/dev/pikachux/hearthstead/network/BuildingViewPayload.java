@@ -41,6 +41,7 @@ public record BuildingViewPayload(
         ColonyInfo colony,
         List<RequestEntry> requests,
         List<ResearchEntry> research,
+        List<SettingEntry> settings,
         boolean updateOnly
 ) implements CustomPacketPayload {
     public static final Type<BuildingViewPayload> TYPE = new Type<>(Hearthstead.id("building_view"));
@@ -62,6 +63,10 @@ public record BuildingViewPayload(
     }
 
     public record Cost(Item item, int count, int have) {
+    }
+
+    /** A hut setting and its current value (see {@code HutSettings}). */
+    public record SettingEntry(String id, String value) {
     }
 
     /**
@@ -132,6 +137,10 @@ public record BuildingViewPayload(
             b.writeUtf(r.blocker());
             b.writeUtf(r.blockerArgument());
         });
+        writeList(buf, settings, (b, s) -> {
+            b.writeUtf(s.id());
+            b.writeUtf(s.value());
+        });
         buf.writeBoolean(updateOnly);
         buf.writeBoolean(colony.present());
         if (colony.present()) {
@@ -183,6 +192,7 @@ public record BuildingViewPayload(
                 b.readEnum(ResearchEntry.State.class), b.readFloat(),
                 readList(b, b2 -> new Cost(ITEM_CODEC.decode(b2), b2.readVarInt(), b2.readVarInt())),
                 b.readUtf(), b.readUtf()));
+        List<SettingEntry> settings = readList(buf, b -> new SettingEntry(b.readUtf(), b.readUtf()));
         boolean updateOnly = buf.readBoolean();
         ColonyInfo colony = ColonyInfo.NONE;
         if (buf.readBoolean()) {
@@ -202,7 +212,7 @@ public record BuildingViewPayload(
                     raidsEnabled, raidersLeft, raidSize, colonyStyle);
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
-                orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, updateOnly);
+                orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, settings, updateOnly);
     }
 
     static void writeRequest(RegistryFriendlyByteBuf buf, RequestEntry request) {

@@ -196,24 +196,26 @@ public final class Logistics {
             case LUMBERJACK -> tool(level, colony, building, storage, s -> s.is(ItemTags.AXES), "Axe", requests);
             case FARMER -> {
                 tool(level, colony, building, storage, s -> s.is(ItemTags.HOES), "Hoe", requests);
-                restock(building, storage, s -> s.is(ItemTags.VILLAGER_PLANTABLE_SEEDS), 16, 32, "Seeds", requests);
+                restock(building, storage, HutSettings.farmerSeeds(building), 16, 32, HutSettings.farmerSeedsName(building), requests);
                 restock(building, storage, s -> s.is(Items.BONE_MEAL), 4, 16, "Bone Meal", requests);
             }
             case MINER -> {
                 tool(level, colony, building, storage, s -> s.is(ItemTags.PICKAXES), "Pickaxe", requests);
-                restock(building, storage, s -> s.is(Items.TORCH), 16, 32, "Torches", requests);
+                if (HutSettings.isOn(building, HutSettings.TORCHES)) {
+                    restock(building, storage, s -> s.is(Items.TORCH), 16, 32, "Torches", requests);
+                }
             }
             case GUARD_TOWER -> tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
             case FISHERMAN -> tool(level, colony, building, storage, Logistics::isFishingRod, "Fishing Rod", requests);
             case COOK -> {
                 if (building.level() > 0) {
-                    restock(building, storage, Logistics::isRawFood, 16, 32, "Raw food", requests);
+                    restock(building, storage, HutSettings.cookInput(building), 16, 32, HutSettings.cookInputName(building), requests);
                     restock(building, storage, Logistics::isCookFuel, 8, 16, "Coal or charcoal", requests);
                 }
             }
             case SMELTER -> {
                 if (building.level() > 0) {
-                    restock(building, storage, Logistics::isSmeltable, 16, 32, "Ore, raw metal or sand", requests);
+                    restock(building, storage, HutSettings.smelterInput(building), 16, 32, HutSettings.smelterInputName(building), requests);
                     restock(building, storage, Logistics::isCookFuel, 8, 16, "Coal or charcoal", requests);
                 }
             }
@@ -224,11 +226,15 @@ public final class Logistics {
             }
             case SHEPHERD -> {
                 tool(level, colony, building, storage, s -> s.is(Items.SHEARS), "Shears", requests);
-                restock(building, storage, s -> s.is(Items.WHEAT), 8, 16, "Wheat", requests);
+                if (HutSettings.isOn(building, HutSettings.BREED)) {
+                    restock(building, storage, s -> s.is(Items.WHEAT), 8, 16, "Wheat", requests);
+                }
             }
             case COWHAND -> {
                 restock(building, storage, s -> s.is(Items.BUCKET), 2, 4, "Buckets", requests);
-                restock(building, storage, s -> s.is(Items.WHEAT), 8, 16, "Wheat", requests);
+                if (HutSettings.isOn(building, HutSettings.BREED)) {
+                    restock(building, storage, s -> s.is(Items.WHEAT), 8, 16, "Wheat", requests);
+                }
             }
             case COMPOSTER -> {
                 if (building.level() > 0) {
@@ -241,10 +247,16 @@ public final class Logistics {
                     restock(building, storage, s -> s.is(Items.STRING), 2, 8, "String", requests);
                 }
             }
-            case CHICKEN_HERDER -> restock(building, storage, s -> s.is(ItemTags.CHICKEN_FOOD), 8, 16, "Seeds", requests);
+            case CHICKEN_HERDER -> {
+                if (HutSettings.isOn(building, HutSettings.BREED)) {
+                    restock(building, storage, s -> s.is(ItemTags.CHICKEN_FOOD), 8, 16, "Seeds", requests);
+                }
+            }
             case SWINEHERD -> {
                 tool(level, colony, building, storage, Logistics::isButcherTool, "Sword or Axe", requests);
-                restock(building, storage, s -> s.is(ItemTags.PIG_FOOD), 8, 16, "Carrots, potatoes or beetroot", requests);
+                if (HutSettings.isOn(building, HutSettings.BREED)) {
+                    restock(building, storage, s -> s.is(ItemTags.PIG_FOOD), 8, 16, "Carrots, potatoes or beetroot", requests);
+                }
             }
             case STONEMASON -> {
                 if (building.level() > 0) {
@@ -262,7 +274,9 @@ public final class Logistics {
             case BEEKEEPER -> tool(level, colony, building, storage, s -> s.is(Items.SHEARS), "Shears", requests);
             case RABBIT_HERDER -> {
                 tool(level, colony, building, storage, Logistics::isButcherTool, "Sword or Axe", requests);
-                restock(building, storage, Logistics::isRabbitFood, 8, 16, "Carrots or dandelions", requests);
+                if (HutSettings.isOn(building, HutSettings.BREED)) {
+                    restock(building, storage, Logistics::isRabbitFood, 8, 16, "Carrots or dandelions", requests);
+                }
             }
             case GLASSBLOWER -> {
                 if (building.level() > 0) {

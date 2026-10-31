@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -11,5 +12,10 @@ import dev.pikachux.hearthstead.entity.CitizenEntity;
 public class CookGoal extends FurnaceWorkerGoal {
     public CookGoal(CitizenEntity citizen) {
         super(citizen, JobType.COOK, Logistics::isRawFood, Logistics::isCookFuel, "Cooking", "Needs raw food to cook");
+    }
+
+    @Override
+    protected java.util.function.Predicate<net.minecraft.world.item.ItemStack> input() {
+        return HutSettings.cookInput(building());
     }
 }

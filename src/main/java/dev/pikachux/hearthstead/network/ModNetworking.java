@@ -8,6 +8,7 @@ import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.ColonyManager;
 import dev.pikachux.hearthstead.colony.ColonyRequests;
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.WorkOrder;
 import dev.pikachux.hearthstead.registry.ModItems;
@@ -103,6 +104,13 @@ public final class ModNetworking {
             // Huts hand in their own requests; the town hall hands in any request of the colony.
             case FULFILL_REQUEST -> handIn(player, colony, payload.argument(),
                     building.type() == BuildingType.TOWN_HALL ? null : building.pos());
+            case CHANGE_SETTING -> {
+                HutSettings.Setting setting = HutSettings.byId(building.type(), payload.argument());
+                if (setting != null) {
+                    HutSettings.cycle(building, setting);
+                    colony.markDirty();
+                }
+            }
             case RENAME_COLONY -> {
                 String name = payload.argument().strip();
                 if (building.type() == BuildingType.TOWN_HALL && colony.owner().equals(player.getUUID())

@@ -5,6 +5,20 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.23.0-alpha] - 2026-10-31
+
+### Added
+- **Hut settings.** A Settings tab in the window of these huts; click a setting to switch it:
+  - Farmer: which crop to sow (any seeds, wheat, carrots, potatoes, beetroot).
+  - Lumberjack: replant saplings or not.
+  - Miner: place torches or not.
+  - Smeltery: smelt everything, only ores and raw metals, or only sand.
+  - Cook's Hut: cook all raw food, only meat, only fish or only vegetables.
+  - Shepherd, Cowhand, Chicken Herder, Swineherd and Rabbit Hutch: herd size (auto or 2 to 24)
+    and whether to breed.
+- What a hut requests follows its settings (for example, a farm set to carrots asks for carrots,
+  and a mine without torches stops asking for them). Settings are saved with the colony.
+
 ## [0.22.0-alpha] - 2026-10-31
 
 ### Added

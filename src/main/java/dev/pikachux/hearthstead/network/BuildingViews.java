@@ -11,6 +11,7 @@ import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.ColonyRequests;
 import dev.pikachux.hearthstead.colony.ColonyResearch;
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.Storage;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -114,7 +115,11 @@ public final class BuildingViews {
                 (int) residents, colony.housing(building), workers, order != null,
                 order == null ? 0 : order.targetLevel(), order != null && order.builder() != null, done, total,
                 materials, blocker, needsBuilder, builderJob, building.style(), info, requests,
-                type == BuildingType.UNIVERSITY ? research(level, colony, building) : List.of(), updateOnly);
+                type == BuildingType.UNIVERSITY ? research(level, colony, building) : List.of(),
+                HutSettings.of(type).stream()
+                        .map(s -> new BuildingViewPayload.SettingEntry(s.id(), HutSettings.get(building, s)))
+                        .toList(),
+                updateOnly);
     }
 
     private static List<BuildingViewPayload.ResearchEntry> research(ServerLevel level, Colony colony, BuildingData university) {

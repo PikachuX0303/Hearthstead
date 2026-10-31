@@ -31,7 +31,7 @@ Hearthstead has the core colony loop, 27 huts and jobs, five building styles, re
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
-- Hut-specific settings pages (for example, choosing which crops a farmer plants).
+- Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
 - Some jobs: no Enchanter, Alchemist, Mechanic, Planter, Netherworker, and so on.
 - Most of the original research tree, pirates and other raider cultures, colony events, permissions GUI.
 
@@ -236,6 +236,23 @@ previews its next level, with an **Order Upgrade** button.
 | | |
 |---|---|
 | ![Choosing a hut](docs/screenshots/build_tool_select.png) | ![Building preview](docs/screenshots/build_tool_preview.png) |
+
+## Hut settings
+
+Some huts have a **Settings** tab in their window. Click a setting's button to switch to its next
+value; the worker and the hut's requests follow it right away.
+
+| Hut | Setting | Values |
+| --- | --- | --- |
+| Farmer | Crop | any seeds, wheat, carrots, potatoes, beetroot |
+| Lumberjack | Replant saplings | yes / no |
+| Miner | Place torches | yes / no (no torches are requested when off) |
+| Smeltery | Smelt | everything, ores & metals, sand only |
+| Cook's Hut | Cook | all raw food, meat, fish, vegetables |
+| Shepherd, Cowhand, Chicken Herder, Swineherd, Rabbit Hutch | Herd size | auto (grows with the hut level), 2 to 24 |
+| (same) | Breed animals | yes / no (no feed is requested when off) |
+
+The swineherd and rabbit herder butcher animals above the herd size.
 
 ## Requests
 

@@ -37,6 +37,11 @@ public abstract class FurnaceWorkerGoal extends WorkGoal {
     private final String workStatus;
     private final String needsInputStatus;
 
+    /** What goes into the furnaces; subclasses may follow the hut's settings. */
+    protected Predicate<ItemStack> input() {
+        return input;
+    }
+
     protected FurnaceWorkerGoal(CitizenEntity citizen, JobType job, Predicate<ItemStack> input, Predicate<ItemStack> fuel,
                                 String workStatus, String needsInputStatus) {
         super(citizen, job);
@@ -125,9 +130,9 @@ public abstract class FurnaceWorkerGoal extends WorkGoal {
             ItemStack rest = citizen.inventory().addItem(furnace.removeItemNoUpdate(RESULT_SLOT));
             furnace.setItem(RESULT_SLOT, rest);
         }
-        boolean hasInput = Storage.count(hut, input) > 0 || !furnace.getItem(INPUT_SLOT).isEmpty();
+        boolean hasInput = Storage.count(hut, input()) > 0 || !furnace.getItem(INPUT_SLOT).isEmpty();
         if (furnace.getItem(INPUT_SLOT).isEmpty()) {
-            for (ItemStack stack : Storage.extract(hut, input, 16)) {
+            for (ItemStack stack : Storage.extract(hut, input(), 16)) {
                 if (furnace.getItem(INPUT_SLOT).isEmpty()) {
                     furnace.setItem(INPUT_SLOT, stack);
                 } else {

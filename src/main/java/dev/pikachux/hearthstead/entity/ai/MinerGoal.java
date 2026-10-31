@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -69,7 +70,9 @@ public class MinerGoal extends WorkGoal {
                     timer = 200;
                     return;
                 }
-                takeFromHut(s -> s.is(Items.TORCH), 16);
+                if (HutSettings.isOn(building, HutSettings.TORCHES)) {
+                    takeFromHut(s -> s.is(Items.TORCH), 16);
+                }
                 state = State.DIG;
             }
             case DIG -> {
@@ -155,6 +158,9 @@ public class MinerGoal extends WorkGoal {
     }
 
     private void placeTorch(BlockPos hut, Direction facing, BlockPos dug) {
+        if (!HutSettings.isOn(building(), HutSettings.TORCHES)) {
+            return;
+        }
         int distance = Math.abs(dug.getX() - hut.getX()) + Math.abs(dug.getZ() - hut.getZ());
         if (distance % 8 != 0 || dug.getY() != hut.getY() + 1) {
             return;

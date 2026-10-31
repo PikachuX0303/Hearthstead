@@ -223,6 +223,24 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 throw new AssertionError("The build tool did not place the lumberjack hut");
             }
 
+            // The lumberjack's Settings tab: turn replanting off.
+            singleplayer.getServer().runOnServer(server -> open(server, previewPos));
+            context.waitForScreen(BuildingScreen.class);
+            context.clickScreenButton("gui.hearthstead.tab.settings");
+            context.waitTicks(5);
+            context.takeScreenshot("lumberjack_settings");
+            context.clickScreenButton("setting.hearthstead.replant.on");
+            context.waitTicks(10);
+            String replant = singleplayer.getServer().computeOnServer(server -> {
+                Colony colony = ColonyManager.get(server).colonyAt(player(server).level().dimension(), previewPos);
+                return dev.pikachux.hearthstead.colony.HutSettings.get(colony.building(previewPos),
+                        dev.pikachux.hearthstead.colony.HutSettings.REPLANT);
+            });
+            if (!"off".equals(replant)) {
+                throw new AssertionError("The settings button should turn replanting off, got " + replant);
+            }
+            context.setScreen(() -> null);
+
             // A row of hut blocks, to show their models.
             singleplayer.getServer().runOnServer(server -> {
                 ServerPlayer player = player(server);

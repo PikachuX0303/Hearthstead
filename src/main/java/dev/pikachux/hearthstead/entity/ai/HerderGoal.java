@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -75,6 +76,10 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
 
     /** Maximum number of adult animals the herder keeps. */
     protected int herdSize(BuildingData building) {
+        int chosen = HutSettings.herdSize(building);
+        if (chosen > 0) {
+            return chosen;
+        }
         return 2 + 2 * building.level();
     }
 
@@ -120,7 +125,8 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
                     target = nearest(herd.stream().filter(this::canTend).toList());
                     breeding = false;
                 }
-                if (target == null && herd.size() >= 2 && herd.size() < herdSize(building)
+                if (target == null && HutSettings.isOn(building, HutSettings.BREED)
+                        && herd.size() >= 2 && herd.size() < herdSize(building)
                         && breedingFood() >= 2) {
                     target = nearest(herd.stream().filter(a -> a.canFallInLove() && a.getAge() == 0).toList());
                     breeding = true;

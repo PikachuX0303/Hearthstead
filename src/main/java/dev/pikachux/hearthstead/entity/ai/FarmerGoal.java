@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -71,7 +72,7 @@ public class FarmerGoal extends WorkGoal {
                     timer = 200;
                     return;
                 }
-                takeFromHut(s -> s.is(ItemTags.VILLAGER_PLANTABLE_SEEDS), 32);
+                takeFromHut(HutSettings.farmerSeeds(building), 32);
                 takeFromHut(s -> s.is(Items.BONE_MEAL), 16);
                 state = State.WORK;
             }
@@ -161,10 +162,12 @@ public class FarmerGoal extends WorkGoal {
         }
     }
 
+    /** A slot holding seeds of the crop chosen in the hut's settings. */
     private int seedSlot() {
+        var seeds = HutSettings.farmerSeeds(building());
         for (int i = 0; i < citizen.inventory().getContainerSize(); i++) {
             ItemStack stack = citizen.inventory().getItem(i);
-            if (stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) && stack.getItem() instanceof BlockItem) {
+            if (seeds.test(stack) && stack.getItem() instanceof BlockItem) {
                 return i;
             }
         }

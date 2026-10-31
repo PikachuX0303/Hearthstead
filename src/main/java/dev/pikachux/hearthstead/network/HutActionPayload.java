@@ -17,7 +17,9 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
     public enum Action {
         REFRESH, OPEN_INVENTORY, UPGRADE, CANCEL_ORDER, RENAME_COLONY, TOGGLE_RAIDS, START_RESEARCH, CYCLE_STYLE,
         /** Hand in items for a request; the argument is {@link #requestArgument}. */
-        FULFILL_REQUEST
+        FULFILL_REQUEST,
+        /** Moves a hut setting to its next value; the argument is the setting's id. */
+        CHANGE_SETTING
     }
 
     private static final int MAX_ARGUMENT = 256;

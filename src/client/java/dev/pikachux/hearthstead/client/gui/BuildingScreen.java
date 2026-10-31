@@ -26,6 +26,7 @@ public class BuildingScreen extends ColonyScreen {
         OVERVIEW("gui.hearthstead.tab.overview"),
         CONSTRUCTION("gui.hearthstead.tab.construction"),
         REQUESTS("gui.hearthstead.tab.requests"),
+        SETTINGS("gui.hearthstead.tab.settings"),
         RESEARCH("gui.hearthstead.tab.research"),
         CITIZENS("gui.hearthstead.tab.citizens"),
         COLONY("gui.hearthstead.tab.colony");
@@ -69,6 +70,9 @@ public class BuildingScreen extends ColonyScreen {
 
     private List<Tab> tabs() {
         List<Tab> tabs = new ArrayList<>(List.of(Tab.OVERVIEW, Tab.CONSTRUCTION, Tab.REQUESTS));
+        if (!view.settings().isEmpty()) {
+            tabs.add(Tab.SETTINGS);
+        }
         if (!view.research().isEmpty()) {
             tabs.add(Tab.RESEARCH);
         }
@@ -148,6 +152,15 @@ public class BuildingScreen extends ColonyScreen {
             }
         }
 
+        if (tab == Tab.SETTINGS) {
+            for (int i = 0; i < view.settings().size(); i++) {
+                BuildingViewPayload.SettingEntry setting = view.settings().get(i);
+                addRenderableWidget(ColonyButton.themed(settingValue(setting),
+                                b -> send(HutActionPayload.Action.CHANGE_SETTING, setting.id()))
+                        .bounds(left + panelWidth - 98, top + 46 + i * SETTING_ROW, 88, 20).build());
+            }
+        }
+
         if (tab == Tab.COLONY && view.colony().isOwner()) {
             nameField = new EditBox(font, left + 10, top + 108, panelWidth - 92, 18, Component.translatable("gui.hearthstead.colony_name"));
             nameField.setMaxLength(32);
@@ -188,6 +201,7 @@ public class BuildingScreen extends ColonyScreen {
             case OVERVIEW -> renderOverview(g, x, y, w, listBottom);
             case CONSTRUCTION -> renderConstruction(g, x, y, w, listBottom, mouseX, mouseY);
             case REQUESTS -> renderRequests(g, x, y, w, listBottom, mouseX, mouseY);
+            case SETTINGS -> renderSettings(g, x, y, w);
             case CITIZENS -> renderCitizens(g, x, y, w, listBottom);
             case COLONY -> renderColony(g, x, y, w, listBottom);
             case RESEARCH -> renderResearch(g, x, y, w, mouseX, mouseY);
@@ -328,6 +342,23 @@ public class BuildingScreen extends ColonyScreen {
             gr.drawString(font, font.plainSubstrByWidth(order.description(), rw), rx, ry,
                     order.assigned() ? 0xFF8BE38B : 0xFFFFFFFF, true);
         });
+    }
+
+    // ---------------------------------------------------------------- settings tab
+
+    private static final int SETTING_ROW = 40;
+
+    private static Component settingValue(BuildingViewPayload.SettingEntry setting) {
+        return Component.translatableWithFallback("setting.hearthstead." + setting.id() + "." + setting.value(), setting.value());
+    }
+
+    private void renderSettings(GuiGraphics g, int x, int y, int w) {
+        for (int i = 0; i < view.settings().size(); i++) {
+            BuildingViewPayload.SettingEntry setting = view.settings().get(i);
+            int rowY = y + i * SETTING_ROW;
+            text(g, Component.translatable("setting.hearthstead." + setting.id()), x, rowY + 1, HEADER);
+            wrapped(g, Component.translatable("setting.hearthstead." + setting.id() + ".desc"), x, rowY + 12, w - 96, TEXT_LIGHT);
+        }
     }
 
     // ---------------------------------------------------------------- requests tab
