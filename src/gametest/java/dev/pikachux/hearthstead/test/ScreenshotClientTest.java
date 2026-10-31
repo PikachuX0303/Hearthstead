@@ -8,6 +8,7 @@ import dev.pikachux.hearthstead.client.buildtool.HutSelectScreen;
 import dev.pikachux.hearthstead.client.buildtool.PendingPlacement;
 import dev.pikachux.hearthstead.client.gui.BuildingScreen;
 import dev.pikachux.hearthstead.client.gui.CitizenScreen;
+import dev.pikachux.hearthstead.client.gui.UpdatePromptScreen;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -50,6 +51,12 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             client.options.framerateLimit().set(10);
             client.options.menuBackgroundBlurriness().set(0);
         });
+        // The automatic updates question, shown on the title screen at the first start.
+        context.setScreen(() -> new UpdatePromptScreen(new net.minecraft.client.gui.screens.TitleScreen(), enabled -> {
+        }));
+        context.waitTicks(5);
+        context.takeScreenshot("update_prompt");
+        context.setScreen(net.minecraft.client.gui.screens.TitleScreen::new);
         try (TestSingleplayerContext singleplayer = context.worldBuilder().adjustSettings(settings -> {
             settings.getNormalPresetList().stream()
                     .filter(entry -> entry.preset() != null && entry.preset().is(WorldPresets.FLAT))

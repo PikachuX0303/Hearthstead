@@ -16,6 +16,15 @@ Get the latest jar from the [Releases page](https://github.com/PikachuX0303/Hear
 Put it into your `mods` folder together with [Fabric API](https://modrinth.com/mod/fabric-api).
 See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 
+### Automatic updates
+
+On the first start Hearthstead asks whether it may update itself. If you turn this on, it
+checks the Releases page each time the game starts. When there is a newer release for your
+Minecraft version, it downloads the jar into your `mods` folder (checking its size and SHA-256
+checksum) and shows a message. The new version replaces the old jar when you close the game
+and is used from the next start. Turn it on or off later in `config/hearthstead-updates.json`
+(`{"automaticUpdates": true}` or `false`); delete that file to be asked again.
+
 ## Status: early alpha
 
 Hearthstead has the core colony loop, 27 huts and jobs, five building styles, research and

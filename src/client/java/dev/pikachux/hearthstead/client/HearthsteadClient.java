@@ -19,6 +19,7 @@ public class HearthsteadClient implements ClientModInitializer {
         EntityRenderers.register(ModEntities.CHIEF_BARBARIAN, context -> new BarbarianRenderer(context, "chief_barbarian", 1.15F));
 
         BuildToolClient.register();
+        UpdateClient.register();
 
         ClientPlayNetworking.registerGlobalReceiver(BuildingViewPayload.TYPE, (payload, context) -> {
             if (context.client().screen instanceof BuildingScreen screen && screen.pos().equals(payload.pos())) {

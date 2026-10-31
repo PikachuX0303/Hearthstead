@@ -5,6 +5,15 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.18.0-alpha] - 2026-10-31
+
+### Added
+- **Automatic updates.** On the first start Hearthstead asks whether it may update itself.
+  When turned on, it checks the GitHub releases at every start, downloads a newer jar for the
+  same Minecraft version into the `mods` folder (verifying its size and SHA-256 checksum) and
+  shows a message. The old jar is replaced when you close the game. The choice is saved in
+  `config/hearthstead-updates.json`.
+
 ## [0.17.1-alpha] - 2026-10-31
 
 ### Changed

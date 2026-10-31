@@ -9,7 +9,8 @@
       "dev.pikachux.hearthstead.test.ColonyGameTests",
       "dev.pikachux.hearthstead.test.JobGameTests",
       "dev.pikachux.hearthstead.test.RaidGameTests",
-      "dev.pikachux.hearthstead.test.ResearchGameTests"
+      "dev.pikachux.hearthstead.test.ResearchGameTests",
+      "dev.pikachux.hearthstead.test.UpdaterGameTests"
     ],
     "fabric-client-gametest": [
       "dev.pikachux.hearthstead.test.ScreenshotClientTest"
