@@ -91,7 +91,7 @@ links to the releases and the changelog.
 | **Swineherd** | Needs a **sword or axe** in the hut. Breeds the pigs around the hut with carrots, potatoes or beetroot; once the herd reaches 2 + 2 × hut level, it butchers an adult pig for pork. |
 | **Stonemason** | Cuts stone, cobblestone, sandstone, deepslate, bricks and more into the stone parts huts are waiting for and the warehouse can't supply (stone bricks, stairs, slabs, walls, cut and polished blocks). |
 | **Florist** | Needs **bone meal** in the hut. Uses it on the grass around its building so flowers grow, and picks the flowers. |
-| **Dyer** | Makes the dyes, coloured wool and beds huts are waiting for (for example the Concrete Mixer's dyes) (flowers into dyes, white wool into coloured wool, wool and planks into beds). Otherwise turns flowers into dyes. |
+| **Dyer** | Makes the dyes, coloured wool and beds huts are waiting for, such as the Concrete Mixer's dyes (flowers into dyes, white wool into coloured wool, wool and planks into beds). Otherwise turns flowers into dyes. |
 | **Beekeeper** | Harvests the full beehives in the Apiary (one per level) and bee nests nearby: honey bottles when it has glass bottles, honeycomb with **shears** otherwise. Bees are not angered. Bring your own bees. |
 | **Rabbit Herder** | Needs a **sword or axe** in the hut. Breeds the rabbits around the hutch with carrots or dandelions; once the warren reaches 2 + 2 × hut level, takes an adult rabbit for meat and hide. |
 | **Glassblower** | Smelts sand into glass in the furnaces of its workshop (one per hut level) with coal or charcoal, and makes the glass panes and stained glass huts are waiting for. |
