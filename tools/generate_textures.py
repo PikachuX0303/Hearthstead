@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the mod's textures: the barbarian skins (64x64, standard humanoid layout) and
+"""Draws the mod's textures: the barbarian and pirate skins (64x64, standard humanoid layout) and
 the build tool and clipboard icons (16x16).
 
 Output: src/main/resources/assets/hearthstead/textures/entity/barbarian/<kind>.png
@@ -135,6 +135,93 @@ def chief():
     return s
 
 
+def pirate_base(seed, hair, shirt_a, shirt_b):
+    """A pirate: no war paint, a striped shirt with a sash, dark trousers and boots."""
+    s = base(seed, hair=hair)
+    fx, fy = s.front(0, 0, 8, 8, 8)
+    s.rect(fx, fy + 2, fx + 8, fy + 4, SKIN, 6)      # wash off the war paint
+    for ex in (1, 5):
+        s.px(fx + ex, fy + 3, EYE)
+        s.px(fx + ex + 1, fy + 3, PUPIL)
+    s.rect(fx + 1, fy + 5, fx + 7, fy + 6, hair)     # moustache over a shorter beard
+    s.rect(fx + 2, fy + 6, fx + 6, fy + 8, SKIN, 6)
+    s.rect(fx + 3, fy + 6, fx + 5, fy + 8, hair)
+    # striped shirt
+    s.box(16, 16, 8, 12, 4, shirt_a, 6)
+    for y in range(20, 28, 2):
+        s.rect(16, y, 40, y + 1, shirt_b, 6)
+    s.rect(16, 28, 40, 30, (150, 40, 36), 8)         # red sash instead of a belt
+    # sleeves to the elbow, then bare arms
+    for u, v in ((40, 16), (32, 48)):
+        s.box(u, v, 4, 12, 4, SKIN, 8)
+        s.rect(u, v + 4, u + 16, v + 10, shirt_a, 6)
+        for y in range(v + 5, v + 10, 2):
+            s.rect(u, y, u + 16, y + 1, shirt_b, 6)
+        s.rect(u, v + 12, u + 16, v + 16, SKIN_DARK, 6)
+    for u, v in ((0, 16), (16, 48)):
+        s.box(u, v, 4, 12, 4, (44, 48, 70), 8)       # navy trousers
+        s.rect(u, v + 10, u + 16, v + 16, (30, 26, 24), 6)   # tall boots
+    return s
+
+
+def pirate():
+    s = pirate_base(4, (60, 40, 28), (232, 228, 214), (40, 60, 120))
+    red = (176, 36, 32)
+    s.rect(32, 0, 64, 10, red, 10)                   # bandana on the hat layer
+    s.rect(40, 0, 48, 8, red, 10)
+    hx, hy = s.front(32, 0, 8, 8, 8)
+    for x in range(hx, hx + 8):                      # leave the face free below the bandana
+        for y in range(hy + 2, hy + 8):
+            s.img.putpixel((x, y), (0, 0, 0, 0))
+    for x, y in ((hx + 1, hy), (hx + 4, hy + 1), (hx + 6, hy)):
+        s.px(x, y, (236, 230, 220))                  # white dots
+    return s
+
+
+def pirate_archer():
+    s = pirate_base(5, (120, 80, 40), (210, 196, 160), (130, 100, 60))
+    green = (60, 96, 70)
+    s.rect(32, 0, 64, 10, green, 10)                 # green headscarf
+    s.rect(40, 0, 48, 8, green, 10)
+    hx, hy = s.front(32, 0, 8, 8, 8)
+    for x in range(hx, hx + 8):
+        for y in range(hy + 2, hy + 8):
+            s.img.putpixel((x, y), (0, 0, 0, 0))
+    s.rect(32, 20, 36, 32, (110, 80, 44), 8)         # quiver strap on the back
+    return s
+
+
+def pirate_captain():
+    s = pirate_base(6, (30, 26, 24), (236, 232, 222), (236, 232, 222))
+    coat, gold, black = (150, 28, 34), (220, 180, 60), (26, 24, 28)
+    # long red coat with gold buttons over the white shirt
+    s.box(16, 16, 8, 12, 4, coat, 8)
+    s.rect(23, 20, 25, 28, (236, 232, 222), 4)       # shirt showing at the front
+    for y in (21, 24, 27):
+        s.px(22, y, gold)
+        s.px(25, y, gold)
+    s.rect(16, 28, 40, 30, black, 4)                 # black belt with a gold buckle
+    s.rect(23, 28, 25, 30, gold, 4)
+    for u, v in ((40, 16), (32, 48)):
+        s.box(u, v, 4, 12, 4, coat, 8)               # coat sleeves with gold cuffs
+        s.rect(u, v + 10, u + 16, v + 12, gold, 6)
+        s.rect(u, v + 12, u + 16, v + 16, SKIN, 6)
+    # black tricorn hat with gold trim on the hat layer
+    s.rect(32, 0, 64, 10, black, 4)
+    s.rect(40, 0, 48, 8, black, 4)
+    s.rect(32, 9, 64, 10, gold, 4)
+    hx, hy = s.front(32, 0, 8, 8, 8)
+    for x in range(hx, hx + 8):
+        for y in range(hy + 2, hy + 8):
+            s.img.putpixel((x, y), (0, 0, 0, 0))
+    s.px(hx + 3, hy + 1, (236, 232, 222))            # small white skull on the hat
+    s.px(hx + 4, hy + 1, (236, 232, 222))
+    fx, fy = s.front(0, 0, 8, 8, 8)
+    s.rect(fx + 5, fy + 2, fx + 8, fy + 4, black, 2)  # eyepatch and its strap
+    s.rect(fx, fy + 2, fx + 1, fy + 3, black, 2)
+    return s
+
+
 ITEM_OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources",
                         "assets", "hearthstead", "textures", "item")
 
@@ -198,7 +285,8 @@ def main():
     build_tool().save(os.path.join(ITEM_OUT, "build_tool.png"))
     clipboard().save(os.path.join(ITEM_OUT, "clipboard.png"))
     os.makedirs(OUT, exist_ok=True)
-    for name, make in (("barbarian", barbarian), ("archer_barbarian", archer), ("chief_barbarian", chief)):
+    for name, make in (("barbarian", barbarian), ("archer_barbarian", archer), ("chief_barbarian", chief),
+                       ("pirate", pirate), ("pirate_archer", pirate_archer), ("pirate_captain", pirate_captain)):
         make().img.save(os.path.join(OUT, name + ".png"))
     print("wrote barbarian textures to", os.path.normpath(OUT))
 

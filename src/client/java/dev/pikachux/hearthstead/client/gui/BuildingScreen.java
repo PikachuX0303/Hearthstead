@@ -233,8 +233,12 @@ public class BuildingScreen extends ColonyScreen {
         if (view.colony().present()) {
             BuildingViewPayload.ColonyInfo colony = view.colony();
             if (colony.raidersLeft() > 0) {
-                text(g, Component.literal("⚔ ").append(Component.translatable("gui.hearthstead.raid_active",
-                        colony.raidersLeft(), colony.raidSize())), x, y, BAD);
+                text(g, Component.literal("⚔ ").append(Component.translatable(colony.pirates() ? "gui.hearthstead.raid_active_pirates"
+                        : "gui.hearthstead.raid_active", colony.raidersLeft(), colony.raidSize())), x, y, BAD);
+                y += 12;
+            }
+            if (colony.festival()) {
+                text(g, Component.literal("✿ ").append(Component.translatable("gui.hearthstead.festival")), x, y, GOOD);
                 y += 12;
             }
             text(g, Component.translatable("gui.hearthstead.citizen_count", colony.citizenCount(), colony.housing()), x, y, TEXT);

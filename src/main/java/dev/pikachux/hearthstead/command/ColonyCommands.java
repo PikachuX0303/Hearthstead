@@ -10,6 +10,7 @@ import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.ColonyManager;
+import dev.pikachux.hearthstead.colony.ColonyRaid;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.blueprint.Blueprint;
 import dev.pikachux.hearthstead.blueprint.Construction;
@@ -61,8 +62,14 @@ public final class ColonyCommands {
                         .then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(ColonyCommands::instantBuild)))
                 .then(Commands.literal("raid")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                        .then(Commands.literal("start").executes(ctx -> raid(ctx, true)))
-                        .then(Commands.literal("stop").executes(ctx -> raid(ctx, false))))
+                        .then(Commands.literal("start").executes(ctx -> raid(ctx, true, null))
+                                .then(Commands.literal("barbarians").executes(ctx -> raid(ctx, true, ColonyRaid.Culture.BARBARIANS)))
+                                .then(Commands.literal("pirates").executes(ctx -> raid(ctx, true, ColonyRaid.Culture.PIRATES))))
+                        .then(Commands.literal("stop").executes(ctx -> raid(ctx, false, null))))
+                .then(Commands.literal("event")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.literal("merchant").executes(ctx -> event(ctx, false)))
+                        .then(Commands.literal("festival").executes(ctx -> event(ctx, true))))
                 .then(Commands.literal("raids")
                         .then(Commands.literal("on").executes(ctx -> toggleRaids(ctx, true)))
                         .then(Commands.literal("off").executes(ctx -> toggleRaids(ctx, false))))
@@ -283,7 +290,8 @@ public final class ColonyCommands {
     }
 
     /** Starts or stops a raid on the colony the operator stands in (or owns). */
-    private static int raid(CommandContext<CommandSourceStack> ctx, boolean start) throws CommandSyntaxException {
+    private static int raid(CommandContext<CommandSourceStack> ctx, boolean start, @org.jetbrains.annotations.Nullable ColonyRaid.Culture culture)
+            throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         ColonyManager manager = ColonyManager.get(ctx.getSource().getServer());
         Colony colony = manager.colonyAt(player.level().dimension(), player.blockPosition());
@@ -307,8 +315,30 @@ public final class ColonyCommands {
             return 0;
         }
         ServerLevel level = colony.level(ctx.getSource().getServer());
-        if (level == null || !colony.raid().start(ctx.getSource().getServer(), colony, level)) {
+        if (level == null || !colony.raid().start(ctx.getSource().getServer(), colony, level, culture)) {
             ctx.getSource().sendFailure(Component.translatable("message.hearthstead.raid_failed"));
+            return 0;
+        }
+        return 1;
+    }
+
+    /** Starts a colony event (a merchant visit or a festival) in the colony the operator stands in (or owns). */
+    private static int event(CommandContext<CommandSourceStack> ctx, boolean festival) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        ColonyManager manager = ColonyManager.get(ctx.getSource().getServer());
+        Colony colony = manager.colonyAt(player.level().dimension(), player.blockPosition());
+        if (colony == null) {
+            colony = manager.colonyOf(player);
+        }
+        ServerLevel level = colony == null ? null : colony.level(ctx.getSource().getServer());
+        if (level == null) {
+            ctx.getSource().sendFailure(Component.translatable("message.hearthstead.no_colony"));
+            return 0;
+        }
+        boolean started = festival ? colony.happenings().startFestival(ctx.getSource().getServer(), colony, level)
+                : colony.happenings().sendMerchant(ctx.getSource().getServer(), colony, level);
+        if (!started) {
+            ctx.getSource().sendFailure(Component.translatable("message.hearthstead.event_failed"));
             return 0;
         }
         return 1;

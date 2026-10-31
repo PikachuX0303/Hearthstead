@@ -94,4 +94,79 @@ public class RaidGameTests {
             }
         });
     }
+
+    /**
+     * A colony with water around it gets pirates: they land on the shore between the water and
+     * the town hall with two boats, and the boats are gone once the raid is over.
+     */
+    @GameTest(environment = "hearthstead-gametest:pirates", structure = PLATFORM, maxTicks = 100, skyAccess = true)
+    public void piratesLandOnTheShore(GameTestHelper helper) {
+        try {
+            dev.pikachux.hearthstead.config.HearthsteadConfig.COLONY_RADIUS.set(32);
+            dev.pikachux.hearthstead.config.HearthsteadConfig.PIRATE_CHANCE.set(1.0);
+            Colony colony = TestColonies.found(helper, new BlockPos(16, 1, 16));
+            prepareWorld(helper, colony.center());
+            ServerLevel level = helper.getLevel();
+            for (int i = 0; i < 6; i++) {
+                colony.addNewCitizen(level);
+            }
+            // A moat 10 to 26 blocks out, at the height of the ground around the town hall.
+            BlockPos center = colony.center();
+            for (int dx = -26; dx <= 26; dx++) {
+                for (int dz = -26; dz <= 26; dz++) {
+                    int ring = Math.max(Math.abs(dx), Math.abs(dz));
+                    if (ring >= 10) {
+                        level.setBlock(center.offset(dx, -1, dz), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 2);
+                    }
+                }
+            }
+            if (!colony.raid().start(level.getServer(), colony, level)) {
+                throw helper.assertionException("The pirate raid did not start");
+            }
+            if (colony.raid().culture() != dev.pikachux.hearthstead.colony.ColonyRaid.Culture.PIRATES) {
+                throw helper.assertionException("Expected pirates for a colony surrounded by water, got " + colony.raid().culture());
+            }
+            var area = new net.minecraft.world.phys.AABB(center).inflate(40);
+            List<AbstractBarbarian> raiders = level.getEntitiesOfClass(AbstractBarbarian.class, area);
+            if (raiders.isEmpty() || !raiders.stream().allMatch(r -> r instanceof dev.pikachux.hearthstead.entity.raider.PirateEntity
+                    || r instanceof dev.pikachux.hearthstead.entity.raider.PirateArcherEntity
+                    || r instanceof dev.pikachux.hearthstead.entity.raider.PirateCaptainEntity)) {
+                throw helper.assertionException("Expected only pirates, got " + raiders.stream().map(r -> r.getType().toShortString()).toList());
+            }
+            for (AbstractBarbarian raider : raiders) {
+                int ring = Math.max(Math.abs(raider.getBlockX() - center.getX()), Math.abs(raider.getBlockZ() - center.getZ()));
+                if (ring >= 13 || !level.getFluidState(raider.blockPosition()).isEmpty()) {
+                    throw helper.assertionException("A pirate should stand on the shore, not at " + raider.blockPosition());
+                }
+            }
+            var boats = level.getEntitiesOfClass(net.minecraft.world.entity.vehicle.boat.Boat.class, area);
+            if (boats.size() != 2) {
+                throw helper.assertionException("Expected 2 boats on the water, found " + boats.size());
+            }
+            colony.raid().stop(level.getServer(), colony);
+            if (boats.stream().anyMatch(net.minecraft.world.entity.Entity::isAlive)) {
+                throw helper.assertionException("The boats should leave with the pirates");
+            }
+        } finally {
+            dev.pikachux.hearthstead.config.HearthsteadConfig.load();
+        }
+        helper.succeed();
+    }
+
+    /** A pirate raid can be forced even without a shore: the pirates then gather like barbarians. */
+    @GameTest(environment = "hearthstead-gametest:pirates_inland", structure = PLATFORM, maxTicks = 100, skyAccess = true)
+    public void piratesCanBeForcedInland(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(16, 1, 16));
+        prepareWorld(helper, colony.center());
+        ServerLevel level = helper.getLevel();
+        for (int i = 0; i < 4; i++) {
+            colony.addNewCitizen(level);
+        }
+        if (!colony.raid().start(level.getServer(), colony, level, dev.pikachux.hearthstead.colony.ColonyRaid.Culture.PIRATES)
+                || colony.raid().culture() != dev.pikachux.hearthstead.colony.ColonyRaid.Culture.PIRATES) {
+            throw helper.assertionException("A forced pirate raid should start");
+        }
+        colony.raid().stop(level.getServer(), colony);
+        helper.succeed();
+    }
 }

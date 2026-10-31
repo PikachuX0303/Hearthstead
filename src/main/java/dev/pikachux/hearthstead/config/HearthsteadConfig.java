@@ -91,6 +91,24 @@ public final class HearthsteadConfig {
             "Added to the chance for every night without a raid, so raids do not stay away for long.",
             0.15, 0.0, 1.0));
 
+    public static final BoolOption PIRATES = add(new BoolOption(RAIDS, "pirates",
+            "Whether pirates raid colonies that have water nearby. They land on the shore with their boats.", true));
+
+    public static final DoubleOption PIRATE_CHANCE = add(new DoubleOption(RAIDS, "pirateChance",
+            "For a colony near water, the chance that a raid is by pirates instead of barbarians.", 0.5, 0.0, 1.0));
+
+    // ---------------------------------------------------------------- colony events
+
+    private static final String EVENTS = section("events", "Things that happen in colonies now and then. Rolled each morning\n"
+            + "for colonies with at least three citizens.");
+
+    public static final DoubleOption MERCHANT_CHANCE = add(new DoubleOption(EVENTS, "wanderingMerchantChance",
+            "Chance each morning that a wandering merchant visits the town hall for the day.", 0.1, 0.0, 1.0));
+
+    public static final IntOption FESTIVAL_INTERVAL = add(new IntOption(EVENTS, "festivalInterval",
+            "Days between harvest festivals, when citizens are happier until nightfall and fireworks go up\n"
+                    + "over the town hall. 0 turns festivals off.", 7, 0, 100));
+
     // ---------------------------------------------------------------- world generation
 
     private static final String WORLDGEN = section("worldgen", "Structures generated in new parts of the world.");

@@ -86,8 +86,8 @@ public record BuildingViewPayload(
     /** Colony wide information, only filled in for the town hall. */
     public record ColonyInfo(boolean present, String owner, int citizenCount, int housing, int buildingCount,
                              boolean isOwner, List<Citizen> citizens, List<WorkOrderEntry> workOrders,
-                             boolean raidsEnabled, int raidersLeft, int raidSize, String style) {
-        public static final ColonyInfo NONE = new ColonyInfo(false, "", 0, 0, 0, false, List.of(), List.of(), true, 0, 0, "");
+                             boolean raidsEnabled, int raidersLeft, int raidSize, String style, boolean pirates, boolean festival) {
+        public static final ColonyInfo NONE = new ColonyInfo(false, "", 0, 0, 0, false, List.of(), List.of(), true, 0, 0, "", false, false);
     }
 
     @Override
@@ -165,6 +165,8 @@ public record BuildingViewPayload(
             buf.writeVarInt(colony.raidersLeft());
             buf.writeVarInt(colony.raidSize());
             buf.writeUtf(colony.style());
+            buf.writeBoolean(colony.pirates());
+            buf.writeBoolean(colony.festival());
         }
     }
 
@@ -208,8 +210,10 @@ public record BuildingViewPayload(
             int raidersLeft = buf.readVarInt();
             int raidSize = buf.readVarInt();
             String colonyStyle = buf.readUtf();
+            boolean pirates = buf.readBoolean();
+            boolean festival = buf.readBoolean();
             colony = new ColonyInfo(true, owner, citizenCount, colonyHousing, buildingCount, isOwner, citizens, orders,
-                    raidsEnabled, raidersLeft, raidSize, colonyStyle);
+                    raidsEnabled, raidersLeft, raidSize, colonyStyle, pirates, festival);
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
                 orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, settings, updateOnly);

@@ -19,6 +19,9 @@ public class HearthsteadClient implements ClientModInitializer {
         EntityRenderers.register(ModEntities.BARBARIAN, context -> new BarbarianRenderer(context, "barbarian", 1.0F));
         EntityRenderers.register(ModEntities.ARCHER_BARBARIAN, context -> new BarbarianRenderer(context, "archer_barbarian", 1.0F));
         EntityRenderers.register(ModEntities.CHIEF_BARBARIAN, context -> new BarbarianRenderer(context, "chief_barbarian", 1.15F));
+        EntityRenderers.register(ModEntities.PIRATE, context -> new BarbarianRenderer(context, "pirate", 1.0F));
+        EntityRenderers.register(ModEntities.PIRATE_ARCHER, context -> new BarbarianRenderer(context, "pirate_archer", 1.0F));
+        EntityRenderers.register(ModEntities.PIRATE_CAPTAIN, context -> new BarbarianRenderer(context, "pirate_captain", 1.15F));
 
         BuildToolClient.register();
         UpdateClient.register();

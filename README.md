@@ -33,7 +33,7 @@ raids. Things that are **not there yet** (some of which MineColonies has):
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
 - Some jobs: no Mechanic, Netherworker, Crusher, Sifter, and so on.
-- Most of the original research tree, pirates and other raider cultures, colony events, permissions GUI.
+- Most of the original research tree, more raider cultures (pirates are in), more colony events, permissions GUI.
 
 ## Features
 
@@ -160,7 +160,8 @@ All huts are also in the **Hearthstead** creative tab.
 - `workorders`: lists the colony's open work orders
 - `build <x y z>`: builds a hut's next level instantly, without materials (operators only)
 - `raids <on|off>`: allows or prevents raids on your colony (owner only)
-- `raid <start|stop>`: starts or stops a raid on the colony you are in (operators only)
+- `raid start [barbarians|pirates]` / `raid stop`: starts or stops a raid on the colony you are in (operators only)
+- `event <merchant|festival>`: starts a colony event in the colony you are in (operators only)
 - `research complete <research>`: finishes a research immediately (operators only)
 - `delete <id>`: deletes a colony (operators only)
 - `config reload`: reads `config/hearthstead.toml` again and reports invalid values (operators only)
@@ -202,6 +203,10 @@ options from newer versions are added automatically. On a server the server's fi
 | `raids` | `maxRaiders` | `16` | Largest raid |
 | `raids` | `nightlyChance` | `0.2` | Chance of a raid at nightfall |
 | `raids` | `chanceIncreasePerQuietNight` | `0.15` | Added to the chance after every night without a raid |
+| `raids` | `pirates` | `true` | Pirate raids on colonies near water |
+| `raids` | `pirateChance` | `0.5` | Share of raids by pirates for colonies near water |
+| `events` | `wanderingMerchantChance` | `0.1` | Chance each morning of a merchant visit |
+| `events` | `festivalInterval` | `7` | Days between harvest festivals (0 = none) |
 | `worldgen` | `abandonedSettlements` | `true` | Generate abandoned settlements in new chunks |
 | `worldgen` | `settlementChance` | `0.35` | How likely each possible spot gets one |
 
@@ -303,16 +308,20 @@ with one researcher).
 
 ## Raids
 
-At nightfall, a colony with at least 4 citizens may be raided by barbarians. The chance grows
-with every night without a raid.
+At nightfall, a colony with at least 4 citizens may be raided by barbarians, or by **pirates**
+if there is water near the colony's edge. The chance grows with every night without a raid.
 
 - **Warning:** members get a chat warning with the direction of the attack, a raid horn
   sounds, and a boss bar shows the raiders left to everyone inside the colony.
 - **Attack:** the raiders gather at the edge of the colony, march on the Town Hall and attack
   citizens and players on the way. Guards fight back; everyone else flees.
 - **End:** the raid ends when all raiders are dead, or at sunrise when the survivors retreat.
-- **Size:** 2 raiders plus 1 for every 2 citizens, up to 16. Barbarian Archers join from 6
-  citizens, and a Barbarian Chief from 10.
+- **Size:** 2 raiders plus 1 for every 2 citizens, up to 16. Archers join from 6 citizens, and a
+  Chief (or a Pirate Captain) from 10.
+- **Pirates:** for a colony with water nearby, half the raids (configurable) are by pirates. They
+  come ashore between the water and the town hall, leaving two boats on the water, and fight
+  with cutlasses and bows; the captain carries a diamond sword. When the raid ends, the boats
+  are gone too.
 - **Loot:** leather, iron nuggets and arrows. Chiefs drop iron ingots and emeralds, and
   sometimes a golden apple.
 - **Controls:** owners can switch raids off on the Town Hall's Colony tab or with
@@ -321,6 +330,19 @@ with every night without a raid.
 | | |
 |---|---|
 | ![Barbarians](docs/screenshots/barbarians.png) | ![A raid starts](docs/screenshots/raid_started.png) |
+| ![Pirates](docs/screenshots/pirates.png) | |
+
+## Colony events
+
+Each morning, colonies with at least 3 citizens may have a visitor or a celebration:
+
+- **Wandering merchant:** a wandering trader comes to the town hall and stays for a day
+  (10% chance each morning).
+- **Harvest festival:** every 7 days, citizens are 2 points happier until nightfall and
+  fireworks go up over the town hall. The town hall window shows when a festival is on.
+
+Both can be changed or turned off in the `[events]` section of the config, and operators can
+start them with `/hs event merchant` or `/hs event festival`.
 
 ## Getting started
 

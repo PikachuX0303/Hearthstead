@@ -45,6 +45,7 @@ public class Colony {
     private final Map<Integer, CitizenData> citizens = new LinkedHashMap<>();
     private final List<WorkOrder> workOrders = new ArrayList<>();
     private final ColonyRaid raid = new ColonyRaid();
+    private final ColonyHappenings happenings = new ColonyHappenings();
     private final ColonyResearch research = new ColonyResearch();
     /** Style given to newly placed huts. */
     private String style = dev.pikachux.hearthstead.blueprint.Styles.CLASSIC;
@@ -180,6 +181,11 @@ public class Colony {
                 .orElse(null);
     }
 
+    /** Colony events: merchant visits and festivals. */
+    public ColonyHappenings happenings() {
+        return happenings;
+    }
+
     public ColonyRaid raid() {
         return raid;
     }
@@ -282,6 +288,7 @@ public class Colony {
         assignHomes();
         assignJobs();
         raid.tick(server, this, level);
+        happenings.tick(server, this, level);
 
         if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get()) {
             spawnTimer = 0;
@@ -427,6 +434,7 @@ public class Colony {
         workOrders.forEach(o -> orderList.add(o.save()));
         tag.put("workOrders", orderList);
         tag.put("raid", raid.save());
+        tag.put("events", happenings.save());
         tag.put("research", research.save());
         tag.putString("style", style);
         tag.putInt("nextCitizenId", nextCitizenId);
@@ -444,6 +452,7 @@ public class Colony {
         tag.getListOrEmpty("buildings").compoundStream().map(BuildingData::load).forEach(b -> colony.buildings.put(b.pos(), b));
         tag.getListOrEmpty("citizens").compoundStream().map(CitizenData::load).forEach(c -> colony.citizens.put(c.id(), c));
         colony.raid.load(tag.getCompoundOrEmpty("raid"));
+        colony.happenings.load(tag.getCompoundOrEmpty("events"));
         colony.research.load(tag.getCompoundOrEmpty("research"));
         colony.style = tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
         tag.getListOrEmpty("workOrders").compoundStream().map(WorkOrder::load).forEach(colony.workOrders::add);

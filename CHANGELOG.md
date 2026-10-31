@@ -5,6 +5,27 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.25.0-alpha] - 2026-10-31
+
+### Added
+- **Pirates.** Colonies with water near their edge may be raided by pirates instead of
+  barbarians (half the time by default). They come ashore between the water and the town hall
+  with two boats, and fight with cutlasses and bows; the Pirate Captain carries a diamond
+  sword. Original skins for the Pirate, Pirate Archer and Pirate Captain.
+- **Colony events**, rolled each morning for colonies with at least 3 citizens:
+  - A **wandering merchant** visits the town hall for a day (10% chance).
+  - A **harvest festival** every 7 days: citizens are happier until nightfall and fireworks go
+    up over the town hall; the town hall window shows it.
+- Config: `pirates` and `pirateChance` in `[raids]`, and a new `[events]` section
+  (`wanderingMerchantChance`, `festivalInterval`).
+- Commands: `/hs raid start barbarians|pirates` and `/hs event merchant|festival` (operators).
+
+### Changed
+- The Stone Walls research now makes every kind of raid smaller, not only barbarian ones.
+
+### Fixed
+- Raiders no longer spawn in water when the gathering point is next to it.
+
 ## [0.24.0-alpha] - 2026-10-31
 
 ### Added

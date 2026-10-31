@@ -6,6 +6,9 @@ import dev.pikachux.hearthstead.entity.raider.AbstractBarbarian;
 import dev.pikachux.hearthstead.entity.raider.ArcherBarbarianEntity;
 import dev.pikachux.hearthstead.entity.raider.BarbarianEntity;
 import dev.pikachux.hearthstead.entity.raider.ChiefBarbarianEntity;
+import dev.pikachux.hearthstead.entity.raider.PirateCaptainEntity;
+import dev.pikachux.hearthstead.entity.raider.PirateArcherEntity;
+import dev.pikachux.hearthstead.entity.raider.PirateEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,6 +31,9 @@ public final class ModEntities {
     public static final EntityType<BarbarianEntity> BARBARIAN = raider("barbarian", BarbarianEntity::new);
     public static final EntityType<ArcherBarbarianEntity> ARCHER_BARBARIAN = raider("archer_barbarian", ArcherBarbarianEntity::new);
     public static final EntityType<ChiefBarbarianEntity> CHIEF_BARBARIAN = raider("chief_barbarian", ChiefBarbarianEntity::new);
+    public static final EntityType<PirateEntity> PIRATE = raider("pirate", PirateEntity::new);
+    public static final EntityType<PirateArcherEntity> PIRATE_ARCHER = raider("pirate_archer", PirateArcherEntity::new);
+    public static final EntityType<PirateCaptainEntity> PIRATE_CAPTAIN = raider("pirate_captain", PirateCaptainEntity::new);
 
     private ModEntities() {
     }
@@ -46,5 +52,8 @@ public final class ModEntities {
         FabricDefaultAttributeRegistry.register(BARBARIAN, AbstractBarbarian.createBarbarianAttributes());
         FabricDefaultAttributeRegistry.register(ARCHER_BARBARIAN, AbstractBarbarian.createBarbarianAttributes());
         FabricDefaultAttributeRegistry.register(CHIEF_BARBARIAN, ChiefBarbarianEntity.createChiefAttributes());
+        FabricDefaultAttributeRegistry.register(PIRATE, AbstractBarbarian.createBarbarianAttributes());
+        FabricDefaultAttributeRegistry.register(PIRATE_ARCHER, AbstractBarbarian.createBarbarianAttributes());
+        FabricDefaultAttributeRegistry.register(PIRATE_CAPTAIN, ChiefBarbarianEntity.createChiefAttributes());
     }
 }

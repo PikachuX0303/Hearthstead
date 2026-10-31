@@ -271,9 +271,19 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.takeScreenshot("hut_blocks");
 
             singleplayer.getServer().runCommand("difficulty normal");
-            singleplayer.getServer().runOnServer(this::lineUpBarbarians);
+            singleplayer.getServer().runOnServer(server -> lineUpRaiders(server, java.util.List.of(ModEntities.ARCHER_BARBARIAN,
+                    ModEntities.CHIEF_BARBARIAN, ModEntities.BARBARIAN), -10, -20));
             context.waitTicks(40);
             context.takeScreenshot("barbarians");
+            // The pirates take the barbarians' place for their picture.
+            singleplayer.getServer().runOnServer(server -> {
+                ServerLevel level = player(server).level();
+                level.getEntitiesOfClass(AbstractBarbarian.class, new net.minecraft.world.phys.AABB(townHall).inflate(48))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                lineUpRaiders(server, java.util.List.of(ModEntities.PIRATE_ARCHER, ModEntities.PIRATE_CAPTAIN, ModEntities.PIRATE), -10, -20);
+            });
+            context.waitTicks(40);
+            context.takeScreenshot("pirates");
 
             singleplayer.getServer().runOnServer(server -> {
                 ServerPlayer player = player(server);
@@ -321,12 +331,12 @@ public class ScreenshotClientTest implements FabricClientGameTest {
     }
 
     /** Places one raider of each kind in front of the player, frozen for the picture. */
-    private void lineUpBarbarians(MinecraftServer server) {
+    private void lineUpRaiders(MinecraftServer server, java.util.List<? extends net.minecraft.world.entity.EntityType<? extends AbstractBarbarian>> types,
+                               int offsetX, int offsetZ) {
         ServerPlayer player = player(server);
         ServerLevel level = player.level();
-        BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, townHall.offset(-10, 0, -20));
+        BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, townHall.offset(offsetX, 0, offsetZ));
         player.teleportTo(level, base.getX() + 0.5, base.getY(), base.getZ() + 0.5, java.util.Set.of(), 0, 10, false);
-        var types = java.util.List.of(ModEntities.ARCHER_BARBARIAN, ModEntities.CHIEF_BARBARIAN, ModEntities.BARBARIAN);
         for (int i = 0; i < types.size(); i++) {
             AbstractBarbarian raider = types.get(i).create(level, EntitySpawnReason.COMMAND);
             BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.offset(i - 1, 0, 4));

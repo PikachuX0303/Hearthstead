@@ -108,7 +108,9 @@ public final class BuildingViews {
                     .toList();
             info = new BuildingViewPayload.ColonyInfo(true, colony.ownerName(), colony.citizens().size(),
                     colony.housingCapacity(), colony.buildings().size(), colony.owner().equals(player.getUUID()),
-                    citizens, orders, colony.raid().enabled(), colony.raid().remaining(), colony.raid().total(), colony.style());
+                    citizens, orders, colony.raid().enabled(), colony.raid().remaining(), colony.raid().total(), colony.style(),
+                    colony.raid().culture() == dev.pikachux.hearthstead.colony.ColonyRaid.Culture.PIRATES,
+                    colony.happenings().festival(level.getGameTime()));
         }
 
         return new BuildingViewPayload(building.pos(), type.id(), building.level(), BuildingType.MAX_LEVEL, colony.name(),

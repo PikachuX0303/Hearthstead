@@ -255,6 +255,7 @@ public class CitizenEntity extends PathfinderMob {
         happiness += data.homePos() != null ? 2 : -2;
         happiness += data.job() != JobType.UNEMPLOYED ? 1 : 0;
         happiness += colony.research().has(Research.COMMUNITY_SPIRIT) ? 1 : 0;
+        happiness += colony.happenings().festival(level().getGameTime()) ? dev.pikachux.hearthstead.colony.ColonyHappenings.FESTIVAL_HAPPINESS : 0;
         happiness += data.saturation() > CitizenData.MAX_SATURATION / 2 ? 2 : (data.saturation() <= 0 ? -3 : 0);
         data.setHappiness(happiness);
 
