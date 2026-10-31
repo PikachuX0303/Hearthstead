@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PSP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "S": "minecraft:wooden_sword"
+  },
+  "result": {
+    "id": "hearthstead:blockhutguardtower",
+    "count": 1
+  }
+}

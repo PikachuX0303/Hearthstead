@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutuniversity"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutuniversity",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutuniversity",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutuniversity",
+      "y": 270
+    }
+  }
+}

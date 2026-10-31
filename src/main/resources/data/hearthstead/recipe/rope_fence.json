@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "S#S",
+    "S#S"
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "#": "minecraft:string"
+  },
+  "result": {
+    "id": "hearthstead:rope_fence",
+    "count": 4
+  }
+}

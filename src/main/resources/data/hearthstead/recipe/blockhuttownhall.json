@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PCP",
+    "CBC",
+    "PCP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "C": "minecraft:cobblestone",
+    "B": "minecraft:book"
+  },
+  "result": {
+    "id": "hearthstead:blockhuttownhall",
+    "count": 1
+  }
+}

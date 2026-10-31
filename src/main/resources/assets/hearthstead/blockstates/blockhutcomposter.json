@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutcomposter"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutcomposter",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutcomposter",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutcomposter",
+      "y": 270
+    }
+  }
+}

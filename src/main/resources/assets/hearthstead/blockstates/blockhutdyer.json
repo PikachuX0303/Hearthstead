@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutdyer"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutdyer",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutdyer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutdyer",
+      "y": 270
+    }
+  }
+}

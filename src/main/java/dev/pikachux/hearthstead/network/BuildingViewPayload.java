@@ -1,0 +1,212 @@
+package dev.pikachux.hearthstead.network;
+
+import dev.pikachux.hearthstead.Hearthstead;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.item.Item;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+/**
+ * Everything the hut screen shows, sent from the server when a player opens a hut.
+ * With {@code updateOnly} set it only refreshes an already open screen.
+ */
+public record BuildingViewPayload(
+        BlockPos pos,
+        String buildingType,
+        int level,
+        int maxLevel,
+        String colonyName,
+        int residents,
+        int housing,
+        List<Worker> workers,
+        boolean hasOrder,
+        int orderLevel,
+        boolean orderAssigned,
+        int progressDone,
+        int progressTotal,
+        List<Material> materials,
+        String upgradeBlocker,
+        boolean needsBuilder,
+        String builderJob,
+        String style,
+        ColonyInfo colony,
+        List<String> requests,
+        List<ResearchEntry> research,
+        boolean updateOnly
+) implements CustomPacketPayload {
+    public static final Type<BuildingViewPayload> TYPE = new Type<>(Hearthstead.id("building_view"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, BuildingViewPayload> CODEC =
+            CustomPacketPayload.codec(BuildingViewPayload::write, BuildingViewPayload::read);
+
+    private static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_CODEC = ByteBufCodecs.registry(Registries.ITEM);
+
+    public record Worker(String name, String job, String status) {
+    }
+
+    public record Material(Item item, int needed, int available) {
+    }
+
+    public record Citizen(int id, String name, String job, float happiness, float saturation, String status) {
+    }
+
+    public record WorkOrderEntry(String description, boolean assigned) {
+    }
+
+    public record Cost(Item item, int count, int have) {
+    }
+
+    /** One node of the research tree as seen from the university. */
+    public record ResearchEntry(String id, int branch, int tier, State state, float progress, List<Cost> cost,
+                                String blocker, String blockerArgument) {
+        public enum State { DONE, ACTIVE, AVAILABLE, LOCKED }
+    }
+
+    /** Colony wide information, only filled in for the town hall. */
+    public record ColonyInfo(boolean present, String owner, int citizenCount, int housing, int buildingCount,
+                             boolean isOwner, List<Citizen> citizens, List<WorkOrderEntry> workOrders,
+                             boolean raidsEnabled, int raidersLeft, int raidSize, String style) {
+        public static final ColonyInfo NONE = new ColonyInfo(false, "", 0, 0, 0, false, List.of(), List.of(), true, 0, 0, "");
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    private void write(RegistryFriendlyByteBuf buf) {
+        buf.writeBlockPos(pos);
+        buf.writeUtf(buildingType);
+        buf.writeVarInt(level);
+        buf.writeVarInt(maxLevel);
+        buf.writeUtf(colonyName);
+        buf.writeVarInt(residents);
+        buf.writeVarInt(housing);
+        writeList(buf, workers, (b, w) -> {
+            b.writeUtf(w.name());
+            b.writeUtf(w.job());
+            b.writeUtf(w.status());
+        });
+        buf.writeBoolean(hasOrder);
+        buf.writeVarInt(orderLevel);
+        buf.writeBoolean(orderAssigned);
+        buf.writeVarInt(progressDone);
+        buf.writeVarInt(progressTotal);
+        writeList(buf, materials, (b, m) -> {
+            ITEM_CODEC.encode(b, m.item());
+            b.writeVarInt(m.needed());
+            b.writeVarInt(m.available());
+        });
+        buf.writeUtf(upgradeBlocker);
+        buf.writeBoolean(needsBuilder);
+        buf.writeUtf(builderJob);
+        buf.writeUtf(style);
+        writeList(buf, requests, (b, r) -> b.writeUtf(r));
+        writeList(buf, research, (b, r) -> {
+            b.writeUtf(r.id());
+            b.writeVarInt(r.branch());
+            b.writeVarInt(r.tier());
+            b.writeEnum(r.state());
+            b.writeFloat(r.progress());
+            writeList(b, r.cost(), (b2, c) -> {
+                ITEM_CODEC.encode(b2, c.item());
+                b2.writeVarInt(c.count());
+                b2.writeVarInt(c.have());
+            });
+            b.writeUtf(r.blocker());
+            b.writeUtf(r.blockerArgument());
+        });
+        buf.writeBoolean(updateOnly);
+        buf.writeBoolean(colony.present());
+        if (colony.present()) {
+            buf.writeUtf(colony.owner());
+            buf.writeVarInt(colony.citizenCount());
+            buf.writeVarInt(colony.housing());
+            buf.writeVarInt(colony.buildingCount());
+            buf.writeBoolean(colony.isOwner());
+            writeList(buf, colony.citizens(), (b, c) -> {
+                b.writeVarInt(c.id());
+                b.writeUtf(c.name());
+                b.writeUtf(c.job());
+                b.writeFloat(c.happiness());
+                b.writeFloat(c.saturation());
+                b.writeUtf(c.status());
+            });
+            writeList(buf, colony.workOrders(), (b, o) -> {
+                b.writeUtf(o.description());
+                b.writeBoolean(o.assigned());
+            });
+            buf.writeBoolean(colony.raidsEnabled());
+            buf.writeVarInt(colony.raidersLeft());
+            buf.writeVarInt(colony.raidSize());
+            buf.writeUtf(colony.style());
+        }
+    }
+
+    private static BuildingViewPayload read(RegistryFriendlyByteBuf buf) {
+        BlockPos pos = buf.readBlockPos();
+        String type = buf.readUtf();
+        int level = buf.readVarInt();
+        int maxLevel = buf.readVarInt();
+        String colonyName = buf.readUtf();
+        int residents = buf.readVarInt();
+        int housing = buf.readVarInt();
+        List<Worker> workers = readList(buf, b -> new Worker(b.readUtf(), b.readUtf(), b.readUtf()));
+        boolean hasOrder = buf.readBoolean();
+        int orderLevel = buf.readVarInt();
+        boolean orderAssigned = buf.readBoolean();
+        int done = buf.readVarInt();
+        int total = buf.readVarInt();
+        List<Material> materials = readList(buf, b -> new Material(ITEM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
+        String blocker = buf.readUtf();
+        boolean needsBuilder = buf.readBoolean();
+        String builderJob = buf.readUtf();
+        String style = buf.readUtf();
+        List<String> requests = readList(buf, b -> b.readUtf());
+        List<ResearchEntry> research = readList(buf, b -> new ResearchEntry(b.readUtf(), b.readVarInt(), b.readVarInt(),
+                b.readEnum(ResearchEntry.State.class), b.readFloat(),
+                readList(b, b2 -> new Cost(ITEM_CODEC.decode(b2), b2.readVarInt(), b2.readVarInt())),
+                b.readUtf(), b.readUtf()));
+        boolean updateOnly = buf.readBoolean();
+        ColonyInfo colony = ColonyInfo.NONE;
+        if (buf.readBoolean()) {
+            String owner = buf.readUtf();
+            int citizenCount = buf.readVarInt();
+            int colonyHousing = buf.readVarInt();
+            int buildingCount = buf.readVarInt();
+            boolean isOwner = buf.readBoolean();
+            List<Citizen> citizens = readList(buf, b -> new Citizen(b.readVarInt(), b.readUtf(), b.readUtf(),
+                    b.readFloat(), b.readFloat(), b.readUtf()));
+            List<WorkOrderEntry> orders = readList(buf, b -> new WorkOrderEntry(b.readUtf(), b.readBoolean()));
+            boolean raidsEnabled = buf.readBoolean();
+            int raidersLeft = buf.readVarInt();
+            int raidSize = buf.readVarInt();
+            String colonyStyle = buf.readUtf();
+            colony = new ColonyInfo(true, owner, citizenCount, colonyHousing, buildingCount, isOwner, citizens, orders,
+                    raidsEnabled, raidersLeft, raidSize, colonyStyle);
+        }
+        return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
+                orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, updateOnly);
+    }
+
+    static <T> void writeList(RegistryFriendlyByteBuf buf, List<T> list, BiConsumer<RegistryFriendlyByteBuf, T> writer) {
+        buf.writeVarInt(list.size());
+        list.forEach(entry -> writer.accept(buf, entry));
+    }
+
+    static <T> List<T> readList(RegistryFriendlyByteBuf buf, Function<RegistryFriendlyByteBuf, T> reader) {
+        int size = buf.readVarInt();
+        List<T> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(reader.apply(buf));
+        }
+        return list;
+    }
+}

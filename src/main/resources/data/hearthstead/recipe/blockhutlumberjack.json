@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PAP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "A": "minecraft:wooden_axe"
+  },
+  "result": {
+    "id": "hearthstead:blockhutlumberjack",
+    "count": 1
+  }
+}

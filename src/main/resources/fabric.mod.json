@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "hearthstead",
+  "version": "${version}",
+  "name": "Hearthstead",
+  "description": "Found a town, attract citizens and watch them build, farm, mine, trade and defend it. A colony-building mod for Fabric, inspired by MineColonies; not affiliated with or endorsed by the MineColonies team (ldtteam).",
+  "authors": [
+    "PikachuX0303",
+    "PerniciousPx",
+    "FallenStar114"
+  ],
+  "contact": {
+    "sources": "https://github.com/PikachuX0303/Hearthstead"
+  },
+  "license": "GPL-3.0-or-later",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.pikachux.hearthstead.Hearthstead"
+    ],
+    "client": [
+      "dev.pikachux.hearthstead.client.HearthsteadClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

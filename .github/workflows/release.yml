@@ -1,0 +1,88 @@
+name: Build and release
+
+# Runs on every push. When gradle.properties has a mod_version that has not been
+# released yet, the jar is published as a GitHub release, with that version's section
+# of CHANGELOG.md as the release notes.
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and run game tests
+        run: ./gradlew build --no-daemon
+
+      - name: Read version
+        id: version
+        run: |
+          full=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          short=${full%%+*}
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+          echo "tag=v$short" >> "$GITHUB_OUTPUT"
+          echo "short=$short" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether this version is already released
+        id: exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract changelog
+        if: steps.exists.outputs.released == 'false'
+        run: |
+          awk -v version="${{ steps.version.outputs.short }}" '
+            index($0, "## [" version "]") == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "CHANGELOG.md has no section for ${{ steps.version.outputs.short }}" >&2
+            exit 1
+          fi
+          {
+            echo
+            echo "---"
+            echo "**Requires:** Minecraft 1.21.11, Fabric Loader 0.16.0 or newer, and Fabric API."
+            echo "Put the jar into your \`mods\` folder."
+            echo
+            echo "**Credits:** PikachuX0303, PerniciousPx and FallenStar114."
+          } >> release-notes.md
+
+      - name: Publish release
+        if: steps.exists.outputs.released == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            "build/libs/hearthstead-${{ steps.version.outputs.full }}.jar" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Hearthstead ${{ steps.version.outputs.short }} (Minecraft 1.21.11)" \
+            --notes-file release-notes.md \
+            --prerelease
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hearthstead-${{ steps.version.outputs.full }}
+          path: build/libs/*.jar

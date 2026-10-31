@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "hearthstead-gametest",
+  "version": "1.0.0",
+  "name": "Hearthstead GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.pikachux.hearthstead.test.ColonyGameTests",
+      "dev.pikachux.hearthstead.test.JobGameTests",
+      "dev.pikachux.hearthstead.test.RaidGameTests",
+      "dev.pikachux.hearthstead.test.ResearchGameTests"
+    ],
+    "fabric-client-gametest": [
+      "dev.pikachux.hearthstead.test.ScreenshotClientTest"
+    ]
+  },
+  "depends": {
+    "hearthstead": "*"
+  }
+}

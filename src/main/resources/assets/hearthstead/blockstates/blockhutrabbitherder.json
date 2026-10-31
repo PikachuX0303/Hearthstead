@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutrabbitherder"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutrabbitherder",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutrabbitherder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutrabbitherder",
+      "y": 270
+    }
+  }
+}

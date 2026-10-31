@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PHP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "H": "minecraft:wooden_hoe"
+  },
+  "result": {
+    "id": "hearthstead:blockhutfarmer",
+    "count": 1
+  }
+}

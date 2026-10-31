@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:fishing_rod"
+  },
+  "result": {
+    "id": "hearthstead:blockhutfisherman",
+    "count": 1
+  }
+}
