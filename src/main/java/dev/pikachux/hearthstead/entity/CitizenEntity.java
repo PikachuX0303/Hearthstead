@@ -92,6 +92,8 @@ public class CitizenEntity extends PathfinderMob {
             SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> DATA_JOB =
             SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Boolean> DATA_CHILD =
+            SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final Identifier GUARD_HEALTH = Hearthstead.id("guard_health");
     private static final Identifier GUARD_SPEED = Hearthstead.id("guard_speed");
@@ -127,6 +129,7 @@ public class CitizenEntity extends PathfinderMob {
         super.defineSynchedData(builder);
         builder.define(DATA_SKIN, 0);
         builder.define(DATA_JOB, JobType.UNEMPLOYED.id());
+        builder.define(DATA_CHILD, false);
     }
 
     @Override
@@ -180,6 +183,10 @@ public class CitizenEntity extends PathfinderMob {
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.HealerGoal(this));
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.QuarrierGoal(this));
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.LibrarianGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.TeacherGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.UndertakerGoal(this));
+        goalSelector.addGoal(7, new dev.pikachux.hearthstead.entity.ai.ChildSchoolGoal(this));
+        goalSelector.addGoal(7, new dev.pikachux.hearthstead.entity.ai.VisitorGoal(this));
         goalSelector.addGoal(5, new dev.pikachux.hearthstead.entity.ai.GuardTrainingGoal(this));
         goalSelector.addGoal(1, new dev.pikachux.hearthstead.entity.ai.GuardRangedGoal(this));
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
@@ -249,8 +256,9 @@ public class CitizenEntity extends PathfinderMob {
                 data.job() == JobType.DELIVERYMAN && colony != null && colony.research().has(Research.DELIVERY_CARTS));
         entityData.set(DATA_SKIN, data.skin());
         entityData.set(DATA_JOB, data.job().id());
+        entityData.set(DATA_CHILD, data.child());
         Component name = Component.literal(data.name())
-                .append(Component.literal(" (" + data.job().displayName() + ")").withStyle(ChatFormatting.GRAY));
+                .append(Component.literal(" (" + role(data) + ")").withStyle(ChatFormatting.GRAY));
         if (!name.equals(getCustomName())) {
             setCustomName(name);
         }
@@ -286,6 +294,7 @@ public class CitizenEntity extends PathfinderMob {
         happiness += data.job() != JobType.UNEMPLOYED ? 1 : 0;
         happiness += colony.research().has(Research.COMMUNITY_SPIRIT) ? 1 : 0;
         happiness += colony.research().has(Research.GOLDEN_AGE) ? 1 : 0;
+        happiness -= colony.mourning(level().getGameTime()) ? 1 : 0;
         happiness += colony.happenings().festival(level().getGameTime()) ? dev.pikachux.hearthstead.colony.ColonyHappenings.FESTIVAL_HAPPINESS : 0;
         happiness += data.saturation() > CitizenData.MAX_SATURATION / 2 ? 2 : (data.saturation() <= 0 ? -3 : 0);
         data.setHappiness(happiness);
@@ -383,10 +392,45 @@ public class CitizenEntity extends PathfinderMob {
         return speed;
     }
 
+    /** Children are half size: the game scales "baby" entities and their hitbox. */
+    @Override
+    public boolean isBaby() {
+        return entityData.get(DATA_CHILD);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (DATA_CHILD.equals(accessor)) {
+            refreshDimensions();
+        }
+    }
+
+    /** What a citizen is called in name tags and windows: their job, or child or visitor. */
+    public static String role(CitizenData data) {
+        return data.child() ? "Child" : data.visitor() ? "Visitor" : data.job().displayName();
+    }
+
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer && hand == InteractionHand.MAIN_HAND) {
             CitizenData data = data();
+            Colony colony = colony();
+            if (data != null && colony != null && data.visitor() && colony.isMember(player)) {
+                ItemStack cost = data.recruitCost();
+                ItemStack held = player.getItemInHand(hand);
+                if (held.is(cost.getItem()) && held.getCount() >= cost.getCount()) {
+                    if (colony.recruit(data)) {
+                        held.shrink(cost.getCount());
+                        colony.broadcast(serverPlayer.level().getServer(), Component.translatable("message.hearthstead.recruited",
+                                data.name(), colony.name()).withStyle(ChatFormatting.GREEN));
+                    } else {
+                        player.displayClientMessage(Component.translatable("message.hearthstead.recruit_no_bed")
+                                .withStyle(ChatFormatting.RED), true);
+                    }
+                    return InteractionResult.SUCCESS;
+                }
+            }
             if (data != null) {
                 BuildingViews.sendCitizen(serverPlayer, this, data);
             }
@@ -402,6 +446,7 @@ public class CitizenEntity extends PathfinderMob {
             if (data != null && getUUID().equals(data.entityUuid())) {
                 colony.broadcast(serverLevel.getServer(), Component.translatable("message.hearthstead.citizen_died",
                         data.name(), source.getLocalizedDeathMessage(this)).withStyle(ChatFormatting.RED));
+                colony.recordDeath(data, serverLevel.getGameTime());
                 colony.removeCitizen(citizenId);
                 for (int i = 0; i < inventory.getContainerSize(); i++) {
                     spawnAtLocation(serverLevel, inventory.removeItemNoUpdate(i));

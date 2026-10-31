@@ -27,12 +27,11 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 44 huts and jobs, citizen skills, five building styles, research and
+Hearthstead has the core colony loop, 47 huts and jobs, citizen skills, families, five building styles, research and
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
-- Some buildings: no School, Tavern or Graveyard yet; no children.
 - More raider cultures (barbarians and pirates so far), more colony events.
 
 ## Features
@@ -110,6 +109,8 @@ links to the releases and the changelog.
 | **Healer** | Works at the Hospital and heals hurt citizens around it. Citizens below half health leave their work and go to a staffed Hospital until they have mostly recovered. |
 | **Quarrier** | Digs an open pit behind the Quarry, layer by layer from the top: 5x5 and 8 deep at level 1, up to 13x13 and 24 deep at level 5. Brings the stone and ores to the hut. Needs a pickaxe. |
 | **Librarian** | Studies the Library's books. While a staffed Library has books, every citizen gains skill experience 25% faster per Library level; one book is used up every quarter day. |
+| **Teacher** | Keeps the School open. While it is staffed, children go there during the day, learn a little of every skill and grow up twice as fast. |
+| **Undertaker** | Buries the colony's dead at the Graveyard, which ends the mourning. Sometimes (4% per Graveyard level) the departed comes back to life instead. |
 | **Fisherman** | Needs a **fishing rod** in the hut. Finds open water near the hut, fishes from the shore using the vanilla fishing loot, and brings the catch home. |
 | **Builder** | Every hut is built from a blueprint (schematic) by a **Builder**. A placed hut starts at level 0 and gets a work order for level 1. The builder takes building materials from the **Builder's Hut** inventory and places the blueprint block by block, clearing whatever is in the way. Open a hut to see progress and the materials still needed. |
 | **Upgrades** | Huts go up to level 5, and each level has a bigger building. Open a hut and click **Upgrade** to create a work order. Other huts can't exceed the Town Hall's level, and a builder can only build up to its own hut's level (level 1 is always possible). |
@@ -164,6 +165,9 @@ Each hut is 8 planks around a center item:
 | Library | bookshelf |
 | Combat Academy | iron sword |
 | Archery | target |
+| School | book and quill |
+| Tavern | barrel |
+| Graveyard | mossy cobblestone |
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
@@ -232,6 +236,8 @@ options from newer versions are added automatically. On a server the server's fi
 | `raids` | `pirateChance` | `0.5` | Share of raids by pirates for colonies near water |
 | `events` | `wanderingMerchantChance` | `0.1` | Chance each morning of a merchant visit |
 | `events` | `festivalInterval` | `7` | Days between harvest festivals (0 = none) |
+| `events` | `birthChance` | `0.25` | Chance each morning of a birth (two adults at home, a free bed) |
+| `events` | `visitorChance` | `0.5` | Chance each morning of a visitor at a tavern with a free room |
 | `worldgen` | `abandonedSettlements` | `true` | Generate abandoned settlements in new chunks |
 | `worldgen` | `settlementChance` | `0.35` | How likely each possible spot gets one |
 
@@ -325,6 +331,20 @@ Marksmanship at the archery, faster at higher levels. Guard towers and barracks 
 arrows for their marksmen (the Fletcher makes them).
 
 ![Citizen window with skills](docs/screenshots/citizen.png)
+
+## Families, visitors and the dead
+
+- **Children:** each morning (25% chance) a child may be born in a Residence where two adults
+  live, if the colony has a free bed. Children are half size, don't work, and grow up after one
+  in-game day (half a day with a staffed **School**, where they also pick up skills). Then they
+  take a free job like any citizen.
+- **Visitors:** a **Tavern** has one room per level. Each morning a visitor may arrive (50%),
+  more skilled than ordinary settlers. Their window and name show what they ask to join: some
+  bread, iron ingots or emeralds. Right-click them holding it to recruit them (needs a free bed);
+  otherwise they leave after three days.
+- **The dead:** when a citizen dies the colony mourns: everyone is 1 point less happy for a day.
+  With a **Graveyard** and an undertaker, the dead are buried, which ends the mourning early, and
+  now and then someone comes back to life.
 
 ## Hut settings
 

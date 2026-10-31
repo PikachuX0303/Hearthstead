@@ -100,7 +100,7 @@ public final class BuildingViews {
         BuildingViewPayload.ColonyInfo info = BuildingViewPayload.ColonyInfo.NONE;
         if (type == BuildingType.TOWN_HALL) {
             List<BuildingViewPayload.Citizen> citizens = colony.citizens().stream()
-                    .map(c -> new BuildingViewPayload.Citizen(c.id(), c.name(), c.job().displayName(),
+                    .map(c -> new BuildingViewPayload.Citizen(c.id(), c.name(), CitizenEntity.role(c),
                             (float) c.happiness(), (float) c.saturation(), c.status()))
                     .toList();
             List<BuildingViewPayload.WorkOrderEntry> orders = colony.workOrders().stream()
@@ -202,7 +202,7 @@ public final class BuildingViews {
         for (int i = 0; i < entity.inventory().getContainerSize(); i++) {
             inventory.add(entity.inventory().getItem(i).copy());
         }
-        ServerPlayNetworking.send(player, new CitizenViewPayload(entity.getId(), data.name(), data.job().displayName(),
+        ServerPlayNetworking.send(player, new CitizenViewPayload(entity.getId(), data.name(), CitizenEntity.role(data),
                 entity.getHealth(), entity.getMaxHealth(), (float) data.saturation(), (float) CitizenData.MAX_SATURATION,
                 (float) data.happiness(), data.status(), describe(entity.colony(), data.homePos()),
                 describe(entity.colony(), data.workPos()), entity.getMainHandItem().copy(), inventory,

@@ -5,6 +5,22 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.33.0-alpha] - 2026-10-31
+
+### Added
+- **Children.** A child may be born each morning in a residence where two adults live (with a
+  free bed). Children are half size, don't work, and grow up after an in-game day.
+- **School.** With a teacher, children learn there during the day and grow up twice as fast.
+- **Tavern.** Visitors arrive (one room per level), more skilled than settlers; right-click one
+  holding what they ask for (bread, iron or emeralds) to recruit them, or they leave after three
+  days.
+- **Graveyard.** The colony mourns its dead for a day (-1 happiness); an undertaker buries them,
+  ending the mourning, and sometimes brings one back to life.
+- Config: `birthChance` and `visitorChance` in `[events]`.
+
+### Changed
+- Name tags and windows show "Child" or "Visitor" for children and visitors.
+
 ## [0.32.0-alpha] - 2026-10-31
 
 ### Added

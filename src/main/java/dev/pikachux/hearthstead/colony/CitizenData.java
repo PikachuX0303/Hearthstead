@@ -38,6 +38,14 @@ public class CitizenData {
     private double saturation = MAX_SATURATION;
     private double happiness = 5.0;
     private String status = "Idle";
+    /** Children grow up after {@link #GROW_UP_SECONDS}; they do not work. */
+    private boolean child;
+    private int ageSeconds;
+    /** Visitors stay at the tavern until recruited for {@link #recruitCost()} or until they leave. */
+    private boolean visitor;
+    private long arrivalDay;
+    private String recruitItem = "";
+    private int recruitCount;
     private final int[] skillLevels = new int[Skill.values().length];
     private final double[] skillExperience = new double[Skill.values().length];
     /** Game time at which the entity last reported in. */
@@ -147,6 +155,92 @@ public class CitizenData {
         return saturation < MAX_SATURATION / 2;
     }
 
+    /** Seconds a child needs to grow up: one in-game day (half with a school). */
+    public static final int GROW_UP_SECONDS = 1200;
+
+    /** A newborn of the colony, taking the family name from a parent. */
+    public static CitizenData createChild(int id, RandomSource random, String familyName) {
+        CitizenData data = create(id, random);
+        data.name = FIRST_NAMES[random.nextInt(FIRST_NAMES.length)] + " " + familyName;
+        data.child = true;
+        for (Skill skill : Skill.values()) {
+            data.skillLevels[skill.ordinal()] = 1;
+        }
+        return data;
+    }
+
+    /** A traveller who stays at the tavern: more skilled than settlers, but asks for something to join. */
+    public static CitizenData createVisitor(int id, RandomSource random, long day) {
+        CitizenData data = create(id, random);
+        data.visitor = true;
+        data.arrivalDay = day;
+        int best = 0;
+        for (Skill skill : Skill.values()) {
+            int level = skill == Skill.MARKSMANSHIP ? 1 + random.nextInt(5) : 5 + random.nextInt(16);
+            data.skillLevels[skill.ordinal()] = level;
+            best = Math.max(best, level);
+        }
+        // The better the visitor, the more they ask for.
+        if (best < 12) {
+            data.recruitItem = "minecraft:bread";
+            data.recruitCount = 8 + random.nextInt(9);
+        } else if (best < 17) {
+            data.recruitItem = "minecraft:iron_ingot";
+            data.recruitCount = 3 + random.nextInt(4);
+        } else {
+            data.recruitItem = "minecraft:emerald";
+            data.recruitCount = 1 + random.nextInt(3);
+        }
+        return data;
+    }
+
+    public String familyName() {
+        int space = name.lastIndexOf(' ');
+        return space < 0 ? name : name.substring(space + 1);
+    }
+
+    public boolean child() {
+        return child;
+    }
+
+    public int ageSeconds() {
+        return ageSeconds;
+    }
+
+    /** Ages a child; returns true when it has just grown up. */
+    public boolean grow(int seconds) {
+        if (!child) {
+            return false;
+        }
+        ageSeconds += seconds;
+        if (ageSeconds >= GROW_UP_SECONDS) {
+            child = false;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean visitor() {
+        return visitor;
+    }
+
+    public long arrivalDay() {
+        return arrivalDay;
+    }
+
+    /** What the visitor asks for to join: an item id and count. */
+    public net.minecraft.world.item.ItemStack recruitCost() {
+        var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(
+                recruitItem.isEmpty() ? "minecraft:bread" : recruitItem));
+        return new net.minecraft.world.item.ItemStack(item, Math.max(1, recruitCount));
+    }
+
+    /** The visitor joins the colony as an ordinary citizen. */
+    public void recruit() {
+        visitor = false;
+        homePos = null;
+    }
+
     public int skill(Skill skill) {
         return Math.max(1, skillLevels[skill.ordinal()]);
     }
@@ -202,6 +296,16 @@ public class CitizenData {
             skills.putDouble(skill.id() + "_xp", skillExperience[skill.ordinal()]);
         }
         tag.put("skills", skills);
+        if (child) {
+            tag.putBoolean("child", true);
+            tag.putInt("age", ageSeconds);
+        }
+        if (visitor) {
+            tag.putBoolean("visitor", true);
+            tag.putLong("arrivalDay", arrivalDay);
+            tag.putString("recruitItem", recruitItem);
+            tag.putInt("recruitCount", recruitCount);
+        }
         return tag;
     }
 
@@ -222,6 +326,12 @@ public class CitizenData {
             data.skillLevels[skill.ordinal()] = skills.getIntOr(skill.id(), skill == Skill.MARKSMANSHIP ? 1 : 5);
             data.skillExperience[skill.ordinal()] = skills.getDoubleOr(skill.id() + "_xp", 0);
         }
+        data.child = tag.getBooleanOr("child", false);
+        data.ageSeconds = tag.getIntOr("age", 0);
+        data.visitor = tag.getBooleanOr("visitor", false);
+        data.arrivalDay = tag.getLongOr("arrivalDay", 0);
+        data.recruitItem = tag.getStringOr("recruitItem", "");
+        data.recruitCount = tag.getIntOr("recruitCount", 0);
         return data;
     }
 }

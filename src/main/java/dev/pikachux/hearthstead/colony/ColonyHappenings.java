@@ -59,13 +59,62 @@ public class ColonyHappenings {
                 if (level.getRandom().nextDouble() < merchant) {
                     sendMerchant(server, colony, level);
                 }
+                if (level.getRandom().nextDouble() < HearthsteadConfig.BIRTH_CHANCE.get()) {
+                    tryBirth(colony, level);
+                }
             }
+            sendVisitors(colony, level, day);
         }
         // A rocket now and then while the festival lasts (the colony ticks once a second).
         if (festival(level.getGameTime()) && ++fireworkTimer >= 30) {
             fireworkTimer = 0;
             launchFireworks(level, colony.center(), 1);
         }
+    }
+
+    /** Visitors leave after this many days at the tavern. */
+    public static final int VISITOR_DAYS = 3;
+
+    /** A child is born in a residence where at least two adults live, if the colony has a free bed. */
+    public boolean tryBirth(Colony colony, ServerLevel level) {
+        if (colony.residents() >= colony.housingCapacity()) {
+            return false;
+        }
+        for (BuildingData home : colony.buildings()) {
+            if (home.type() != BuildingType.RESIDENCE || home.level() == 0) {
+                continue;
+            }
+            List<CitizenData> adults = colony.citizens().stream()
+                    .filter(c -> home.pos().equals(c.homePos()) && !c.child() && !c.visitor()).toList();
+            if (adults.size() >= 2) {
+                colony.addChild(level, home, adults.get(level.getRandom().nextInt(adults.size())).familyName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Visitors who stayed too long leave; a new one may arrive at a tavern with room. */
+    private void sendVisitors(Colony colony, ServerLevel level, long day) {
+        for (CitizenData visitor : List.copyOf(colony.citizens())) {
+            if (visitor.visitor() && day - visitor.arrivalDay() >= VISITOR_DAYS) {
+                if (visitor.entityUuid() != null && level.getEntity(visitor.entityUuid()) != null) {
+                    level.getEntity(visitor.entityUuid()).discard();
+                }
+                colony.removeCitizen(visitor.id());
+                colony.broadcast(level.getServer(), Component.translatable("message.hearthstead.visitor_left", visitor.name(), colony.name())
+                        .withStyle(ChatFormatting.GRAY));
+            }
+        }
+        BuildingData tavern = colony.trainingGround(BuildingType.TAVERN);
+        if (tavern != null && visitorCount(colony) < tavern.level()
+                && level.getRandom().nextDouble() < HearthsteadConfig.VISITOR_CHANCE.get()) {
+            colony.addVisitor(level, tavern);
+        }
+    }
+
+    public static int visitorCount(Colony colony) {
+        return (int) colony.citizens().stream().filter(CitizenData::visitor).count();
     }
 
     /** Starts a harvest festival that lasts until nightfall (or half a day when started at night). */

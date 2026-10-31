@@ -113,6 +113,9 @@ ICONS = {
     "library": ["BBBBBBBBBB", "BrbubeyrBB", "BrbubeyrBB", "BBBBBBBBBB", "BubryebuBB", "BubryebuBB", "BBBBBBBBBB", "BeyrubrbBB", "BeyrubrbBB", "BBBBBBBBBB"],
     "combatacademy": ["g........g", ".g......g.", "..g.uu.g..", "...guug...", "..uuggu...", "..uugguu..", "..uuuuuu..", "...uuuu...", "....uu....", ".........."],
     "archery": ["..rrrrrr..", ".rwwwwwwr.", "rwwrrrrwwr", "rwrwwwwrwr", "rwrwrrwrwr", "rwrwrrwrwr", "rwrwwwwrwr", "rwwrrrrwwr", ".rwwwwwwr.", "..rrrrrr.."],
+    "school": ["..........", ".wwww.www.", ".wkkw.wkw.", ".wwww.www.", ".wkkw.wkw.", ".wwwwbwww.", "BBBBBBBBBB", "..........", "....y.....", "...yyy...."],
+    "tavern": ["..........", "..wwwww...", ".wwwwwww..", ".yyyyyyBB.", ".yYyyyyB.B", ".yyyyYyB.B", ".yyyyyyBB.", ".yYyyyyB..", ".BBBBBBB..", ".........."],
+    "graveyard": ["....gg....", "....gg....", ".gggggggg.", ".gggggggg.", "....gg....", "....gg....", "....gg....", "...gGGg...", ".EEeEEeEE.", "EeEEEEEeEE"],
 }
 
 
@@ -185,6 +188,9 @@ PROPS = {
     "library": [box(3, 12, 4, 13, 20, 12, V + "bookshelf", V + "oak_planks")],
     "combatacademy": [box(4, 12, 4, 12, 14, 12, V + "iron_block"), box(6, 14, 6, 10, 20, 10, V + "hay_block_side", V + "hay_block_top")],
     "archery": [box(4, 12, 6, 12, 20, 10, V + "target_side", V + "target_top")],
+    "school": [box(3, 12, 4, 13, 14, 12, V + "white_wool"), box(5, 14, 5, 11, 17, 11, V + "bookshelf", V + "oak_planks")],
+    "tavern": [box(4, 12, 4, 12, 19, 12, V + "barrel_side", V + "barrel_top")],
+    "graveyard": [box(3, 12, 3, 13, 14, 13, V + "podzol_side", V + "podzol_top"), box(6, 14, 7, 10, 21, 9, V + "mossy_cobblestone")],
 }
 
 # Workbench wood per hut: (planks for the top and shelf, stripped log for the legs).
@@ -194,7 +200,8 @@ WOODS = {"townhall": ("dark_oak", "dark_oak"), "university": ("dark_oak", "dark_
          "mechanic": ("spruce", "spruce"), "netherworker": ("dark_oak", "dark_oak"),
          "blacksmith": ("spruce", "spruce"), "stonesmeltery": ("spruce", "spruce"),
          "barracks": ("spruce", "spruce"), "hospital": ("birch", "birch"),
-         "library": ("dark_oak", "dark_oak"), "combatacademy": ("spruce", "spruce")}
+         "library": ("dark_oak", "dark_oak"), "combatacademy": ("spruce", "spruce"),
+         "tavern": ("spruce", "spruce"), "graveyard": ("dark_oak", "dark_oak")}
 
 
 def cube(frm, to, faces):

@@ -17,7 +17,8 @@
       "dev.pikachux.hearthstead.test.SettingsGameTests",
       "dev.pikachux.hearthstead.test.EventGameTests",
       "dev.pikachux.hearthstead.test.PermissionGameTests",
-      "dev.pikachux.hearthstead.test.SkillGameTests"
+      "dev.pikachux.hearthstead.test.SkillGameTests",
+      "dev.pikachux.hearthstead.test.FamilyGameTests"
     ],
     "fabric-client-gametest": [
       "dev.pikachux.hearthstead.test.ScreenshotClientTest"

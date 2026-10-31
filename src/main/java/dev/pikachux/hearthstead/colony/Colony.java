@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,6 +55,12 @@ public class Colony {
     private long spawnTimer;
     /** How fast citizens gain skill experience; raised by a staffed Library with books. */
     private double skillGainMultiplier = 1;
+    /** Citizens who died and wait to be buried at a graveyard. */
+    private final List<CitizenData> dead = new ArrayList<>();
+    /** Game time until which the colony mourns its dead. */
+    private long mourningUntil;
+    /** Names of the citizens buried in the colony's graveyard, newest last. */
+    private final List<String> fallen = new ArrayList<>();
 
     Colony(ColonyManager manager, int id) {
         this.manager = manager;
@@ -330,7 +337,8 @@ public class Colony {
         skillGainMultiplier = libraryBonus(level);
         happenings.tick(server, this, level);
 
-        if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get() / (research.has(Research.WELCOME_WAGONS) ? 2 : 1)) {
+        growChildren(level);
+        if (residents() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get() / (research.has(Research.WELCOME_WAGONS) ? 2 : 1)) {
             spawnTimer = 0;
             addNewCitizen(level);
         }
@@ -346,6 +354,120 @@ public class Colony {
         }
     }
 
+    /** Citizens who live in the colony: everyone but the tavern's visitors. */
+    public int residents() {
+        return (int) citizens.values().stream().filter(c -> !c.visitor()).count();
+    }
+
+    public boolean hasStaffed(BuildingType type) {
+        return buildings.values().stream().anyMatch(b -> b.type() == type && b.level() > 0
+                && citizens.values().stream().anyMatch(c -> b.pos().equals(c.workPos())));
+    }
+
+    private void growChildren(ServerLevel level) {
+        int rate = hasStaffed(BuildingType.SCHOOL) ? 2 : 1;
+        for (CitizenData citizen : citizens.values()) {
+            if (citizen.child() && citizen.grow(rate)) {
+                broadcast(level.getServer(), Component.translatable("message.hearthstead.grown_up", citizen.name(), name)
+                        .withStyle(net.minecraft.ChatFormatting.GREEN));
+                markDirty();
+            }
+        }
+    }
+
+    /** A child is born in the residence, named after the family. */
+    public CitizenData addChild(ServerLevel level, BuildingData home, String familyName) {
+        CitizenData data = CitizenData.createChild(nextCitizenId++, level.getRandom(), familyName);
+        data.setHomePos(home.pos());
+        citizens.put(data.id(), data);
+        spawnCitizen(level, data, home.pos());
+        broadcast(level.getServer(), Component.translatable("message.hearthstead.child_born", data.name(), name)
+                .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+        markDirty();
+        return data;
+    }
+
+    /** A visitor arrives at the tavern. */
+    public CitizenData addVisitor(ServerLevel level, BuildingData tavern) {
+        CitizenData data = CitizenData.createVisitor(nextCitizenId++, level.getRandom(), level.getDayTime() / 24000);
+        data.setHomePos(tavern.pos());
+        citizens.put(data.id(), data);
+        spawnCitizen(level, data, tavern.pos());
+        ItemStack cost = data.recruitCost();
+        broadcast(level.getServer(), Component.translatable("message.hearthstead.visitor_arrived", data.name(), name,
+                cost.getCount(), cost.getHoverName()).withStyle(net.minecraft.ChatFormatting.AQUA));
+        markDirty();
+        return data;
+    }
+
+    /** Records a citizen's death: the colony mourns, and a graveyard will bury them. */
+    public void recordDeath(CitizenData data, long gameTime) {
+        if (data.visitor()) {
+            return;
+        }
+        dead.add(data);
+        mourningUntil = Math.max(mourningUntil, gameTime + 24000);
+        markDirty();
+    }
+
+    public List<CitizenData> dead() {
+        return dead;
+    }
+
+    public List<String> fallen() {
+        return fallen;
+    }
+
+    public boolean mourning(long gameTime) {
+        return gameTime < mourningUntil;
+    }
+
+    /**
+     * Buries the first of the dead. With a chance that grows with the graveyard level they come
+     * back to life at the graveyard instead; once everyone is buried the mourning ends.
+     * Returns the citizen brought back, or null.
+     */
+    @Nullable
+    public CitizenData bury(ServerLevel level, BuildingData graveyard) {
+        if (dead.isEmpty()) {
+            return null;
+        }
+        CitizenData data = dead.removeFirst();
+        CitizenData revived = null;
+        if (level.getRandom().nextFloat() < 0.04F * graveyard.level() && residents() < housingCapacity()) {
+            data.setEntityUuid(null);
+            data.setHomePos(null);
+            data.assignJob(JobType.UNEMPLOYED, null);
+            citizens.put(data.id(), data);
+            spawnCitizen(level, data, graveyard.pos());
+            broadcast(level.getServer(), Component.translatable("message.hearthstead.revived", data.name(), name)
+                    .withStyle(net.minecraft.ChatFormatting.GOLD));
+            revived = data;
+        } else {
+            fallen.add(data.name());
+            while (fallen.size() > 50) {
+                fallen.removeFirst();
+            }
+            broadcast(level.getServer(), Component.translatable("message.hearthstead.buried", data.name(), name)
+                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
+        if (dead.isEmpty()) {
+            mourningUntil = 0;
+        }
+        markDirty();
+        return revived;
+    }
+
+    /** The visitor joins the colony, if there is a free bed. Returns false otherwise. */
+    public boolean recruit(CitizenData visitor) {
+        if (!visitor.visitor() || residents() >= housingCapacity()) {
+            return false;
+        }
+        visitor.recruit();
+        markDirty();
+        return true;
+    }
+
     /** A new settler arrives at the town hall. */
     public CitizenData addNewCitizen(ServerLevel level) {
         CitizenData data = CitizenData.create(nextCitizenId++, level.getRandom());
@@ -357,11 +479,17 @@ public class Colony {
     }
 
     private void spawnCitizen(ServerLevel level, CitizenData data) {
+        spawnCitizen(level, data, null);
+    }
+
+    /** Spawns the citizen's entity next to {@code near}, or at the town hall. */
+    private void spawnCitizen(ServerLevel level, CitizenData data, @Nullable BlockPos near) {
         CitizenEntity entity = ModEntities.CITIZEN.create(level, EntitySpawnReason.MOB_SUMMONED);
         if (entity == null) {
             return;
         }
-        BlockPos spawn = findSpawnPos(level);
+        BlockPos spawn = near == null ? findSpawnPos(level)
+                : level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, near.offset(0, 0, 2));
         entity.snapTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, level.getRandom().nextFloat() * 360F, 0);
         entity.bind(this, data);
         data.setEntityUuid(entity.getUUID());
@@ -394,7 +522,7 @@ public class Colony {
         Map<BlockPos, Integer> occupancy = new LinkedHashMap<>();
         for (CitizenData citizen : citizens.values()) {
             BlockPos home = citizen.homePos();
-            if (home != null) {
+            if (home != null && !citizen.visitor()) {
                 BuildingData building = buildings.get(home);
                 if (building == null || housing(building) <= occupancy.getOrDefault(home, 0)) {
                     citizen.setHomePos(null);
@@ -404,7 +532,7 @@ public class Colony {
             }
         }
         for (CitizenData citizen : citizens.values()) {
-            if (citizen.homePos() != null) {
+            if (citizen.homePos() != null || citizen.visitor()) {
                 continue;
             }
             for (BuildingData building : buildings.values()) {
@@ -431,7 +559,7 @@ public class Colony {
                 if (needed <= 0) {
                     break;
                 }
-                if (citizen.job() == JobType.UNEMPLOYED) {
+                if (citizen.job() == JobType.UNEMPLOYED && !citizen.child() && !citizen.visitor()) {
                     citizen.assignJob(job, building.pos());
                     needed--;
                     markDirty();
@@ -469,6 +597,13 @@ public class Colony {
         tag.put("buildings", buildingList);
         ListTag citizenList = new ListTag();
         citizens.values().forEach(c -> citizenList.add(c.save()));
+        ListTag deadList = new ListTag();
+        dead.forEach(c -> deadList.add(c.save()));
+        tag.put("dead", deadList);
+        tag.putLong("mourningUntil", mourningUntil);
+        ListTag fallenList = new ListTag();
+        fallen.forEach(n -> fallenList.add(net.minecraft.nbt.StringTag.valueOf(n)));
+        tag.put("fallen", fallenList);
         tag.put("citizens", citizenList);
         ListTag orderList = new ListTag();
         workOrders.forEach(o -> orderList.add(o.save()));
@@ -499,6 +634,9 @@ public class Colony {
         colony.style = tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
         tag.getListOrEmpty("workOrders").compoundStream().map(WorkOrder::load).forEach(colony.workOrders::add);
         colony.nextCitizenId = tag.getIntOr("nextCitizenId", colony.citizens.size() + 1);
+        tag.getListOrEmpty("dead").forEach(t -> t.asCompound().ifPresent(c -> colony.dead.add(CitizenData.load(c))));
+        colony.mourningUntil = tag.getLongOr("mourningUntil", 0);
+        tag.getListOrEmpty("fallen").forEach(t -> t.asString().ifPresent(colony.fallen::add));
         return colony;
     }
 }

@@ -109,6 +109,14 @@ public final class HearthsteadConfig {
             "Days between harvest festivals, when citizens are happier until nightfall and fireworks go up\n"
                     + "over the town hall. 0 turns festivals off.", 7, 0, 100));
 
+    public static final DoubleOption BIRTH_CHANCE = add(new DoubleOption(EVENTS, "birthChance",
+            "Chance each morning that a child is born in a residence where two adults live (needs a free bed).",
+            0.25, 0.0, 1.0));
+
+    public static final DoubleOption VISITOR_CHANCE = add(new DoubleOption(EVENTS, "visitorChance",
+            "Chance each morning that a visitor arrives at a tavern with a free room (one room per tavern level).",
+            0.5, 0.0, 1.0));
+
     // ---------------------------------------------------------------- world generation
 
     private static final String WORLDGEN = section("worldgen", "Structures generated in new parts of the world.");
