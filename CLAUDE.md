@@ -25,6 +25,14 @@ and the chat welcome message (`event/WelcomeMessage.java`).
 - `xvfb-run ./gradlew runClientGameTest` opens every screen in a real client and writes
   screenshots to `build/run/clientGameTest/screenshots`.
 
+## Libraries
+
+Existing Fabric mod libraries may be used (for example Mod Menu, Cloth Config or YACL for a
+config screen). Prefer well-maintained libraries available for 1.21.11 on Modrinth, keep them
+optional where that is practical (the mod should still run with only Fabric API), check that
+their license is compatible with GPL-3.0-or-later, and list any required ones in the README
+download section and in `fabric.mod.json` `depends` (optional ones in `suggests`).
+
 ## Generated assets
 
 - `tools/generate_schematics.py`: hut blueprints for every style.
