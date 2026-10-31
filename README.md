@@ -27,12 +27,12 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 37 huts and jobs, five building styles, research and
+Hearthstead has the core colony loop, 41 huts and jobs, five building styles, research and
 raids. Things that are **not there yet** (some of which MineColonies has):
 
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
-- Some jobs: no Combat Academy, Archery, Hospital, Library, School, Tavern, Quarry, and so on.
+- Some jobs: no Combat Academy, Archery, Library, School, Tavern, Graveyard, and so on.
 - More raider cultures (barbarians and pirates so far), more colony events.
 
 ## Features
@@ -106,6 +106,9 @@ links to the releases and the changelog.
 | **Blacksmith** | Forges the tools and weapons huts ask for (axes, hoes, pickaxes, shovels, swords), plus iron armour and shields, with the game's recipes. Prefers iron, then stone; diamond gear from hut level 3. Asks for iron ingots and sticks. |
 | **Fletcher** | Makes bows, crossbows, arrows, fishing rods and leads for the huts that ask for them, such as the fisherman's rod. Asks for sticks, string, flint and feathers. |
 | **Stone Smelter** | Runs the furnaces of the Stone Smeltery (one per level): cobblestone into stone, clay into bricks and terracotta, netherrack into nether bricks, cobbled deepslate into deepslate, sandstone, quartz and basalt into their smooth forms. Asks for cobblestone and fuel. |
+| **Guard (Barracks)** | The Barracks employs 2 guards per level (up to 10), who patrol around it like Guard Tower guards. Asks for swords. |
+| **Healer** | Works at the Hospital and heals hurt citizens around it. Citizens below half health leave their work and go to a staffed Hospital until they have mostly recovered. |
+| **Quarrier** | Digs an open pit behind the Quarry, layer by layer from the top: 5x5 and 8 deep at level 1, up to 13x13 and 24 deep at level 5. Brings the stone and ores to the hut. Needs a pickaxe. |
 | **Fisherman** | Needs a **fishing rod** in the hut. Finds open water near the hut, fishes from the shore using the vanilla fishing loot, and brings the catch home. |
 | **Builder** | Every hut is built from a blueprint (schematic) by a **Builder**. A placed hut starts at level 0 and gets a work order for level 1. The builder takes building materials from the **Builder's Hut** inventory and places the blueprint block by block, clearing whatever is in the way. Open a hut to see progress and the materials still needed. |
 | **Upgrades** | Huts go up to level 5, and each level has a bigger building. Open a hut and click **Upgrade** to create a work order. Other huts can't exceed the Town Hall's level, and a builder can only build up to its own hut's level (level 1 is always possible). |
@@ -153,6 +156,10 @@ Each hut is 8 planks around a center item:
 | Blacksmith's Hut | anvil |
 | Fletcher's Hut | fletching table |
 | Stone Smeltery | blast furnace |
+| Barracks | iron sword |
+| Hospital | golden apple |
+| Quarry | iron pickaxe |
+| Stash | barrel |
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
@@ -284,6 +291,11 @@ between officer and friend with ⇅, removes them with ✕, and clicks Yes/No to
 and visitors may do. Officers can open the screen to look but not change it.
 
 ![Permissions](docs/screenshots/permissions.png)
+
+## Stash
+
+A **Stash** is a drop-off box with no worker: put anything into it and the deliveryman carries
+it to the Warehouse on their next round. Handy next to a mine entrance or a farm.
 
 ## Hut settings
 

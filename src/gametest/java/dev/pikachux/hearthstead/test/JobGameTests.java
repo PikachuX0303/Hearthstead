@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.List;
+
 public class JobGameTests {
     private static final String PLATFORM = "hearthstead-gametest:platform";
 
@@ -605,6 +607,89 @@ public class JobGameTests {
         helper.succeedWhen(() -> {
             if (TestColonies.count(helper, hut, Items.STONE) == 0) {
                 throw helper.assertionException("No stone yet (" + citizen.status() + ")");
+            }
+        });
+    }
+
+    /** A level 1 barracks employs two guards. */
+    @GameTest(environment = "hearthstead-gametest:barracks", structure = PLATFORM, maxTicks = 400, skyAccess = true)
+    public void barracksEmploysTwoGuards(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData barracks = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.BARRACKS, 1);
+        CitizenData first = colony.addNewCitizen(helper.getLevel());
+        CitizenData second = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            for (CitizenData citizen : List.of(first, second)) {
+                if (citizen.job() != dev.pikachux.hearthstead.colony.JobType.GUARD || !barracks.pos().equals(citizen.workPos())) {
+                    throw helper.assertionException(citizen.name() + " is not a guard at the barracks yet");
+                }
+            }
+        });
+    }
+
+    /** A hurt citizen gets better at a hospital with a healer. */
+    @GameTest(environment = "hearthstead-gametest:hospital", structure = PLATFORM, maxTicks = 1200, skyAccess = true)
+    public void hospitalHealsCitizens(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.HOSPITAL, 1);
+        var level = helper.getLevel();
+        CitizenData healer = colony.addNewCitizen(level);
+        CitizenData patient = colony.addNewCitizen(level);
+        helper.runAfterDelay(40, () -> {
+            var entity = (dev.pikachux.hearthstead.entity.CitizenEntity) level.getEntity(patient.entityUuid());
+            if (healer.job() != dev.pikachux.hearthstead.colony.JobType.HEALER || entity == null) {
+                throw helper.assertionException("Expected the first citizen to be the healer");
+            }
+            entity.setHealth(4F);
+            helper.succeedWhen(() -> {
+                if (entity.getHealth() < 12F) {
+                    throw helper.assertionException("The patient is at " + entity.getHealth() + " health (" + healer.status() + ")");
+                }
+            });
+        });
+    }
+
+    /** The quarrier digs the top layer of the pit behind the quarry. */
+    @GameTest(environment = "hearthstead-gametest:quarry", structure = PLATFORM, maxTicks = 3000, skyAccess = true)
+    public void quarryDigsItsPit(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData quarry = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.QUARRY, 1);
+        TestColonies.give(helper, quarry, Items.IRON_PICKAXE, 1);
+        var level = helper.getLevel();
+        var pit = dev.pikachux.hearthstead.entity.ai.QuarrierGoal.pit(quarry.pos(),
+                level.getBlockState(quarry.pos()).getValue(dev.pikachux.hearthstead.block.HutBlock.FACING), 1);
+        List<BlockPos> stone = new java.util.ArrayList<>();
+        for (int x = pit.minX(); x <= pit.maxX(); x++) {
+            for (int z = pit.minZ(); z <= pit.maxZ(); z++) {
+                BlockPos pos = new BlockPos(x, pit.maxY(), z);
+                level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+                stone.add(pos);
+            }
+        }
+        if (pit.getXSpan() != 5 || pit.getYSpan() != 8) {
+            throw helper.assertionException("A level 1 pit should be 5 wide and 8 deep, got " + pit);
+        }
+        CitizenData citizen = colony.addNewCitizen(level);
+        helper.succeedWhen(() -> {
+            long left = stone.stream().filter(pos -> level.getBlockState(pos).is(Blocks.STONE)).count();
+            if (left > 0) {
+                throw helper.assertionException(left + " stone left in the pit (" + citizen.status() + ")");
+            }
+        });
+    }
+
+    /** Whatever is dropped in a stash is carried to the warehouse. */
+    @GameTest(environment = "hearthstead-gametest:stash", structure = PLATFORM, maxTicks = 2400, skyAccess = true)
+    public void stashIsEmptiedIntoTheWarehouse(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData stash = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.STASH, 0);
+        BuildingData warehouse = TestColonies.hut(helper, colony, new BlockPos(4, 1, 4), BuildingType.WAREHOUSE, 0);
+        TestColonies.hut(helper, colony, new BlockPos(24, 1, 4), BuildingType.DELIVERYMAN, 1);
+        TestColonies.give(helper, stash, Items.APPLE, 3);
+        CitizenData citizen = colony.addNewCitizen(helper.getLevel());
+        helper.succeedWhen(() -> {
+            if (TestColonies.count(helper, warehouse, Items.APPLE) != 3 || TestColonies.count(helper, stash, Items.APPLE) != 0) {
+                throw helper.assertionException("The apples are not in the warehouse yet (" + citizen.status() + ")");
             }
         });
     }

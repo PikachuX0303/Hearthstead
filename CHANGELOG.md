@@ -5,6 +5,18 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.31.0-alpha] - 2026-10-31
+
+### Added
+- **Barracks.** Employs 2 guards per level (up to 10), who patrol around it.
+- **Hospital.** A healer heals hurt citizens nearby; citizens below half health go to a staffed
+  hospital until they have mostly recovered.
+- **Quarry.** The quarrier digs an open pit behind the hut, layer by layer, for stone and ores;
+  the pit grows wider and deeper with the hut level.
+- **Stash.** A drop-off box without a worker: the deliveryman carries whatever you put in it to
+  the warehouse.
+- Blueprints in all five styles, workbench models, job signs and recipes for the four huts.
+
 ## [0.30.0-alpha] - 2026-10-31
 
 ### Added

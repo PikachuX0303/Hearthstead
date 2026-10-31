@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:golden_apple"
+  },
+  "result": {
+    "id": "hearthstead:blockhuthospital",
+    "count": 1
+  }
+}

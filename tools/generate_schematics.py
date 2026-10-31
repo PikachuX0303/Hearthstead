@@ -100,6 +100,10 @@ STYLES = {
     "blacksmith": ("stone_bricks",     "spruce_log",   "cobblestone",         "spruce"),
     "fletcher":   ("birch_planks",     "spruce_log",   "oak_planks",          "birch"),
     "stonesmeltery": ("cobblestone",   "stripped_spruce_log", "stone_bricks", "spruce"),
+    "barracks":   ("stone_bricks",     "dark_oak_log", "spruce_planks",       "dark_oak"),
+    "hospital":   ("white_concrete",   "birch_log",    "smooth_quartz",       "birch"),
+    "quarry":     ("cobblestone",      "oak_log",      "andesite",            "oak"),
+    "stash":      ("oak_planks",       "oak_log",      "oak_planks",          "oak"),
 }
 
 # Architectural styles. "classic" uses the per-hut palette above; the others give every
@@ -305,7 +309,11 @@ def build(hut, level, style="classic"):
              "netherworker": block("crying_obsidian"),
              "blacksmith": block("anvil", facing="north"),
              "fletcher": block("fletching_table"),
-             "stonesmeltery": block("crafting_table")}
+             "stonesmeltery": block("crafting_table"),
+             "barracks": block("target", power=0),
+             "hospital": block("white_carpet"),
+             "quarry": block("stonecutter", facing="north"),
+             "stash": block("barrel", facing="up", open=False)}
     if hut in decor:
         put(c + 1, 1, c + 1, decor[hut])
 

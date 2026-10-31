@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:iron_sword"
+  },
+  "result": {
+    "id": "hearthstead:blockhutbarracks",
+    "count": 1
+  }
+}

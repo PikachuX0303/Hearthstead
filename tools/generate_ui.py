@@ -106,6 +106,10 @@ ICONS = {
     "blacksmith": ["..........", "..........", ".GGGGGGGG.", "GGGGGGGGGG", ".GGGGGGG..", "...GGG....", "...GGG....", "..GGGGG...", ".GGGGGGG..", ".........."],
     "fletcher": ["b........w", ".b......k.", "..b....k..", "..b...k...", "..b..k....", "..b.k.....", "..bk......", "..k.......", ".kbb......", "rr........"],
     "stonesmeltery": ["..........", ".gggggggg.", ".gGGGGGGg.", ".gG....Gg.", ".gG.oo.Gg.", ".gGoyyoGg.", ".gGGGGGGg.", ".gggggggg.", ".gggggggg.", ".........."],
+    "barracks": ["g........g", ".g......g.", "..g....g..", "...g..g...", "....gg....", "....gg....", "...b..b...", "..b....b..", ".b......b.", "y........y"],
+    "hospital": ["..........", "...rrrr...", "...rrrr...", ".rrrrrrrr.", ".rrrrrrrr.", ".rrrrrrrr.", ".rrrrrrrr.", "...rrrr...", "...rrrr...", ".........."],
+    "quarry": ["..GGGGG...", ".G....bG..", "......b...", ".....b....", "....b.....", "...b......", "..........", "gg.gGg.gg.", "gGggggGggg", "gggGgggggG"],
+    "stash": ["..........", ".BBBBBBBB.", ".BbbbbbbB.", ".BbBBBBbB.", ".BbByyBbB.", ".BbBBBBbB.", ".BbbbbbbB.", ".BBBBBBBB.", "..........", ".........."],
 }
 
 
@@ -171,6 +175,10 @@ PROPS = {
     "blacksmith": [box(4, 12, 5, 12, 14, 11, V + "iron_block"), box(6, 14, 6, 10, 17, 10, V + "smooth_stone")],
     "fletcher": [box(3, 12, 3, 13, 14, 13, V + "white_wool"), box(5, 14, 5, 11, 18, 11, V + "birch_log", V + "birch_log_top")],
     "stonesmeltery": [box(4, 12, 4, 12, 19, 12, V + "furnace_front", V + "furnace_top")],
+    "barracks": [box(4, 12, 4, 12, 15, 12, V + "iron_block"), box(6, 15, 6, 10, 20, 10, V + "red_wool")],
+    "hospital": [box(3, 12, 3, 13, 14, 13, V + "white_wool"), box(6, 14, 6, 10, 17, 10, V + "red_wool")],
+    "quarry": [box(3, 12, 3, 13, 15, 13, V + "stone"), box(5, 15, 5, 11, 17, 11, V + "cobblestone")],
+    "stash": [box(4, 12, 4, 12, 19, 12, V + "barrel_side", V + "barrel_top")],
 }
 
 # Workbench wood per hut: (planks for the top and shelf, stripped log for the legs).
@@ -178,7 +186,8 @@ WOODS = {"townhall": ("dark_oak", "dark_oak"), "university": ("dark_oak", "dark_
          "guardtower": ("spruce", "spruce"), "miner": ("spruce", "spruce"), "smelter": ("spruce", "spruce"),
          "planter": ("jungle", "jungle"), "alchemist": ("dark_oak", "dark_oak"), "enchanter": ("dark_oak", "dark_oak"),
          "mechanic": ("spruce", "spruce"), "netherworker": ("dark_oak", "dark_oak"),
-         "blacksmith": ("spruce", "spruce"), "stonesmeltery": ("spruce", "spruce")}
+         "blacksmith": ("spruce", "spruce"), "stonesmeltery": ("spruce", "spruce"),
+         "barracks": ("spruce", "spruce"), "hospital": ("birch", "birch")}
 
 
 def cube(frm, to, faces):

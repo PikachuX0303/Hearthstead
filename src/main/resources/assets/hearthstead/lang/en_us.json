@@ -335,6 +335,10 @@
   "block.hearthstead.blockhutblacksmith": "Blacksmith's Hut",
   "block.hearthstead.blockhutfletcher": "Fletcher's Hut",
   "block.hearthstead.blockhutstonesmeltery": "Stone Smeltery",
+  "block.hearthstead.blockhutbarracks": "Barracks",
+  "block.hearthstead.blockhuthospital": "Hospital",
+  "block.hearthstead.blockhutquarry": "Quarry",
+  "block.hearthstead.blockhutstash": "Stash",
   "block.hearthstead.rope_fence": "Rope Fence",
   "style.hearthstead.timber": "Timber"
 }

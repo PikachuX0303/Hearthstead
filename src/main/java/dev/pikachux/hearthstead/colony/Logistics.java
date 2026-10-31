@@ -134,7 +134,9 @@ public final class Logistics {
             case LUMBERJACK -> s -> s.is(ItemTags.AXES) || s.is(ItemTags.SAPLINGS);
             case FARMER -> s -> s.is(ItemTags.HOES) || s.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) || s.is(Items.BONE_MEAL);
             case MINER -> s -> s.is(ItemTags.PICKAXES) || s.is(Items.TORCH);
-            case GUARD_TOWER -> s -> s.is(ItemTags.SWORDS);
+            case GUARD_TOWER, BARRACKS -> s -> s.is(ItemTags.SWORDS);
+            case QUARRY -> s -> s.is(ItemTags.PICKAXES);
+            case STASH -> s -> false;
             case FISHERMAN -> Logistics::isFishingRod;
             case COOK -> s -> isRawFood(s) || isCookFuel(s);
             case SMELTER -> s -> isSmeltable(s) || isCookFuel(s);
@@ -172,7 +174,8 @@ public final class Logistics {
             case LUMBERJACK, FARMER, MINER, FISHERMAN, COOK, SMELTER, BAKER, SHEPHERD, COWHAND, COMPOSTER, SAWMILL,
                  CHICKEN_HERDER, SWINEHERD, STONEMASON, FLORIST, DYER, BEEKEEPER,
                  RABBIT_HERDER, GLASSBLOWER, CONCRETE_MIXER, PLANTER, ALCHEMIST, ENCHANTER,
-                 CRUSHER, SIFTER, MECHANIC, NETHERWORKER, BLACKSMITH, FLETCHER, STONE_SMELTERY -> true;
+                 CRUSHER, SIFTER, MECHANIC, NETHERWORKER, BLACKSMITH, FLETCHER, STONE_SMELTERY,
+                 QUARRY, STASH -> true;
             default -> false;
         };
     }
@@ -234,7 +237,8 @@ public final class Logistics {
                     restock(building, storage, s -> s.is(Items.TORCH), 16, 32, "Torches", requests);
                 }
             }
-            case GUARD_TOWER -> tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
+            case GUARD_TOWER, BARRACKS -> tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
+            case QUARRY -> tool(level, colony, building, storage, s -> s.is(ItemTags.PICKAXES), "Pickaxe", requests);
             case FISHERMAN -> tool(level, colony, building, storage, Logistics::isFishingRod, "Fishing Rod", requests);
             case COOK -> {
                 if (building.level() > 0) {

@@ -42,7 +42,11 @@ public enum BuildingType {
     NETHERWORKER("netherworker", "Nether Mine", JobType.NETHERWORKER, 0),
     BLACKSMITH("blacksmith", "Blacksmith's Hut", JobType.BLACKSMITH, 0),
     FLETCHER("fletcher", "Fletcher's Hut", JobType.FLETCHER, 0),
-    STONE_SMELTERY("stonesmeltery", "Stone Smeltery", JobType.STONE_SMELTER, 0);
+    STONE_SMELTERY("stonesmeltery", "Stone Smeltery", JobType.STONE_SMELTER, 0),
+    BARRACKS("barracks", "Barracks", JobType.GUARD, 0),
+    HOSPITAL("hospital", "Hospital", JobType.HEALER, 0),
+    QUARRY("quarry", "Quarry", JobType.QUARRIER, 0),
+    STASH("stash", "Stash", null, 0);
 
     public static final int MAX_LEVEL = 5;
 
@@ -93,6 +97,9 @@ public enum BuildingType {
         }
         if (level == 0) {
             return 0;
+        }
+        if (this == BARRACKS) {
+            return 2 * level;
         }
         return job == JobType.GUARD || job == JobType.RESEARCHER ? level : 1;
     }

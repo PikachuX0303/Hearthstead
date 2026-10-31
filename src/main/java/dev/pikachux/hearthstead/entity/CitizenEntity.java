@@ -140,6 +140,7 @@ public class CitizenEntity extends PathfinderMob {
         });
         goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Monster.class, 8.0F, 0.8, 1.0, e -> job() != JobType.GUARD));
         goalSelector.addGoal(3, new CitizenEatGoal(this));
+        goalSelector.addGoal(3, new dev.pikachux.hearthstead.entity.ai.SeekHealingGoal(this));
         goalSelector.addGoal(4, new CitizenSleepGoal(this));
         goalSelector.addGoal(5, new OpenDoorGoal(this, true));
         goalSelector.addGoal(6, new LumberjackGoal(this));
@@ -176,6 +177,8 @@ public class CitizenEntity extends PathfinderMob {
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.BlacksmithGoal(this));
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.FletcherGoal(this));
         goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.StoneSmelterGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.HealerGoal(this));
+        goalSelector.addGoal(6, new dev.pikachux.hearthstead.entity.ai.QuarrierGoal(this));
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
         goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 6.0F));
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));

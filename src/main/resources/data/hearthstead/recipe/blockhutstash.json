@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "X": "minecraft:barrel"
+  },
+  "result": {
+    "id": "hearthstead:blockhutstash",
+    "count": 1
+  }
+}
