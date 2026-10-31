@@ -15,6 +15,7 @@ import dev.pikachux.hearthstead.blueprint.Blueprint;
 import dev.pikachux.hearthstead.blueprint.Construction;
 import dev.pikachux.hearthstead.colony.BuildingInfo;
 import dev.pikachux.hearthstead.colony.WorkOrder;
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -72,11 +73,29 @@ public final class ColonyCommands {
                                         .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
                                                 java.util.Arrays.stream(Research.values()).map(Research::id), builder))
                                         .executes(ColonyCommands::completeResearch))))
+                .then(Commands.literal("config")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.literal("reload").executes(ColonyCommands::reloadConfig)))
                 .then(Commands.literal("delete")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("id", IntegerArgumentType.integer(1)).executes(ColonyCommands::delete)));
         var node = dispatcher.register(root);
         dispatcher.register(Commands.literal("hs").redirect(node));
+    }
+
+    private static int reloadConfig(CommandContext<CommandSourceStack> ctx) {
+        List<String> problems = HearthsteadConfig.load();
+        if (problems.isEmpty()) {
+            ctx.getSource().sendSuccess(() -> Component.translatable("message.hearthstead.config_reloaded",
+                    HearthsteadConfig.FILE_NAME).withStyle(ChatFormatting.GREEN), true);
+            return 1;
+        }
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.hearthstead.config_problems",
+                HearthsteadConfig.FILE_NAME, problems.size()).withStyle(ChatFormatting.GOLD), true);
+        for (String problem : problems) {
+            ctx.getSource().sendSuccess(() -> Component.literal(" - " + problem).withStyle(ChatFormatting.GRAY), false);
+        }
+        return problems.size();
     }
 
     private static Colony ownColony(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity;
 
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.Hearthstead;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -243,7 +244,7 @@ public class CitizenEntity extends PathfinderMob {
         }
         syncFromData(data);
 
-        data.setSaturation(data.saturation() - HUNGER_RATE * (colony.research().has(Research.FEAST_DAYS) ? 0.7 : 1.0));
+        data.setSaturation(data.saturation() - HUNGER_RATE * HearthsteadConfig.HUNGER_RATE.get() * (colony.research().has(Research.FEAST_DAYS) ? 0.7 : 1.0));
         double happiness = 5.0;
         happiness += data.homePos() != null ? 2 : -2;
         happiness += data.job() != JobType.UNEMPLOYED ? 1 : 0;
@@ -289,7 +290,7 @@ public class CitizenEntity extends PathfinderMob {
         if (data == null) {
             return 1.0;
         }
-        double speed = 0.5 + data.happiness() / 10.0;
+        double speed = (0.5 + data.happiness() / 10.0) * HearthsteadConfig.WORK_SPEED.get();
         if (colony.research().has(Research.APPRENTICESHIP)) {
             speed *= 1.10;
         }

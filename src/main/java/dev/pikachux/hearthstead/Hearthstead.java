@@ -1,6 +1,7 @@
 package dev.pikachux.hearthstead;
 
 import dev.pikachux.hearthstead.command.ColonyCommands;
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.event.ColonyEvents;
 import dev.pikachux.hearthstead.event.WelcomeMessage;
 import dev.pikachux.hearthstead.network.ModNetworking;
@@ -9,6 +10,7 @@ import dev.pikachux.hearthstead.registry.ModBlocks;
 import dev.pikachux.hearthstead.registry.ModEntities;
 import dev.pikachux.hearthstead.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,9 @@ public class Hearthstead implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        HearthsteadConfig.load();
+        // Pick up edits made while the game was running, for example between two worlds.
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> HearthsteadConfig.load());
         ModBlocks.register();
         ModItems.register();
         ModEntities.register();

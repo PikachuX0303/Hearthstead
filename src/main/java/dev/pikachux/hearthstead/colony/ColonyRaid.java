@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.colony;
 
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.entity.raider.AbstractBarbarian;
 import dev.pikachux.hearthstead.registry.ModEntities;
 import net.minecraft.ChatFormatting;
@@ -36,9 +37,6 @@ import java.util.UUID;
  * (raids started by command during the day last ten minutes).
  */
 public class ColonyRaid {
-    /** Citizens a colony needs before it attracts raids. */
-    public static final int MIN_CITIZENS = 4;
-    private static final int MAX_RAIDERS = 16;
     private static final long DAY = 24000;
     private static final long DUSK = 13000;
     private static final long DAWN = 23500;
@@ -93,10 +91,11 @@ public class ColonyRaid {
             return;
         }
         long night = time / DAY;
-        if (enabled && timeOfDay >= DUSK && timeOfDay < DUSK + 1000 && night != lastNight) {
+        if (enabled && HearthsteadConfig.RAIDS_ENABLED.get() && timeOfDay >= DUSK && timeOfDay < DUSK + 1000 && night != lastNight) {
             lastNight = night;
             colony.markDirty();
-            if (canBeRaided(colony, level) && level.getRandom().nextFloat() < 0.2F + 0.15F * quietNights) {
+            if (canBeRaided(colony, level) && level.getRandom().nextDouble() < HearthsteadConfig.RAID_CHANCE.get()
+                    + HearthsteadConfig.RAID_CHANCE_INCREASE.get() * quietNights) {
                 start(server, colony, level);
             } else {
                 quietNights++;
@@ -105,7 +104,7 @@ public class ColonyRaid {
     }
 
     private static boolean canBeRaided(Colony colony, ServerLevel level) {
-        return level.getDifficulty() != Difficulty.PEACEFUL && colony.citizens().size() >= MIN_CITIZENS;
+        return level.getDifficulty() != Difficulty.PEACEFUL && colony.citizens().size() >= HearthsteadConfig.RAID_MIN_CITIZENS.get();
     }
 
     // ---------------------------------------------------------------- start and end
@@ -121,7 +120,7 @@ public class ColonyRaid {
             return false;
         }
         int citizens = colony.citizens().size();
-        int size = Math.min(MAX_RAIDERS, 2 + citizens / 2);
+        int size = Math.min(HearthsteadConfig.RAID_MAX_RAIDERS.get(), 2 + citizens / 2);
         if (colony.research().has(Research.STONE_WALLS)) {
             size = Math.max(1, size * 3 / 4);
         }
@@ -244,7 +243,7 @@ public class ColonyRaid {
 
     @Nullable
     private static BlockPos findSpawn(Colony colony, ServerLevel level, RandomSource random) {
-        int distance = ColonyManager.COLONY_RADIUS - 12;
+        int distance = ColonyManager.colonyRadius() - 12;
         for (int attempt = 0; attempt < 16; attempt++) {
             double angle = random.nextDouble() * Math.PI * 2;
             BlockPos column = colony.center().offset((int) (Math.cos(angle) * distance), 0, (int) (Math.sin(angle) * distance));

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.colony;
 
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import dev.pikachux.hearthstead.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -32,11 +33,6 @@ import java.util.UUID;
  * A colony: a town hall, a set of huts and the citizens living there.
  */
 public class Colony {
-    /** Ticks between attempts to attract a new citizen. */
-    private static final int SPAWN_INTERVAL = 20 * 60;
-    /** Ticks a citizen may go unseen before it is respawned at the town hall. */
-    private static final int RESPAWN_DELAY = 20 * 30;
-
     private final ColonyManager manager;
     private final int id;
     private String name;
@@ -116,7 +112,7 @@ public class Colony {
         if (!dim.equals(dimension)) {
             return false;
         }
-        int radius = ColonyManager.COLONY_RADIUS;
+        int radius = ColonyManager.colonyRadius();
         return Math.abs(pos.getX() - center.getX()) <= radius && Math.abs(pos.getZ() - center.getZ()) <= radius;
     }
 
@@ -287,7 +283,7 @@ public class Colony {
         assignJobs();
         raid.tick(server, this, level);
 
-        if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= SPAWN_INTERVAL) {
+        if (citizens.size() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get()) {
             spawnTimer = 0;
             addNewCitizen(level);
         }
@@ -297,7 +293,7 @@ public class Colony {
             if (entity instanceof CitizenEntity && entity.isAlive()) {
                 continue;
             }
-            if (data.entityUuid() == null || gameTime - data.lastSeen() > RESPAWN_DELAY) {
+            if (data.entityUuid() == null || gameTime - data.lastSeen() > 20L * HearthsteadConfig.RESPAWN_DELAY.get()) {
                 spawnCitizen(level, data);
             }
         }

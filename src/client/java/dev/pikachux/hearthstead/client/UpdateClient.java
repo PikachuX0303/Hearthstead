@@ -1,7 +1,7 @@
 package dev.pikachux.hearthstead.client;
 
 import dev.pikachux.hearthstead.client.gui.UpdatePromptScreen;
-import dev.pikachux.hearthstead.update.UpdateSettings;
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.update.Updater;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -24,15 +24,16 @@ public final class UpdateClient {
         if (Updater.installedJar().isEmpty()) {
             return;
         }
-        if (UpdateSettings.automaticUpdates().orElse(false)) {
+        if (HearthsteadConfig.AUTOMATIC_UPDATES.is("on")) {
             check();
         }
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!asked && client.screen instanceof TitleScreen title) {
                 asked = true;
-                if (UpdateSettings.automaticUpdates().isEmpty()) {
+                if (HearthsteadConfig.AUTOMATIC_UPDATES.is("ask")) {
                     client.setScreen(new UpdatePromptScreen(title, enabled -> {
-                        UpdateSettings.setAutomaticUpdates(enabled);
+                        HearthsteadConfig.AUTOMATIC_UPDATES.set(enabled ? "on" : "off");
+                        HearthsteadConfig.save();
                         if (enabled) {
                             check();
                         }

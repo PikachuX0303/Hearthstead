@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.colony;
 
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -23,9 +24,15 @@ import java.util.UUID;
  */
 public class ColonyManager extends SavedData {
     /** Half the side length of the square area a colony claims. */
-    public static final int COLONY_RADIUS = 64;
+    /** Blocks from the town hall to the edge of a colony; set in the config. */
+    public static int colonyRadius() {
+        return HearthsteadConfig.COLONY_RADIUS.get();
+    }
     /** Minimum distance between two town halls. */
-    public static final int MIN_COLONY_DISTANCE = COLONY_RADIUS * 2 + 16;
+    /** Smallest distance between two town halls on each axis. */
+    public static int minColonyDistance() {
+        return colonyRadius() * 2 + 16;
+    }
 
     private static final Codec<ColonyManager> CODEC = CompoundTag.CODEC.xmap(ColonyManager::load, ColonyManager::save);
     public static final SavedDataType<ColonyManager> TYPE = new SavedDataType<>(
@@ -97,8 +104,8 @@ public class ColonyManager extends SavedData {
     public boolean canFoundAt(ResourceKey<Level> dimension, BlockPos pos) {
         for (Colony colony : colonies.values()) {
             if (colony.dimension().equals(dimension)
-                    && Math.abs(colony.center().getX() - pos.getX()) < MIN_COLONY_DISTANCE
-                    && Math.abs(colony.center().getZ() - pos.getZ()) < MIN_COLONY_DISTANCE) {
+                    && Math.abs(colony.center().getX() - pos.getX()) < minColonyDistance()
+                    && Math.abs(colony.center().getZ() - pos.getZ()) < minColonyDistance()) {
                 return false;
             }
         }

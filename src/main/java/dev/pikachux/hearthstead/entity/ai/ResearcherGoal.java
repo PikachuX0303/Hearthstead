@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -54,6 +55,7 @@ public class ResearcherGoal extends WorkGoal {
         if (timer % 100 == 0) {
             level().sendParticles(ParticleTypes.ENCHANT, citizen.getX(), citizen.getY() + 2, citizen.getZ(), 6, 0.4, 0.3, 0.4, 0.5);
         }
-        colony.research().addProgress(level().getServer(), colony, citizen.workSpeed());
+        colony.research().addProgress(level().getServer(), colony,
+                citizen.workSpeed() * HearthsteadConfig.RESEARCH_SPEED.get());
     }
 }

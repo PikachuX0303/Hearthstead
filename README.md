@@ -22,8 +22,8 @@ On the first start Hearthstead asks whether it may update itself. If you turn th
 checks the Releases page each time the game starts. When there is a newer release for your
 Minecraft version, it downloads the jar into your `mods` folder (checking its size and SHA-256
 checksum) and shows a message. The new version replaces the old jar when you close the game
-and is used from the next start. Turn it on or off later in `config/hearthstead-updates.json`
-(`{"automaticUpdates": true}` or `false`); delete that file to be asked again.
+and is used from the next start. Change your answer later with `automaticUpdates` in the
+[config file](#configuration).
 
 ## Status: early alpha
 
@@ -33,7 +33,7 @@ raids. Things that are **not there yet** (some of which MineColonies has):
 - Decoration blueprints and hand-built style packs. The five styles are generated.
 - Hut-specific settings pages (for example, choosing which crops a farmer plants).
 - Some jobs: no Enchanter, Alchemist, Mechanic, Planter, Netherworker, and so on.
-- Most of the original research tree, pirates and other raider cultures, request system, colony events, permissions GUI, config file.
+- Most of the original research tree, pirates and other raider cultures, request system, colony events, permissions GUI.
 
 ## Features
 
@@ -154,6 +154,31 @@ All huts are also in the **Hearthstead** creative tab.
 - `raid <start|stop>`: starts or stops a raid on the colony you are in (operators only)
 - `research complete <research>`: finishes a research immediately (operators only)
 - `delete <id>`: deletes a colony (operators only)
+- `config reload`: reads `config/hearthstead.toml` again and reports invalid values (operators only)
+
+## Configuration
+
+Settings are in `config/hearthstead.toml`, created with every option, its description, allowed
+range and default on the first start. Edit a value after the `=` and restart the world, or run
+`/hearthstead config reload`. Invalid values are reported and replaced by their defaults, and
+options from newer versions are added automatically. On a server the server's file counts; only
+`automaticUpdates` is read by each player's game.
+
+| Section | Option | Default | What it does |
+| --- | --- | --- | --- |
+| `general` | `automaticUpdates` | `"ask"` | `"on"`, `"off"` or `"ask"` on the title screen ([details](#automatic-updates)) |
+| `general` | `welcomeMessage` | `true` | Welcome message with version and links when a player joins |
+| `colonies` | `colonyRadius` | `64` | Blocks from the town hall to the colony's edge (32 to 256) |
+| `citizens` | `newCitizenInterval` | `60` | Seconds between new settlers while there are free beds |
+| `citizens` | `respawnDelay` | `30` | Seconds before a lost citizen returns to the town hall |
+| `citizens` | `hungerRate` | `1.0` | How fast citizens get hungry (0 = never) |
+| `citizens` | `workSpeed` | `1.0` | How fast citizens build, craft, farm and so on |
+| `citizens` | `researchSpeed` | `1.0` | How fast research progresses |
+| `raids` | `enabled` | `true` | Whether colonies can be raided at all |
+| `raids` | `minCitizens` | `4` | Citizens a colony needs before raids start |
+| `raids` | `maxRaiders` | `16` | Largest raid |
+| `raids` | `nightlyChance` | `0.2` | Chance of a raid at nightfall |
+| `raids` | `chanceIncreasePerQuietNight` | `0.15` | Added to the chance after every night without a raid |
 
 ## Building styles
 

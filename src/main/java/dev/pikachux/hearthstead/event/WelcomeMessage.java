@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.event;
 
+import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.Hearthstead;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -29,7 +30,11 @@ public final class WelcomeMessage {
     }
 
     public static void register() {
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> send(handler.getPlayer()));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            if (HearthsteadConfig.WELCOME_MESSAGE.get()) {
+                send(handler.getPlayer());
+            }
+        });
     }
 
     public static void send(ServerPlayer player) {

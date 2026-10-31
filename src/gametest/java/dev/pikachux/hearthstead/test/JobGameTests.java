@@ -255,7 +255,9 @@ public class JobGameTests {
         pen(helper);
         // More pigs than a level 1 hut keeps, so the herd is over its limit.
         for (int i = 0; i < 6; i++) {
-            helper.spawn(EntityType.PIG, new BlockPos(22 + i % 3 * 2, 1, 22 + i / 3 * 2));
+            // Frozen in place: the test pen does not hold animals (its fences stand a block above
+            // the floor), and a herd that wanders out of the work radius no longer counts as full.
+            helper.spawn(EntityType.PIG, new BlockPos(22 + i % 3 * 2, 1, 22 + i / 3 * 2)).setNoAi(true);
         }
         CitizenData citizen = colony.addNewCitizen(helper.getLevel());
         helper.succeedWhen(() -> {
@@ -358,7 +360,9 @@ public class JobGameTests {
         TestColonies.give(helper, hut, Items.IRON_SWORD, 1);
         pen(helper);
         for (int i = 0; i < 6; i++) {
-            helper.spawn(EntityType.RABBIT, new BlockPos(22 + i % 3 * 2, 1, 22 + i / 3 * 2));
+            // Frozen in place: the test pen does not hold animals (its fences stand a block above
+            // the floor), and a herd that wanders out of the work radius no longer counts as full.
+            helper.spawn(EntityType.RABBIT, new BlockPos(22 + i % 3 * 2, 1, 22 + i / 3 * 2)).setNoAi(true);
         }
         CitizenData citizen = colony.addNewCitizen(helper.getLevel());
         helper.succeedWhen(() -> {

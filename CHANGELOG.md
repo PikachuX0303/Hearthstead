@@ -5,6 +5,27 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.19.0-alpha] - 2026-10-31
+
+### Added
+- **Config file** `config/hearthstead.toml`, created on the first start with a description,
+  allowed range and default for every option. Settings: automatic updates, welcome message,
+  colony radius, settler arrival and citizen respawn times, hunger rate, work speed, research
+  speed, and raids (on/off, minimum citizens, largest raid, nightly chance and how it grows).
+  Invalid values are reported in the log and replaced by their defaults; options added in
+  later versions are filled in automatically.
+- `/hearthstead config reload` (operators) reads the file again without restarting and lists
+  any invalid values.
+
+### Changed
+- The automatic updates choice moved from `config/hearthstead-updates.json` into
+  `hearthstead.toml` (`automaticUpdates = "on"`, `"off"` or `"ask"`). An existing answer is
+  carried over and the old file is removed.
+
+### Fixed
+- The swineherd and rabbit herder game tests failed at random (and could stop a release from
+  being published): the animals walked out of the test pen and the herd no longer counted as full.
+
 ## [0.18.0-alpha] - 2026-10-31
 
 ### Added
