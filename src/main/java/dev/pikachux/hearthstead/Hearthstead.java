@@ -9,6 +9,7 @@ import dev.pikachux.hearthstead.registry.LegacyIds;
 import dev.pikachux.hearthstead.registry.ModBlocks;
 import dev.pikachux.hearthstead.registry.ModEntities;
 import dev.pikachux.hearthstead.registry.ModItems;
+import dev.pikachux.hearthstead.worldgen.ModWorldgen;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resources.Identifier;
@@ -34,6 +35,7 @@ public class Hearthstead implements ModInitializer {
         ModBlocks.register();
         ModItems.register();
         ModEntities.register();
+        ModWorldgen.register();
         LegacyIds.register();
         ColonyEvents.register();
         WelcomeMessage.register();

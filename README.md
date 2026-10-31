@@ -159,6 +159,20 @@ All huts are also in the **Hearthstead** creative tab.
 - `delete <id>`: deletes a colony (operators only)
 - `config reload`: reads `config/hearthstead.toml` again and reports invalid values (operators only)
 
+## Abandoned settlements
+
+Out in the world (plains, meadows, forests, taiga, savanna, snowy plains and cherry groves) you
+may come across an **abandoned settlement**: an old camp around a **Town Hall** that belongs to
+no one, with collapsed hut foundations, a cold fire pit and a chest of supplies (food, wood,
+stone, tools, sometimes a hut block, a Build Tool or a Clipboard). They are about as rare as
+pillager outposts and never generate right next to villages.
+
+**Right-click the town hall** to claim it: your colony is founded right there, just as if you
+had placed the town hall yourself (you cannot claim one if you already own a colony or it is
+too close to another colony). `/locate structure hearthstead:abandoned_settlement` finds the
+nearest one. Turn them off or change how often they appear in the `[worldgen]` section of the
+config.
+
 ## Configuration
 
 Settings are in `config/hearthstead.toml`, created with every option, its description, allowed
@@ -182,6 +196,8 @@ options from newer versions are added automatically. On a server the server's fi
 | `raids` | `maxRaiders` | `16` | Largest raid |
 | `raids` | `nightlyChance` | `0.2` | Chance of a raid at nightfall |
 | `raids` | `chanceIncreasePerQuietNight` | `0.15` | Added to the chance after every night without a raid |
+| `worldgen` | `abandonedSettlements` | `true` | Generate abandoned settlements in new chunks |
+| `worldgen` | `settlementChance` | `0.35` | How likely each possible spot gets one |
 
 ## Building styles
 

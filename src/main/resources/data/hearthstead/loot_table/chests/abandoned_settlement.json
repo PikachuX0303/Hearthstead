@@ -1,0 +1,47 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": { "type": "minecraft:uniform", "min": 4, "max": 7 },
+      "entries": [
+        { "type": "minecraft:item", "name": "minecraft:bread", "weight": 15,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2, "max": 6 } }] },
+        { "type": "minecraft:item", "name": "minecraft:oak_log", "weight": 15,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 4, "max": 12 } }] },
+        { "type": "minecraft:item", "name": "minecraft:oak_planks", "weight": 12,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 8, "max": 24 } }] },
+        { "type": "minecraft:item", "name": "minecraft:cobblestone", "weight": 10,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 8, "max": 24 } }] },
+        { "type": "minecraft:item", "name": "minecraft:torch", "weight": 10,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 4, "max": 12 } }] },
+        { "type": "minecraft:item", "name": "minecraft:wheat_seeds", "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 3, "max": 10 } }] },
+        { "type": "minecraft:item", "name": "minecraft:glass_pane", "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2, "max": 8 } }] },
+        { "type": "minecraft:item", "name": "minecraft:iron_ingot", "weight": 5,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1, "max": 4 } }] },
+        { "type": "minecraft:item", "name": "minecraft:stone_axe", "weight": 4 },
+        { "type": "minecraft:item", "name": "minecraft:stone_pickaxe", "weight": 4 },
+        { "type": "minecraft:item", "name": "minecraft:stone_hoe", "weight": 3 }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "hearthstead:blockhutresidence", "weight": 4 },
+        { "type": "minecraft:item", "name": "hearthstead:blockhutbuilder", "weight": 4 },
+        { "type": "minecraft:item", "name": "hearthstead:blockhutlumberjack", "weight": 3 },
+        { "type": "minecraft:item", "name": "hearthstead:blockhutfarmer", "weight": 3 },
+        { "type": "minecraft:empty", "weight": 2 }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "hearthstead:build_tool", "weight": 3 },
+        { "type": "minecraft:item", "name": "hearthstead:clipboard", "weight": 2 },
+        { "type": "minecraft:empty", "weight": 3 }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,17 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.22.0-alpha] - 2026-10-31
+
+### Added
+- **Abandoned settlements** generate in new chunks of plains, meadows, forests, taiga, savanna,
+  snowy plains and cherry groves: a ruined camp around an unclaimed Town Hall, with collapsed
+  hut foundations, a fire pit and a chest of starter supplies (sometimes a hut block, a Build
+  Tool or a Clipboard). About as rare as pillager outposts, and never right next to villages.
+- Right-click a town hall that belongs to no colony to claim it and found your colony there
+  (same rules as placing one).
+- Config section `[worldgen]`: `abandonedSettlements` (on/off) and `settlementChance`.
+
 ## [0.21.0-alpha] - 2026-10-31
 
 ### Added

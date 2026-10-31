@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "hearthstead:abandoned_settlement",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 32,
+    "separation": 10,
+    "salt": 1748205391,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 6
+    }
+  }
+}

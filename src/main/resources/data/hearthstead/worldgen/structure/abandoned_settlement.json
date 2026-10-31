@@ -1,0 +1,7 @@
+{
+  "type": "hearthstead:abandoned_settlement",
+  "biomes": "#hearthstead:has_structure/abandoned_settlement",
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin",
+  "spawn_overrides": {}
+}

@@ -91,6 +91,18 @@ public final class HearthsteadConfig {
             "Added to the chance for every night without a raid, so raids do not stay away for long.",
             0.15, 0.0, 1.0));
 
+    // ---------------------------------------------------------------- world generation
+
+    private static final String WORLDGEN = section("worldgen", "Structures generated in new parts of the world.");
+
+    public static final BoolOption SETTLEMENTS = add(new BoolOption(WORLDGEN, "abandonedSettlements",
+            "Generate abandoned settlements: a ruined camp with an unclaimed town hall (right-click it to\n"
+                    + "found your colony there) and a chest of supplies.", true));
+
+    public static final DoubleOption SETTLEMENT_CHANCE = add(new DoubleOption(WORLDGEN, "settlementChance",
+            "How likely a possible spot (one every 32 chunks or so) gets a settlement, from 0.0 to 1.0.\n"
+                    + "0.35 is about as rare as a pillager outpost.", 0.35, 0.0, 1.0));
+
     private HearthsteadConfig() {
     }
 

@@ -117,9 +117,8 @@ public class HutBlock extends BaseEntityBlock {
         ColonyManager manager = ColonyManager.get(serverLevel.getServer());
         Colony colony;
         if (type == BuildingType.TOWN_HALL) {
-            colony = manager.createColony(player, level.dimension(), pos);
-            player.sendSystemMessage(Component.translatable("message.hearthstead.colony_founded", colony.name())
-                    .withStyle(ChatFormatting.GREEN));
+            foundColony(serverLevel, pos, player);
+            return;
         } else {
             colony = manager.colonyAt(level.dimension(), pos);
             if (colony == null) {
@@ -137,6 +136,35 @@ public class HutBlock extends BaseEntityBlock {
         }
     }
 
+    /** Founds a colony around the town hall at {@code pos}, owned by the player. */
+    public static Colony foundColony(ServerLevel level, BlockPos pos, Player player) {
+        Colony colony = ColonyManager.get(level.getServer()).createColony(player, level.dimension(), pos);
+        player.displayClientMessage(Component.translatable("message.hearthstead.colony_founded", colony.name())
+                .withStyle(ChatFormatting.GREEN), false);
+        if (level.getBlockEntity(pos) instanceof HutBlockEntity hut) {
+            hut.setColonyId(colony.id());
+        }
+        return colony;
+    }
+
+    /**
+     * Claims a town hall that belongs to no colony (one found in an abandoned settlement): the
+     * player founds a colony there, if they could have placed a town hall at this spot.
+     * Returns null on success, otherwise a translation key.
+     */
+    @Nullable
+    public String claim(ServerLevel level, BlockPos pos, Player player) {
+        if (type != BuildingType.TOWN_HALL) {
+            return "message.hearthstead.not_in_colony";
+        }
+        String error = placementError(level, pos, player);
+        if (error != null) {
+            return error;
+        }
+        foundColony(level, pos, player);
+        return null;
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level instanceof ServerLevel serverLevel)) {
@@ -145,6 +173,14 @@ public class HutBlock extends BaseEntityBlock {
         ColonyManager manager = ColonyManager.get(serverLevel.getServer());
         Colony colony = manager.colonyAt(level.dimension(), pos);
         BuildingData building = colony == null ? null : colony.building(pos);
+        if (colony == null && type == BuildingType.TOWN_HALL) {
+            String error = claim(serverLevel, pos, player);
+            if (error != null) {
+                player.displayClientMessage(Component.translatable(error).withStyle(ChatFormatting.RED), true);
+                return InteractionResult.FAIL;
+            }
+            return InteractionResult.CONSUME;
+        }
         if (colony == null || building == null) {
             return InteractionResult.PASS;
         }
