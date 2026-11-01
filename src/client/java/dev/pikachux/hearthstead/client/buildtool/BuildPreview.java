@@ -29,6 +29,8 @@ public final class BuildPreview {
     private final List<String> styles;
     private BlockPos pos;
     private Direction facing;
+    /** A move preview: the existing hut's current level, which can be moved and rotated. */
+    private boolean moving;
 
     public BuildPreview(BuildingType type, int level, Blueprint blueprint, BlockPos pos, Direction facing,
                         @Nullable BlockPos existingHut, String style, List<String> styles) {
@@ -99,8 +101,20 @@ public final class BuildPreview {
         return existingHut;
     }
 
+    /** An upgrade preview, fixed to the existing hut. */
     public boolean isUpgrade() {
-        return existingHut != null;
+        return existingHut != null && !moving;
+    }
+
+    public boolean isMove() {
+        return moving;
+    }
+
+    /** A preview for moving the existing hut, starting where it stands. */
+    public static BuildPreview move(BuildingType type, int level, Blueprint blueprint, BlockPos hut, Direction facing, String style) {
+        BuildPreview preview = new BuildPreview(type, null, level, blueprint, hut, facing, hut, style, List.of(style));
+        preview.moving = true;
+        return preview;
     }
 
     public BlockPos pos() {

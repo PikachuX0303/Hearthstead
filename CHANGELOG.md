@@ -5,6 +5,20 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.39.0-alpha] - 2026-11-01
+
+### Added
+- **Repair:** a Repair button on the hut's Construction tab orders a builder to put back what is
+  missing from the hut's current level.
+- **Deconstruct:** a Deconstruct button (click twice) orders a builder to take the hut down; its
+  blocks, contents and the hut block go to the Builder's Hut. Not for the town hall.
+- **Move huts** with the Build Tool: Move Hut on an existing hut's preview, then Move Here. The
+  hut moves with its contents, workers and residents, and builders clear the old site and
+  rebuild it at the new spot.
+
+### Fixed
+- Game tests keep the weather clear, so citizens don't go to bed during a test's thunderstorm.
+
 ## [0.38.0-alpha] - 2026-11-01
 
 ### Added

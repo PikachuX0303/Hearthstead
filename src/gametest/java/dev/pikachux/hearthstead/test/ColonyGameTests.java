@@ -98,7 +98,12 @@ public class ColonyGameTests {
         }
 
         CitizenData citizen = colony.addNewCitizen(level);
-        helper.onEachTick(() -> level.setDayTime(1000));
+        helper.onEachTick(() -> {
+            level.setDayTime(1000);
+            if (level.isRaining() || level.isThundering()) {
+                level.setWeatherParameters(24000, 0, false, false);
+            }
+        });
         helper.succeedWhen(() -> {
             if (citizen.job() != JobType.BUILDER) {
                 throw helper.assertionException("Citizen did not become a builder");

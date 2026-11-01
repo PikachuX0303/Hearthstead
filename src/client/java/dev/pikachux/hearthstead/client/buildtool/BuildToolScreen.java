@@ -5,6 +5,7 @@ import dev.pikachux.hearthstead.client.gui.ColonyButton;
 import dev.pikachux.hearthstead.client.gui.ColonyScreen;
 import dev.pikachux.hearthstead.network.BlueprintRequestPayload;
 import dev.pikachux.hearthstead.network.HutActionPayload;
+import dev.pikachux.hearthstead.network.MoveHutPayload;
 import dev.pikachux.hearthstead.network.PlaceDecorationPayload;
 import dev.pikachux.hearthstead.network.PlaceHutPayload;
 import dev.pikachux.hearthstead.registry.ModBlocks;
@@ -56,7 +57,7 @@ public class BuildToolScreen extends ColonyScreen {
 
         Component confirm = preview.isUpgrade() ? Component.translatable("gui.hearthstead.build_tool.order_upgrade")
                 : Component.translatable(preview.isDecoration() ? "gui.hearthstead.build_tool.order_decoration"
-                : "gui.hearthstead.build_tool.place");
+                : preview.isMove() ? "gui.hearthstead.build_tool.move_here" : "gui.hearthstead.build_tool.place");
         addRenderableWidget(ColonyButton.themed(confirm, b -> confirm()).bounds(left + panelWidth - 98, y, 90, 20).build());
 
         // Style switcher: asks the server for the same building in another style.
@@ -68,6 +69,13 @@ public class BuildToolScreen extends ColonyScreen {
         addRenderableWidget(next);
         addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.build_tool.cancel"), b -> cancel())
                 .bounds(left + panelWidth - 98, y + BUTTON + 2, 90, 20).build());
+        if (preview.isUpgrade()) {
+            // From an existing hut's preview, switch to moving it.
+            addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.build_tool.move"),
+                            b -> ClientPlayNetworking.send(BlueprintRequestPayload.move(preview.existingHut())))
+                    .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("gui.hearthstead.build_tool.move.tooltip")))
+                    .bounds(left + panelWidth - 98, y + 2 * (BUTTON + 2), 90, 20).build());
+        }
     }
 
     private void add(Component label, String tooltipKey, int x, int y, boolean active, Runnable action) {
@@ -112,7 +120,9 @@ public class BuildToolScreen extends ColonyScreen {
         if (preview == null) {
             return;
         }
-        if (preview.isDecoration()) {
+        if (preview.isMove()) {
+            ClientPlayNetworking.send(new MoveHutPayload(preview.existingHut(), preview.pos(), preview.facing()));
+        } else if (preview.isDecoration()) {
             ClientPlayNetworking.send(new PlaceDecorationPayload(preview.decoration(), preview.pos(), preview.facing(), preview.style()));
         } else if (preview.isUpgrade()) {
             ClientPlayNetworking.send(new HutActionPayload(preview.existingHut(), HutActionPayload.Action.UPGRADE, preview.style()));
@@ -168,6 +178,9 @@ public class BuildToolScreen extends ColonyScreen {
         if (preview.isDecoration()) {
             text(g, Component.translatable("gui.hearthstead.build_tool.previewing_decoration",
                     ClientDecorations.displayName(preview.decoration())), left + 8, top + 8, HEADER);
+        } else if (preview.isMove()) {
+            text(g, Component.translatable("gui.hearthstead.build_tool.moving",
+                    Component.translatable(ModBlocks.HUTS.get(preview.type()).getDescriptionId())), left + 8, top + 8, HEADER);
         } else {
             Component name = Component.translatable(ModBlocks.HUTS.get(preview.type()).getDescriptionId());
             text(g, Component.translatable("gui.hearthstead.build_tool.previewing", name, preview.level()), left + 8, top + 8, HEADER);
@@ -177,7 +190,8 @@ public class BuildToolScreen extends ColonyScreen {
         } else {
             text(g, Component.translatable("gui.hearthstead.build_tool.hint"), left + 8, top + 19, TEXT_LIGHT);
             text(g, Component.translatable(preview.isDecoration() ? "gui.hearthstead.build_tool.hint2_decoration"
-                    : "gui.hearthstead.build_tool.hint2"), left + 8, top + 29, TEXT_LIGHT);
+                    : preview.isMove() ? "gui.hearthstead.build_tool.hint2_move" : "gui.hearthstead.build_tool.hint2"),
+                    left + 8, top + 29, TEXT_LIGHT);
         }
         int styleY = top + 40 + 2 * (BUTTON + 2) + 2;
         centered(g, Component.translatable("gui.hearthstead.style", Styles.displayName(preview.style())), left + 8 + 94, styleY + 6, TEXT);

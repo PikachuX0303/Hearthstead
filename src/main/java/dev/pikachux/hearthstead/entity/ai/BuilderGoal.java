@@ -125,6 +125,11 @@ public class BuilderGoal extends WorkGoal {
             return;
         }
         depositAll();
+        if (order.kind() == WorkOrder.Kind.REMOVE) {
+            // Taking things down needs no materials.
+            state = State.BUILD;
+            return;
+        }
         Map<Item, Integer> needed = new LinkedHashMap<>();
         Item first = null;
         for (int i = index; i < plan.size() && needed.size() <= MAX_CARRIED_TYPES; i++) {
@@ -161,7 +166,9 @@ public class BuilderGoal extends WorkGoal {
             state = State.PREPARE;
             return;
         }
-        while (index < plan.size() && Construction.isDone(level(), plan.get(index))) {
+        boolean removal = order.kind() == WorkOrder.Kind.REMOVE;
+        while (index < plan.size() && (removal ? Construction.isRemoved(level(), plan.get(index))
+                : Construction.isDone(level(), plan.get(index)))) {
             index++;
         }
         if (index >= plan.size()) {
@@ -169,6 +176,10 @@ public class BuilderGoal extends WorkGoal {
             return;
         }
         Blueprint.Placement step = plan.get(index);
+        if (removal) {
+            takeDown(colony, step);
+            return;
+        }
         Item item = Construction.requiredItem(step.state());
         if (item != null && citizen.inventory().countItem(item) == 0) {
             state = State.RETURN;
@@ -210,6 +221,44 @@ public class BuilderGoal extends WorkGoal {
         }
     }
 
+    /** Takes one block of a removal down, keeping it (and whatever was stored in it) as items. */
+    private void takeDown(Colony colony, Blueprint.Placement step) {
+        citizen.setStatus(BuildingInfo.describe(colony, order));
+        if (!walkTo(step.pos(), 4.5)) {
+            return;
+        }
+        if (++timer < breakDelay(colony.research().has(Research.SWIFT_CONSTRUCTION) ? 4 : 6)) {
+            return;
+        }
+        timer = 0;
+        BlockState current = level().getBlockState(step.pos());
+        List<ItemStack> recovered = new java.util.ArrayList<>();
+        if (level().getBlockEntity(step.pos()) instanceof net.minecraft.world.Container container) {
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                ItemStack stored = container.removeItemNoUpdate(i);
+                if (!stored.isEmpty()) {
+                    recovered.add(stored);
+                }
+            }
+        }
+        Item item = Construction.requiredItem(current);
+        if (item != null) {
+            recovered.add(new ItemStack(item));
+        }
+        level().destroyBlock(step.pos(), false, citizen);
+        for (ItemStack stack : recovered) {
+            ItemStack rest = citizen.inventory().addItem(stack);
+            if (!rest.isEmpty()) {
+                citizen.spawnAtLocation(level(), rest);
+            }
+        }
+        citizen.swing(InteractionHand.MAIN_HAND);
+        index++;
+        if (inventoryFull()) {
+            state = State.RETURN;
+        }
+    }
+
     private void consume(Item item) {
         for (int i = 0; i < citizen.inventory().getContainerSize(); i++) {
             ItemStack stack = citizen.inventory().getItem(i);
@@ -222,7 +271,14 @@ public class BuilderGoal extends WorkGoal {
 
     private void finish(Colony colony) {
         BuildingData target = order.isDecoration() ? null : colony.building(order.buildingPos());
-        if (order.isDecoration()) {
+        if (order.kind() == WorkOrder.Kind.REMOVE) {
+            finishRemoval(colony, target);
+        } else if (order.kind() == WorkOrder.Kind.REPAIR) {
+            if (target != null) {
+                colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.repair_done",
+                        target.type().displayName()).withStyle(ChatFormatting.GREEN));
+            }
+        } else if (order.isDecoration()) {
             colony.addDecoration(new Decoration(order.decoration(), order.buildingPos(), order.facing(), order.style()));
             colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.decoration_done",
                     Component.translatableWithFallback("decoration.hearthstead." + order.decoration(),
@@ -236,6 +292,34 @@ public class BuilderGoal extends WorkGoal {
         order = null;
         plan = null;
         state = State.RETURN;
+    }
+
+    /** The last step of a removal: a demolished hut's block and contents go to the builder's hut. */
+    private void finishRemoval(Colony colony, @Nullable BuildingData target) {
+        String name = order.hutType() == null ? "?" : order.hutType().displayName();
+        if (!order.demolish()) {
+            colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.site_cleared", name)
+                    .withStyle(ChatFormatting.GREEN));
+            return;
+        }
+        BlockPos pos = order.buildingPos();
+        List<ItemStack> recovered = new java.util.ArrayList<>();
+        if (level().getBlockEntity(pos) instanceof net.minecraft.world.Container hut) {
+            for (int i = 0; i < hut.getContainerSize(); i++) {
+                ItemStack stored = hut.removeItemNoUpdate(i);
+                if (!stored.isEmpty()) {
+                    recovered.add(stored);
+                }
+            }
+        }
+        if (level().getBlockState(pos).getBlock() instanceof HutBlock hutBlock) {
+            recovered.add(new ItemStack(hutBlock));
+        }
+        colony.removeBuilding(pos);
+        level().setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        recovered.forEach(this::storeInHut);
+        colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.demolish_done", name)
+                .withStyle(ChatFormatting.GREEN));
     }
 
     private void idle(int ticks) {

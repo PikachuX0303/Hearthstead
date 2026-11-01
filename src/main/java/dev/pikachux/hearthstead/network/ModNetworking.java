@@ -45,6 +45,7 @@ public final class ModNetworking {
         PayloadTypeRegistry.playC2S().register(BlueprintRequestPayload.TYPE, BlueprintRequestPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(PlaceHutPayload.TYPE, PlaceHutPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(PlaceDecorationPayload.TYPE, PlaceDecorationPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(MoveHutPayload.TYPE, MoveHutPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(DecorationsPayload.TYPE, DecorationsPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(HutActionPayload.TYPE, (payload, context) -> handle(context.player(), payload));
         ServerPlayNetworking.registerGlobalReceiver(PermissionActionPayload.TYPE,
@@ -55,6 +56,8 @@ public final class ModNetworking {
                 (payload, context) -> BuildToolHandler.sendBlueprint(context.player(), payload));
         ServerPlayNetworking.registerGlobalReceiver(PlaceHutPayload.TYPE,
                 (payload, context) -> BuildToolHandler.placeHut(context.player(), payload));
+        ServerPlayNetworking.registerGlobalReceiver(MoveHutPayload.TYPE,
+                (payload, context) -> BuildToolHandler.moveHut(context.player(), payload));
         ServerPlayNetworking.registerGlobalReceiver(PlaceDecorationPayload.TYPE,
                 (payload, context) -> BuildToolHandler.placeDecoration(context.player(), payload));
     }
@@ -91,6 +94,18 @@ public final class ModNetworking {
                 WorkOrder order = colony.workOrder(building.pos());
                 if (order != null) {
                     colony.removeWorkOrder(order);
+                }
+            }
+            case REPAIR -> {
+                String error = BuildingInfo.requestRepair(player.level(), colony, building);
+                if (error != null) {
+                    player.displayClientMessage(Component.translatable(error).withStyle(ChatFormatting.RED), true);
+                }
+            }
+            case DEMOLISH -> {
+                String error = BuildingInfo.requestDemolish(player.level(), colony, building);
+                if (error != null) {
+                    player.displayClientMessage(Component.translatable(error).withStyle(ChatFormatting.RED), true);
                 }
             }
             case CANCEL_DECORATION -> {

@@ -40,6 +40,8 @@ public class BuildingScreen extends ColonyScreen {
 
     private BuildingViewPayload view;
     private Tab tab = Tab.OVERVIEW;
+    /** Set after the first click on Deconstruct; the second click orders it. */
+    private boolean confirmDemolish;
     private EditBox nameField;
     /** Research selected in the research tab, by id. */
     private String selectedResearch;
@@ -161,6 +163,28 @@ public class BuildingScreen extends ColonyScreen {
             }
         }
 
+        if (tab == Tab.CONSTRUCTION && !view.hasOrder() && view.level() > 0) {
+            int rowY = top + panelHeight - 52;
+            addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.repair"),
+                            b -> send(HutActionPayload.Action.REPAIR, ""))
+                    .tooltip(Tooltip.create(Component.translatable("gui.hearthstead.repair.tooltip")))
+                    .bounds(left + 82, rowY, 96, 18).build());
+            if (!view.buildingType().equals(dev.pikachux.hearthstead.colony.BuildingType.TOWN_HALL.id())) {
+                addRenderableWidget(ColonyButton.themed(Component.translatable(confirmDemolish ? "gui.hearthstead.demolish.confirm"
+                                : "gui.hearthstead.demolish"), b -> {
+                            if (confirmDemolish) {
+                                confirmDemolish = false;
+                                send(HutActionPayload.Action.DEMOLISH, "");
+                            } else {
+                                confirmDemolish = true;
+                                rebuildWidgets();
+                            }
+                        })
+                        .tooltip(Tooltip.create(Component.translatable("gui.hearthstead.demolish.tooltip")))
+                        .bounds(left + 182, rowY, 120, 18).build());
+            }
+        }
+
         if (tab == Tab.COLONY) {
             addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.permissions.open"),
                             b -> send(HutActionPayload.Action.OPEN_PERMISSIONS, ""))
@@ -227,8 +251,7 @@ public class BuildingScreen extends ColonyScreen {
             y += 2;
         }
         if (view.hasOrder()) {
-            Component order = Component.translatable(view.orderAssigned() ? "gui.hearthstead.order_in_progress"
-                    : "gui.hearthstead.order_waiting", view.orderLevel());
+            Component order = orderText();
             text(g, order, x, y, view.orderAssigned() ? GOOD : TEXT_LIGHT);
             y += 12;
         }
@@ -281,13 +304,22 @@ public class BuildingScreen extends ColonyScreen {
         }
     }
 
+    /** What the hut's work order is doing, for the overview and construction tabs. */
+    private Component orderText() {
+        String kind = switch (view.orderKind()) {
+            case "repair" -> "repair";
+            case "remove" -> "remove";
+            default -> "order";
+        };
+        return Component.translatable("gui.hearthstead." + kind + (view.orderAssigned() ? "_in_progress" : "_waiting"), view.orderLevel());
+    }
+
     private void renderConstruction(GuiGraphics g, int x, int y, int w, int bottom, int mouseX, int mouseY) {
         if (!view.hasOrder()) {
             wrapped(g, Component.translatable("gui.hearthstead.no_construction"), x, y, w, TEXT_LIGHT);
             return;
         }
-        text(g, Component.translatable(view.orderAssigned() ? "gui.hearthstead.order_in_progress"
-                : "gui.hearthstead.order_waiting", view.orderLevel()), x, y, view.orderAssigned() ? GOOD : TEXT_LIGHT);
+        text(g, orderText(), x, y, view.orderAssigned() ? GOOD : TEXT_LIGHT);
         y += 12;
         bar(g, x, y, w, 10, view.progressDone(), view.progressTotal(), 0xFF4CAF50);
         Component progress = Component.translatable("gui.hearthstead.progress", view.progressDone(), view.progressTotal());

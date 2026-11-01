@@ -35,7 +35,13 @@ final class TestColonies {
         Colony colony = manager.createColony(helper.makeMockPlayer(GameType.SURVIVAL), level.dimension(), pos);
         ((HutBlockEntity) level.getBlockEntity(pos)).setColonyId(colony.id());
         colony.removeWorkOrder(colony.workOrder(pos));
-        helper.onEachTick(() -> level.setDayTime(1000));
+        // Keep it a clear day: rain and thunder darken the sky, and citizens then go to bed.
+        helper.onEachTick(() -> {
+            level.setDayTime(1000);
+            if (level.isRaining() || level.isThundering()) {
+                level.setWeatherParameters(24000, 0, false, false);
+            }
+        });
         return colony;
     }
 

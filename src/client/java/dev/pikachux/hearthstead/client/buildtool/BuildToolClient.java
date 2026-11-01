@@ -35,6 +35,9 @@ public final class BuildToolClient {
                 BlockPos pos = PendingPlacement.pos() != null ? PendingPlacement.pos() : context.player().blockPosition();
                 preview = BuildPreview.decoration(payload.decoration(), payload.blueprint(), pos, PendingPlacement.facing(),
                         payload.style(), payload.styles());
+            } else if (payload.move() && payload.existingHut().isPresent()) {
+                preview = BuildPreview.move(type, payload.level(), payload.blueprint(), payload.existingHut().get(),
+                        payload.hutFacing(), payload.style());
             } else if (payload.existingHut().isPresent()) {
                 BlockPos hut = payload.existingHut().get();
                 preview = new BuildPreview(type, payload.level(), payload.blueprint(), hut, payload.hutFacing(), hut,

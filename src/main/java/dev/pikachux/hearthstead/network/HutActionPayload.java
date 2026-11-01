@@ -23,7 +23,11 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
         /** Opens the colony's permissions screen (town hall only). */
         OPEN_PERMISSIONS,
         /** Cancels a decoration's work order (town hall only); the argument is its anchor as a long. */
-        CANCEL_DECORATION
+        CANCEL_DECORATION,
+        /** Orders a repair of the hut's current level. */
+        REPAIR,
+        /** Orders the hut to be taken down. */
+        DEMOLISH
     }
 
     private static final int MAX_ARGUMENT = 256;

@@ -13,19 +13,24 @@ import java.util.Optional;
  * level of an existing hut, or a decoration when {@code decoration} names one (the building type
  * is then ignored). An empty style means the building's or colony's style.
  */
-public record BlueprintRequestPayload(String buildingType, Optional<BlockPos> existingHut, String style, String decoration)
-        implements CustomPacketPayload {
+public record BlueprintRequestPayload(String buildingType, Optional<BlockPos> existingHut, String style, String decoration,
+                                      boolean move) implements CustomPacketPayload {
     public static final Type<BlueprintRequestPayload> TYPE = new Type<>(Hearthstead.id("blueprint_request"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintRequestPayload> CODEC =
             CustomPacketPayload.codec(BlueprintRequestPayload::write, BlueprintRequestPayload::read);
 
     public BlueprintRequestPayload(String buildingType, Optional<BlockPos> existingHut, String style) {
-        this(buildingType, existingHut, style, "");
+        this(buildingType, existingHut, style, "", false);
     }
 
     /** Asks for a decoration's blueprint. */
     public static BlueprintRequestPayload decoration(String name, String style) {
-        return new BlueprintRequestPayload("", Optional.empty(), style, name);
+        return new BlueprintRequestPayload("", Optional.empty(), style, name, false);
+    }
+
+    /** Asks for an existing hut's current level, to preview moving it. */
+    public static BlueprintRequestPayload move(BlockPos hut) {
+        return new BlueprintRequestPayload("", Optional.of(hut), "", "", true);
     }
 
     @Override
@@ -38,9 +43,10 @@ public record BlueprintRequestPayload(String buildingType, Optional<BlockPos> ex
         buf.writeOptional(existingHut, (b, pos) -> b.writeBlockPos(pos));
         buf.writeUtf(style, 64);
         buf.writeUtf(decoration, 64);
+        buf.writeBoolean(move);
     }
 
     private static BlueprintRequestPayload read(RegistryFriendlyByteBuf buf) {
-        return new BlueprintRequestPayload(buf.readUtf(), buf.readOptional(b -> b.readBlockPos()), buf.readUtf(64), buf.readUtf(64));
+        return new BlueprintRequestPayload(buf.readUtf(), buf.readOptional(b -> b.readBlockPos()), buf.readUtf(64), buf.readUtf(64), buf.readBoolean());
     }
 }

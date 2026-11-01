@@ -484,7 +484,7 @@ public final class Logistics {
                 .filter(o -> builderHut.pos().equals(o.builder()))
                 .findFirst()
                 .orElse(null);
-        if (order == null) {
+        if (order == null || order.kind() == WorkOrder.Kind.REMOVE) {
             return;
         }
         List<Blueprint.Placement> plan = Construction.plan(level, colony, order);

@@ -83,6 +83,14 @@ public class BuildingData {
         return tag;
     }
 
+    /** A copy of this building at another spot (used when a hut is moved). */
+    public BuildingData movedTo(BlockPos to) {
+        BuildingData moved = new BuildingData(to, type, level);
+        moved.style = style;
+        moved.settings.putAll(settings);
+        return moved;
+    }
+
     public static BuildingData load(CompoundTag tag) {
         BuildingData building = new BuildingData(BlockPos.of(tag.getLongOr("pos", 0L)),
                 BuildingType.byId(tag.getStringOr("type", "")),

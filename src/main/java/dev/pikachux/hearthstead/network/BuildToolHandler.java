@@ -60,16 +60,16 @@ public final class BuildToolHandler {
                 player.displayClientMessage(Component.translatable("message.hearthstead.missing_hut").withStyle(ChatFormatting.RED), true);
                 return;
             }
-            if (building.level() >= BuildingType.MAX_LEVEL) {
+            if (building.level() >= BuildingType.MAX_LEVEL && !request.move()) {
                 player.displayClientMessage(Component.translatable("message.hearthstead.max_level").withStyle(ChatFormatting.RED), true);
                 return;
             }
             type = building.type();
-            targetLevel = building.level() + 1;
+            targetLevel = request.move() ? Math.max(1, building.level()) : building.level() + 1;
             facing = Blueprints.facing(level, pos);
             style = building.style();
         }
-        if (!request.style().isEmpty() && Styles.isValid(level.getServer(), request.style())) {
+        if (!request.style().isEmpty() && Styles.isValid(level.getServer(), request.style()) && !request.move()) {
             style = request.style();
         }
         BuildingData preview = new BuildingData(BlockPos.ZERO, type, 0);
@@ -80,7 +80,50 @@ public final class BuildToolHandler {
             return;
         }
         ServerPlayNetworking.send(player, new BlueprintPayload(type.id(), targetLevel, blueprint, request.existingHut(), facing,
-                style, Styles.available(level.getServer()), ""));
+                style, request.move() ? List.of(style) : Styles.available(level.getServer()), "", request.move()));
+    }
+
+    /** Moves a hut to where the player confirmed the move preview. */
+    static void moveHut(ServerPlayer player, MoveHutPayload request) {
+        String error = moveError(player, request);
+        if (error != null) {
+            fail(player, error);
+            return;
+        }
+        ServerLevel level = player.level();
+        Colony colony = ColonyManager.get(level.getServer()).colonyAt(level.dimension(), request.from());
+        BuildingData moved = colony.moveBuilding(level, colony.building(request.from()), request.to(), request.facing());
+        player.displayClientMessage(Component.translatable("message.hearthstead.hut_moved", moved.type().displayName())
+                .withStyle(ChatFormatting.GREEN), true);
+    }
+
+    /** Returns null if the player may move the hut there, otherwise a translation key. */
+    @Nullable
+    public static String moveError(ServerPlayer player, MoveHutPayload request) {
+        ServerLevel level = player.level();
+        BlockPos to = request.to();
+        if (!request.facing().getAxis().isHorizontal() || !level.isLoaded(to)
+                || !player.blockPosition().closerToCenterThan(to.getCenter(), MAX_DISTANCE)) {
+            return "message.hearthstead.place_blocked";
+        }
+        Colony colony = ColonyManager.get(level.getServer()).colonyAt(level.dimension(), request.from());
+        BuildingData building = colony == null ? null : colony.building(request.from());
+        if (building == null) {
+            return "message.hearthstead.missing_hut";
+        }
+        if (!colony.isMember(player)) {
+            return "message.hearthstead.no_permission";
+        }
+        if (building.type() == BuildingType.TOWN_HALL) {
+            return "message.hearthstead.cannot_move_townhall";
+        }
+        if (ColonyManager.get(level.getServer()).colonyAt(level.dimension(), to) != colony) {
+            return "message.hearthstead.not_in_colony";
+        }
+        if (to.equals(request.from()) || !level.getBlockState(to).canBeReplaced()) {
+            return "message.hearthstead.place_blocked";
+        }
+        return null;
     }
 
     private static void sendDecoration(ServerPlayer player, BlueprintRequestPayload request, String style) {
@@ -94,7 +137,7 @@ public final class BuildToolHandler {
             return;
         }
         ServerPlayNetworking.send(player, new BlueprintPayload("", 1, blueprint, Optional.empty(), Direction.NORTH,
-                style, Styles.available(server), request.decoration()));
+                style, Styles.available(server), request.decoration(), false));
     }
 
     /** Tells a player which decorations the build tool can place. */

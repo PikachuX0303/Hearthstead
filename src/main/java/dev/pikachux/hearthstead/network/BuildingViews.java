@@ -60,9 +60,9 @@ public final class BuildingViews {
         int total = 0;
         List<BuildingViewPayload.Material> materials = new ArrayList<>();
         if (order != null) {
-            List<Blueprint.Placement> plan = Construction.plan(level, building, order.targetLevel());
+            List<Blueprint.Placement> plan = Construction.plan(level, colony, order);
             if (plan != null) {
-                Construction.Progress progress = Construction.progress(level, plan);
+                Construction.Progress progress = Construction.progress(level, order, plan);
                 done = progress.done();
                 total = progress.total();
                 for (Map.Entry<Item, Integer> entry : progress.remaining().entrySet()) {
@@ -117,7 +117,8 @@ public final class BuildingViews {
 
         return new BuildingViewPayload(building.pos(), type.id(), building.level(), BuildingType.MAX_LEVEL, colony.name(),
                 (int) residents, colony.housing(building), workers, order != null,
-                order == null ? 0 : order.targetLevel(), order != null && order.builder() != null, done, total,
+                order == null ? 0 : order.targetLevel(), order != null && order.builder() != null,
+                order == null ? "" : order.kind().id(), done, total,
                 materials, blocker, needsBuilder, builderJob, building.style(), info, requests,
                 type == BuildingType.UNIVERSITY ? research(level, colony, building) : List.of(),
                 HutSettings.of(type).stream()

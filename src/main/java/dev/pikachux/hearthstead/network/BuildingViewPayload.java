@@ -32,6 +32,8 @@ public record BuildingViewPayload(
         boolean hasOrder,
         int orderLevel,
         boolean orderAssigned,
+        /** What the hut's work order is: "build", "repair" or "remove" ("" without one). */
+        String orderKind,
         int progressDone,
         int progressTotal,
         List<Material> materials,
@@ -115,6 +117,7 @@ public record BuildingViewPayload(
         buf.writeBoolean(hasOrder);
         buf.writeVarInt(orderLevel);
         buf.writeBoolean(orderAssigned);
+        buf.writeUtf(orderKind);
         buf.writeVarInt(progressDone);
         buf.writeVarInt(progressTotal);
         writeList(buf, materials, (b, m) -> {
@@ -190,6 +193,7 @@ public record BuildingViewPayload(
         boolean hasOrder = buf.readBoolean();
         int orderLevel = buf.readVarInt();
         boolean orderAssigned = buf.readBoolean();
+        String orderKind = buf.readUtf();
         int done = buf.readVarInt();
         int total = buf.readVarInt();
         List<Material> materials = readList(buf, b -> new Material(ITEM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
@@ -229,7 +233,7 @@ public record BuildingViewPayload(
                     decorationHappiness);
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
-                orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, settings, updateOnly);
+                orderLevel, orderAssigned, orderKind, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, settings, updateOnly);
     }
 
     static void writeRequest(RegistryFriendlyByteBuf buf, RequestEntry request) {

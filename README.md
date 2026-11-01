@@ -292,11 +292,31 @@ take it from the creative tab.
 
 Esc hides the controls so you can look around. Right-click with the tool to show them
 again, or right-click a block to move the preview there. Right-clicking an existing hut
-previews its next level, with an **Order Upgrade** button.
+previews its next level, with an **Order Upgrade** button and a **Move Hut** button
+([moving huts](#repairing-taking-down-and-moving-huts)).
 
 | | |
 |---|---|
 | ![Choosing a hut](docs/screenshots/build_tool_select.png) | ![Building preview](docs/screenshots/build_tool_preview.png) |
+
+## Repairing, taking down and moving huts
+
+Builders do more than build:
+
+- **Repair:** the **Repair** button on a hut's Construction tab orders a builder to put back
+  whatever is missing or wrong in the hut's current level, with materials from the Builder's
+  Hut like any construction.
+- **Deconstruct:** the **Deconstruct** button (click twice to confirm) orders a builder to take
+  the hut down from its own layer up; the floor stays. Each block comes back as an item, and
+  the hut block, the hut's contents and anything stored in its chests and barrels go to the
+  Builder's Hut. The town hall cannot be taken down.
+- **Move:** right-click a hut with the Build Tool, press **Move Hut**, move and turn the preview
+  and press **Move Here**. The hut block moves at once with its contents, workers and residents
+  and keeps its level; builders then clear the old site (the materials go to the Builder's Hut)
+  and rebuild the hut's level at the new spot. The town hall cannot be moved.
+
+Any builder can take these jobs, whatever the level of their hut. Cancel one with the hut's
+**Cancel Order** button.
 
 ## Decorations
 

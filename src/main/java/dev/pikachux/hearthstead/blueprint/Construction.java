@@ -34,15 +34,47 @@ public final class Construction {
         return blueprint.placements(building.pos(), Blueprints.facing(level, building.pos()));
     }
 
-    /** What a builder has to build for a work order: a hut level or a decoration. */
+    /**
+     * What a builder has to do for a work order: the blocks of a hut level or a decoration to
+     * build, or for a removal the blocks to take down (each with the block that should be there).
+     */
     @Nullable
     public static List<Blueprint.Placement> plan(ServerLevel level, Colony colony, WorkOrder order) {
+        if (order.kind() == WorkOrder.Kind.REMOVE) {
+            return removalPlan(level, order);
+        }
         if (order.isDecoration()) {
             Blueprint blueprint = Blueprints.decoration(level.getServer(), order.style(), order.decoration());
             return blueprint == null ? null : blueprint.placements(order.buildingPos(), order.facing());
         }
         BuildingData target = colony.building(order.buildingPos());
         return target == null ? null : plan(level, target, order.targetLevel());
+    }
+
+    /**
+     * The blocks a removal takes down, top to bottom: everything of the hut's blueprint from the
+     * hut's own layer upwards (the floor and foundation stay), but never the hut block itself.
+     */
+    @Nullable
+    public static List<Blueprint.Placement> removalPlan(ServerLevel level, WorkOrder order) {
+        if (order.hutType() == null) {
+            return null;
+        }
+        BuildingData ghost = new BuildingData(order.buildingPos(), order.hutType(), order.targetLevel());
+        ghost.setStyle(order.style());
+        Blueprint blueprint = Blueprints.get(level.getServer(), ghost, Math.max(1, order.targetLevel()));
+        if (blueprint == null) {
+            return null;
+        }
+        return blueprint.placements(order.buildingPos(), order.facing()).stream()
+                .filter(p -> !p.state().isAir() && p.state().getFluidState().isEmpty() && p.pos().getY() >= order.buildingPos().getY())
+                .sorted(java.util.Comparator.comparingInt((Blueprint.Placement p) -> -p.pos().getY()))
+                .toList();
+    }
+
+    /** For a removal: true once the blueprint's block is gone from this spot (or something else stands there). */
+    public static boolean isRemoved(ServerLevel level, Blueprint.Placement placement) {
+        return level.getBlockState(placement.pos()).getBlock() != placement.state().getBlock();
     }
 
     /** True if the world already matches this placement closely enough. */
@@ -84,6 +116,17 @@ public final class Construction {
     }
 
     public record Progress(int done, int total, Map<Item, Integer> remaining) {
+    }
+
+    /** How far a removal has come. */
+    public static Progress removalProgress(ServerLevel level, List<Blueprint.Placement> plan) {
+        int done = (int) plan.stream().filter(p -> isRemoved(level, p)).count();
+        return new Progress(done, plan.size(), new LinkedHashMap<>());
+    }
+
+    /** How far a work order has come, and for building which materials are still needed. */
+    public static Progress progress(ServerLevel level, WorkOrder order, List<Blueprint.Placement> plan) {
+        return order.kind() == WorkOrder.Kind.REMOVE ? removalProgress(level, plan) : progress(level, plan);
     }
 
     /** How far construction has come and which materials are still needed. */

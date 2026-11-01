@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import net.minecraft.core.Direction;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -292,7 +293,10 @@ public class Colony {
         WorkOrder best = null;
         for (WorkOrder order : workOrders) {
             BuildingData target = order.isDecoration() ? null : buildings.get(order.buildingPos());
-            if (order.builder() != null || (target == null && !order.isDecoration()) || order.targetLevel() > maxLevel) {
+            // Removals and repairs need no skill beyond a level 1 builder's hut.
+            int needed = order.kind() == WorkOrder.Kind.BUILD ? order.targetLevel() : 1;
+            boolean orphan = target == null && !order.isDecoration() && order.kind() != WorkOrder.Kind.REMOVE;
+            if (order.builder() != null || orphan || needed > maxLevel) {
                 continue;
             }
             if (best == null || (target != null && target.type() == BuildingType.BUILDER && !isBuilderHutOrder(best))) {
@@ -309,6 +313,66 @@ public class Colony {
     private boolean isBuilderHutOrder(WorkOrder order) {
         BuildingData target = order.isDecoration() ? null : buildings.get(order.buildingPos());
         return target != null && target.type() == BuildingType.BUILDER;
+    }
+
+    /**
+     * Moves a hut to {@code to}: the hut block, its contents and everything that refers to it
+     * (workers, residents, work orders) go to the new spot at once. A built hut keeps its level;
+     * builders then clear the old site and rebuild the hut's current level at the new one.
+     */
+    public BuildingData moveBuilding(ServerLevel level, BuildingData building, BlockPos to, Direction facing) {
+        BlockPos from = building.pos();
+        Direction oldFacing = dev.pikachux.hearthstead.blueprint.Blueprints.facing(level, from);
+        // Take the hut's contents along.
+        List<ItemStack> contents = new ArrayList<>();
+        if (level.getBlockEntity(from) instanceof dev.pikachux.hearthstead.block.HutBlockEntity hut) {
+            for (int i = 0; i < hut.getContainerSize(); i++) {
+                contents.add(hut.removeItemNoUpdate(i));
+            }
+        }
+        BuildingData moved = building.movedTo(to);
+        buildings.remove(from);
+        buildings.put(to, moved);
+        for (CitizenData citizen : citizens.values()) {
+            if (from.equals(citizen.workPos())) {
+                citizen.assignJob(citizen.job(), to);
+            }
+            if (from.equals(citizen.homePos())) {
+                citizen.setHomePos(to);
+            }
+        }
+        List<WorkOrder> kept = new ArrayList<>();
+        for (WorkOrder order : workOrders) {
+            if (!order.isDecoration() && order.buildingPos().equals(from)) {
+                // A pending order follows the hut (unclaimed, since the site changed).
+                kept.add(order.kind() == WorkOrder.Kind.REPAIR ? WorkOrder.repair(to, order.targetLevel())
+                        : order.kind() == WorkOrder.Kind.BUILD ? new WorkOrder(to, order.targetLevel()) : order);
+                continue;
+            }
+            if (from.equals(order.builder())) {
+                order.setBuilder(to);
+            }
+            kept.add(order);
+        }
+        workOrders.clear();
+        workOrders.addAll(kept);
+        // The old block goes first; with no building left there, removing it changes nothing else.
+        level.setBlock(from, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        dev.pikachux.hearthstead.block.HutBlock block = dev.pikachux.hearthstead.registry.ModBlocks.HUTS.get(building.type());
+        level.setBlock(to, block.defaultBlockState().setValue(dev.pikachux.hearthstead.block.HutBlock.FACING, facing),
+                net.minecraft.world.level.block.Block.UPDATE_ALL);
+        if (level.getBlockEntity(to) instanceof dev.pikachux.hearthstead.block.HutBlockEntity hut) {
+            hut.setColonyId(id);
+            for (int i = 0; i < contents.size() && i < hut.getContainerSize(); i++) {
+                hut.setItem(i, contents.get(i));
+            }
+        }
+        if (moved.level() > 0 && workOrder(to) == null) {
+            workOrders.add(WorkOrder.removal(from, building.type(), building.style(), building.level(), oldFacing, false));
+            workOrders.add(WorkOrder.repair(to, moved.level()));
+        }
+        markDirty();
+        return moved;
     }
 
     // ---------------------------------------------------------------- decorations
