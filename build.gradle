@@ -11,6 +11,26 @@ base {
 }
 
 repositories {
+    // Mod Menu and Cloth Config, both optional at runtime.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+    // Cloth Config's small math library, nested in its jar; listed for the development client.
+    maven {
+        name = "shedaniel"
+        url = "https://maven.shedaniel.me/"
+        content {
+            includeGroup "me.shedaniel.cloth"
+        }
+    }
 }
 
 loom {
@@ -38,6 +58,13 @@ dependencies {
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Optional: Mod Menu shows a config button, Cloth Config draws the settings screen.
+    modCompileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
+    modCompileOnly "maven.modrinth:cloth-config:${project.cloth_config_version}"
+    // Cloth Config in the development client, so the client test can open the screen.
+    modLocalRuntime "maven.modrinth:cloth-config:${project.cloth_config_version}"
+    localRuntime "me.shedaniel.cloth:basic-math:0.6.1"
 }
 
 processResources {

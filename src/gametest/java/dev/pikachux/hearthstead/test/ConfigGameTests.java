@@ -31,6 +31,34 @@ public class ConfigGameTests {
         helper.succeed();
     }
 
+    /** The settings screen shows a name for every option and section. */
+    @GameTest
+    public void everyOptionHasAName(GameTestHelper helper) {
+        com.google.gson.JsonObject lang;
+        try (var in = ConfigGameTests.class.getResourceAsStream("/assets/hearthstead/lang/en_us.json")) {
+            lang = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+        } catch (java.io.IOException | NullPointerException e) {
+            throw helper.assertionException("Could not read the language file: " + e);
+        }
+        List<String> missing = new ArrayList<>();
+        for (HearthsteadConfig.Option<?> option : HearthsteadConfig.options()) {
+            if (!lang.has("config.hearthstead." + option.path())) {
+                missing.add(option.path());
+            }
+            if (option instanceof HearthsteadConfig.ChoiceOption choice) {
+                choice.choices().stream().filter(c -> !lang.has("config.hearthstead.choice." + c)).forEach(missing::add);
+            }
+        }
+        for (String section : HearthsteadConfig.sections().keySet()) {
+            if (!lang.has("config.hearthstead.category." + section)) {
+                missing.add("[" + section + "]");
+            }
+        }
+        check(helper, missing.isEmpty(), "names for every option, missing " + missing);
+        helper.succeed();
+    }
+
     /** Out-of-range values are clamped, invalid ones get defaults, and every problem is reported. */
     @GameTest
     public void invalidConfigIsRepaired(GameTestHelper helper) {

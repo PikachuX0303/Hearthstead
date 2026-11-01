@@ -142,6 +142,21 @@ public final class HearthsteadConfig {
         return option;
     }
 
+    /** Every option, in file order. */
+    public static List<Option<?>> options() {
+        return List.copyOf(OPTIONS);
+    }
+
+    /** Section names in file order, with their descriptions. */
+    public static Map<String, String> sections() {
+        return java.util.Collections.unmodifiableMap(SECTIONS);
+    }
+
+    /** Whether an option only matters on the client (the others are read by the server or host). */
+    public static boolean isClientOption(Option<?> option) {
+        return option == AUTOMATIC_UPDATES;
+    }
+
     public static Path file() {
         return FabricLoader.getInstance().getConfigDir().resolve(FILE_NAME);
     }
@@ -330,6 +345,23 @@ public final class HearthsteadConfig {
             return section + "." + key;
         }
 
+        public String section() {
+            return section;
+        }
+
+        public String key() {
+            return key;
+        }
+
+        /** The description written above the option in the file. */
+        public String comment() {
+            return comment;
+        }
+
+        public T defaultValue() {
+            return defaultValue;
+        }
+
         void reset() {
             value = defaultValue;
         }
@@ -397,6 +429,14 @@ public final class HearthsteadConfig {
             return value.toString();
         }
 
+        public int min() {
+            return min;
+        }
+
+        public int max() {
+            return max;
+        }
+
         @Override
         String describeRange() {
             return "Whole number from " + min + " to " + max + ". Default: " + defaultValue;
@@ -438,6 +478,14 @@ public final class HearthsteadConfig {
             return Double.toString(number);
         }
 
+        public double min() {
+            return min;
+        }
+
+        public double max() {
+            return max;
+        }
+
         @Override
         String describeRange() {
             return "Number from " + format(min) + " to " + format(max) + ". Default: " + format(defaultValue);
@@ -450,6 +498,10 @@ public final class HearthsteadConfig {
         ChoiceOption(String section, String key, String comment, String defaultValue, String... choices) {
             super(section, key, comment, defaultValue);
             this.choices = List.of(choices);
+        }
+
+        public List<String> choices() {
+            return choices;
         }
 
         public boolean is(String choice) {

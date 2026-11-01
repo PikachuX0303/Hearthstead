@@ -5,6 +5,14 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.35.0-alpha] - 2026-11-01
+
+### Added
+- **Settings screen.** With Mod Menu and Cloth Config installed (both optional), Mods →
+  Hearthstead → ⚙ opens every option of `config/hearthstead.toml` in game: a tab per section,
+  descriptions as tooltips, sliders, percentages for chances and Reset buttons. Saving writes
+  the file and applies the values right away in singleplayer and LAN worlds.
+
 ## [0.34.0-alpha] - 2026-11-01
 
 ### Added

@@ -16,6 +16,11 @@ Get the latest jar from the [Releases page](https://github.com/PikachuX0303/Hear
 Put it into your `mods` folder together with [Fabric API](https://modrinth.com/mod/fabric-api).
 See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 
+Optional: with [Mod Menu](https://modrinth.com/mod/modmenu) and
+[Cloth Config](https://modrinth.com/mod/cloth-config) installed, Hearthstead's settings can be
+changed in game ([details](#settings-screen)). Without them, the mod works the same and the
+settings stay in the config file.
+
 ### Automatic updates
 
 On the first start Hearthstead asks whether it may update itself. If you turn this on, it
@@ -216,6 +221,18 @@ range and default on the first start. Edit a value after the `=` and restart the
 `/hearthstead config reload`. Invalid values are reported and replaced by their defaults, and
 options from newer versions are added automatically. On a server the server's file counts; only
 `automaticUpdates` is read by each player's game.
+
+### Settings screen
+
+With [Mod Menu](https://modrinth.com/mod/modmenu) and [Cloth Config](https://modrinth.com/mod/cloth-config)
+installed, open **Mods → Hearthstead → ⚙** for the same settings in game: one tab per section,
+each option with its description as a tooltip and a Reset button. Chances are shown as
+percentages. **Save & Quit** writes `config/hearthstead.toml` and applies the values right away
+to worlds you host (singleplayer and LAN); on a server, the server's own file still counts.
+
+| | |
+|---|---|
+| ![Settings screen](docs/screenshots/config_general.png) | ![Raid settings](docs/screenshots/config_raids.png) |
 
 | Section | Option | Default | What it does |
 | --- | --- | --- | --- |

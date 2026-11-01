@@ -56,6 +56,28 @@ public class ScreenshotClientTest implements FabricClientGameTest {
         }));
         context.waitTicks(5);
         context.takeScreenshot("update_prompt");
+        // The settings screen (Cloth Config is on the development classpath) and its Raids tab.
+        context.setScreen(() -> dev.pikachux.hearthstead.client.config.ConfigScreens.create(
+                new net.minecraft.client.gui.screens.TitleScreen()));
+        context.waitTicks(5);
+        context.takeScreenshot("config_general");
+        // Cloth Config's tabs are not vanilla buttons, so click the Raids tab with the mouse.
+        double[] tab = context.computeOnClient(client -> {
+            for (var child : client.screen.children()) {
+                if (child instanceof net.minecraft.client.gui.components.AbstractWidget widget
+                        && widget.getMessage().getString().equals("Raids")) {
+                    double scale = client.getWindow().getGuiScale();
+                    return new double[] {(widget.getX() + widget.getWidth() / 2.0) * scale,
+                            (widget.getY() + widget.getHeight() / 2.0) * scale};
+                }
+            }
+            throw new AssertionError("No Raids tab in the settings screen");
+        });
+        context.getInput().setCursorPos(tab[0], tab[1]);
+        context.getInput().pressMouse(org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().setCursorPos(0, 0);
+        context.waitTicks(5);
+        context.takeScreenshot("config_raids");
         context.setScreen(net.minecraft.client.gui.screens.TitleScreen::new);
         try (TestSingleplayerContext singleplayer = context.worldBuilder().adjustSettings(settings -> {
             settings.getNormalPresetList().stream()
