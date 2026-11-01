@@ -4,6 +4,7 @@ import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
+import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import net.minecraft.core.BlockPos;
@@ -19,8 +20,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Farmer: works the field surrounding the farmer's building, at the level of its floor.
+ * Farmer: works the field surrounding the farmer's building, at the level of its floor, and the
+ * fields marked with scarecrows that the colony gives this hut (see {@link Colony#fieldsOf}).
  * Tills dirt, sows seeds, harvests ripe crops and uses bone meal on growing ones.
  */
 public class FarmerGoal extends WorkGoal {
@@ -123,37 +128,51 @@ public class FarmerGoal extends WorkGoal {
         if (house == null) {
             house = new BoundingBox(hut);
         }
+        // The ground of the band around the hut, then of the fields the hut works.
+        List<BlockPos> ground = new ArrayList<>();
         int width = fieldWidth(building);
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = house.minX() - width; x <= house.maxX() + width; x++) {
+            for (int z = house.minZ() - width; z <= house.maxZ() + width; z++) {
+                if (x < house.minX() || x > house.maxX() || z < house.minZ() || z > house.maxZ()) {
+                    ground.add(new BlockPos(x, hut.getY() - 1, z));
+                }
+            }
+        }
+        Colony colony = citizen.colony();
+        if (colony != null) {
+            for (BlockPos scarecrow : colony.fieldsOf(building)) {
+                for (int dx = -Colony.FIELD_RADIUS; dx <= Colony.FIELD_RADIUS; dx++) {
+                    for (int dz = -Colony.FIELD_RADIUS; dz <= Colony.FIELD_RADIUS; dz++) {
+                        if (dx != 0 || dz != 0) {
+                            ground.add(scarecrow.offset(dx, -1, dz));
+                        }
+                    }
+                }
+            }
+        }
         boolean hasSeeds = seedSlot() >= 0;
         boolean hasBoneMeal = citizen.inventory().countItem(Items.BONE_MEAL) > 0;
         BlockPos growing = null;
-        for (int x = house.minX() - width; x <= house.maxX() + width; x++) {
-            for (int z = house.minZ() - width; z <= house.maxZ() + width; z++) {
-                if (x >= house.minX() && x <= house.maxX() && z >= house.minZ() && z <= house.maxZ()) {
-                    continue;
-                }
-                pos.set(x, hut.getY() - 1, z);
-                BlockState ground = level().getBlockState(pos);
-                BlockState above = level().getBlockState(pos.above());
-                if (above.getBlock() instanceof CropBlock crop && crop.isMaxAge(above)) {
-                    target = pos.above().immutable();
-                    task = Task.HARVEST;
-                    return;
-                }
-                if (hasSeeds && ground.is(Blocks.FARMLAND) && above.isAir()) {
-                    target = pos.above().immutable();
-                    task = Task.PLANT;
-                    return;
-                }
-                if ((ground.is(Blocks.DIRT) || ground.is(Blocks.GRASS_BLOCK)) && above.isAir()) {
-                    target = pos.immutable();
-                    task = Task.TILL;
-                    return;
-                }
-                if (hasBoneMeal && growing == null && above.getBlock() instanceof CropBlock) {
-                    growing = pos.above().immutable();
-                }
+        for (BlockPos pos : ground) {
+            BlockState soil = level().getBlockState(pos);
+            BlockState above = level().getBlockState(pos.above());
+            if (above.getBlock() instanceof CropBlock crop && crop.isMaxAge(above)) {
+                target = pos.above();
+                task = Task.HARVEST;
+                return;
+            }
+            if (hasSeeds && soil.is(Blocks.FARMLAND) && above.isAir()) {
+                target = pos.above();
+                task = Task.PLANT;
+                return;
+            }
+            if ((soil.is(Blocks.DIRT) || soil.is(Blocks.GRASS_BLOCK)) && above.isAir()) {
+                target = pos;
+                task = Task.TILL;
+                return;
+            }
+            if (hasBoneMeal && growing == null && above.getBlock() instanceof CropBlock) {
+                growing = pos.above();
             }
         }
         // With nothing else to do, speed up a growing crop with bone meal.

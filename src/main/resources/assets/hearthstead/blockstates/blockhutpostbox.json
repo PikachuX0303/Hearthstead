@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hearthstead:block/blockhutpostbox"
+    },
+    "facing=east": {
+      "model": "hearthstead:block/blockhutpostbox",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hearthstead:block/blockhutpostbox",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hearthstead:block/blockhutpostbox",
+      "y": 270
+    }
+  }
+}

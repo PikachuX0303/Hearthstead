@@ -113,6 +113,8 @@ STYLES = {
     "school":     ("bricks",           "oak_log",      "oak_planks",          "oak"),
     "tavern":     ("spruce_planks",    "dark_oak_log", "stone_bricks",        "dark_oak"),
     "graveyard":  ("mossy_cobblestone", "dark_oak_log", "podzol",             "dark_oak"),
+    "postbox":    ("bricks",           "spruce_log",   "stone_bricks",        "spruce"),
+    "mysticalsite": ("calcite",        "birch_log",    "smooth_quartz",       "birch"),
 }
 
 # Architectural styles. "classic" uses the per-hut palette above; the others give every
@@ -328,7 +330,9 @@ def build(hut, level, style="classic"):
              "archery": block("target", power=0),
              "school": block("lectern", facing="north", has_book=False, powered=False),
              "tavern": block("barrel", facing="up", open=False),
-             "graveyard": block("mossy_cobblestone_wall", up=True, east="none", west="none", north="none", south="none", waterlogged=False)}
+             "graveyard": block("mossy_cobblestone_wall", up=True, east="none", west="none", north="none", south="none", waterlogged=False),
+             "postbox": block("barrel", facing="up", open=False),
+             "mysticalsite": block("amethyst_block")}
     if hut in decor:
         put(c + 1, 1, c + 1, decor[hut])
 

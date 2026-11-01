@@ -121,6 +121,7 @@ public final class BuildingViews {
                 order == null ? "" : order.kind().id(), done, total,
                 materials, blocker, needsBuilder, builderJob, building.style(), info, requests,
                 type == BuildingType.UNIVERSITY ? research(level, colony, building) : List.of(),
+                postboxOrders(level, building),
                 HutSettings.of(type).stream()
                         .map(s -> new BuildingViewPayload.SettingEntry(s.id(), HutSettings.get(building, s)))
                         .toList(),
@@ -192,6 +193,19 @@ public final class BuildingViews {
                                 .mapToInt(ItemStack::getCount).sum(),
                         e.crafter() == null ? "" : e.crafter().type().id()))
                 .toList();
+    }
+
+    private static List<BuildingViewPayload.Cost> postboxOrders(ServerLevel level, BuildingData building) {
+        List<BuildingViewPayload.Cost> orders = new ArrayList<>();
+        var storage = dev.pikachux.hearthstead.colony.Storage.containers(level, building);
+        building.orders().forEach((id, count) -> {
+            Item item = dev.pikachux.hearthstead.colony.Logistics.postboxItem(id);
+            if (item != null) {
+                orders.add(new BuildingViewPayload.Cost(item, count,
+                        dev.pikachux.hearthstead.colony.Storage.count(storage, s -> s.is(item))));
+            }
+        });
+        return orders;
     }
 
     /** Opens (or refreshes) the clipboard's list of the colony's requests. */

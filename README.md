@@ -32,12 +32,16 @@ and is used from the next start. Change your answer later with `automaticUpdates
 
 ## Status: early alpha
 
-Hearthstead has the core colony loop, 47 huts and jobs, citizen skills, families, five building styles, research and
-raids. Things that are **not there yet** (some of which MineColonies has):
+Hearthstead has the core colony loop, 49 huts, citizen skills and job outfits, families, illness,
+guard classes, decorations, five building styles, research and raids. Things that are **not there
+yet** (some of which MineColonies has):
 
-- Decoration blueprints and hand-built style packs. The five styles are generated.
-- Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook and herders have them).
+- Teaching crafters recipes (crafters work out what to make from the colony's shortages).
+- Hand-built style packs. The five styles are generated.
+- Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook, herders and guard
+  buildings have them).
 - More raider cultures (barbarians and pirates so far), more colony events.
+- Translations other than English.
 
 ## Features
 
@@ -77,7 +81,7 @@ links to the releases and the changelog.
 | **Happiness** | Housing, employment and food raise happiness. Happiness scales work speed. |
 | **Day/night** | Workers go home to sleep at night. Guards stay on duty. |
 | **Lumberjack** | Needs an **axe** in the hut. Fells nearby trees from the top down, picks up drops, replants saplings and brings the wood back. |
-| **Farmer** | Needs a **hoe** in the hut. Tills, sows and harvests a field that surrounds the farmer's building, at floor level. Takes seeds from the hut, and uses bone meal from the hut on growing crops. Field width = 2 + level blocks. |
+| **Farmer** | Needs a **hoe** in the hut. Tills, sows and harvests a field that surrounds the farmer's building, at floor level, and the fields marked with **Scarecrows** ([fields](#fields)). Takes seeds from the hut, and uses bone meal from the hut on growing crops. Field width = 2 + level blocks. |
 | **Miner** | Needs a **pickaxe** in the hut. Digs a 2-high tunnel out of the front of the miner's building (16 blocks per level), mines exposed ores and places torches from the hut. Place the hut underground. |
 | **Guard Tower** | Employs one guard per level. Guards attack hostile mobs, including raiders, and have +20 health, +6 armour and +2 attack. Their class (knight, ranger or druid) and orders are chosen in the tower's Settings tab ([guards](#guards)). Other citizens flee from monsters. |
 | **Raids** | See [Raids](#raids) below. |
@@ -106,7 +110,7 @@ links to the releases and the changelog.
 | **Crusher** | Crushes cobblestone into gravel or sand (a hut setting); makes sand whenever another hut (Glassblower, Concrete Mixer) is short of it. Asks for cobblestone. |
 | **Sifter** | Sifts gravel, sand or dirt (a hut setting): gravel turns up flint, nuggets, coal and, at higher levels, raw copper and iron, emeralds and diamonds; sand gives clay, gold, cactus, glowstone and prismarine shards; dirt gives seeds, potatoes, carrots, bones and saplings. Higher hut levels find more. |
 | **Mechanic** | Crafts redstone parts, rails, iron doors, trapdoors and bars, lanterns, torches, buckets, shears and flint and steel with the game's recipes, for whatever huts are short of (the miners' torches, a builder's lanterns, the cowhand's buckets). Asks for iron, redstone, coal, sticks and cobblestone. |
-| **Netherworker** | Goes on expeditions to the Nether through the portal in the Nether Mine: with a sword and 8 food they are away for about two minutes and come back with netherrack, quartz, soul sand and gold nuggets; nether wart and glowstone from level 2, magma cream from 3, blaze rods from 4 and ghast tears at level 5. Only sets out early enough to be back by nightfall. |
+| **Netherworker** | Goes on expeditions to the Nether through the portal in the Nether Mine: with a sword and 8 food they are away for about two minutes and come back with netherrack, quartz, soul sand and gold nuggets; nether wart and glowstone from level 2, magma cream from 3, blaze rods from 4 and ghast tears at level 5. Only sets out early enough to be back by nightfall. A trip under way carries on after the world is reloaded. |
 | **Blacksmith** | Forges the tools and weapons huts ask for (axes, hoes, pickaxes, shovels, swords), plus iron armour and shields, with the game's recipes. Prefers iron, then stone; diamond gear from hut level 3. Asks for iron ingots and sticks. |
 | **Fletcher** | Makes bows, crossbows, arrows, fishing rods and leads for the huts that ask for them, such as the fisherman's rod. Asks for sticks, string, flint and feathers. |
 | **Stone Smelter** | Runs the furnaces of the Stone Smeltery (one per level): cobblestone into stone, clay into bricks and terracotta, netherrack into nether bricks, cobbled deepslate into deepslate, sandstone, quartz and basalt into their smooth forms. Asks for cobblestone and fuel. |
@@ -173,6 +177,11 @@ Each hut is 8 planks around a center item:
 | School | book and quill |
 | Tavern | barrel |
 | Graveyard | mossy cobblestone |
+| Postbox | paper |
+| Mystical Site | amethyst shard |
+
+The **Scarecrow** is crafted from a carved pumpkin (top middle), a hay bale (center), and sticks
+on its sides and below.
 
 The **Rope Fence** is crafted from 4 sticks and 2 string (sticks on the sides, string in the
 middle column) and makes 4 fences.
@@ -365,6 +374,29 @@ and visitors may do. Officers can open the screen to look but not change it.
 
 ![Permissions](docs/screenshots/permissions.png)
 
+## Postbox
+
+A **Postbox** has no worker. On its **Orders** tab, type an item's name or id (`bread`,
+`minecraft:torch`) and a count and press **Order**: up to 8 orders at once. The deliveryman
+brings them from the Warehouse; what the warehouse lacks is made by the crafters or shows up in
+the Requests tab like any request. When an order has fully arrived, members get a message and
+the items wait in the postbox.
+
+![Postbox orders](docs/screenshots/postbox_orders.png)
+
+## Mystical Site
+
+A **Mystical Site** has no worker. The colony's best one makes every citizen happier: +0.25 per
+level, so +1.25 at level 5.
+
+## Fields
+
+Place a **Scarecrow** in the colony to mark a field: the 9 by 9 square around it, one block below
+the scarecrow's feet. Each field is worked by the nearest Farmer's Hut with room for it: one
+field per hut level (at least one), in the order the scarecrows were placed. The farmer works
+the fields like the land around their hut: tilling dirt and grass, sowing, harvesting and using
+bone meal. Breaking the scarecrow ends the field.
+
 ## Stash
 
 A **Stash** is a drop-off box with no worker: put anything into it and the deliveryman carries
@@ -455,6 +487,12 @@ shelf). Without a hospital they rest at home by day and get better on their own.
   more skilled than ordinary settlers. Their window and name show what they ask to join: some
   bread, iron ingots or emeralds. Right-click them holding it to recruit them (needs a free bed);
   otherwise they leave after three days.
+- **Expeditions:** the Tavern's **Send on expedition** button sends a visitor off until the next
+  morning with 6 meals from the tavern (and a sword, if there is one). Usually (85%, 95% with a
+  sword) they come back with finds in the tavern: emeralds, iron, gold, leather, saplings,
+  seeds, books, ender pearls, now and then a saddle, name tag, golden apple or diamonds; more
+  finds at higher tavern levels and with a sword. A visitor back from a trip stays three more
+  days.
 - **The dead:** when a citizen dies the colony mourns: everyone is 1 point less happy for a day.
   With a **Graveyard** and an undertaker, the dead are buried, which ends the mourning early, and
   now and then someone comes back to life.

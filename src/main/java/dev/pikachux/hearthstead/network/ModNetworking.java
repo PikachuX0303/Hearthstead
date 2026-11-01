@@ -29,6 +29,10 @@ import java.util.ArrayList;
  */
 public final class ModNetworking {
     private static final double MAX_DISTANCE = 16;
+    /** Most items of one kind a postbox order can ask for (a hut's worth). */
+    public static final int MAX_POSTBOX_ORDER = 27 * 64;
+    /** Most different items a postbox can have on order at once. */
+    public static final int MAX_POSTBOX_ORDERS = 8;
 
     private ModNetworking() {
     }
@@ -106,6 +110,38 @@ public final class ModNetworking {
                 String error = BuildingInfo.requestDemolish(player.level(), colony, building);
                 if (error != null) {
                     player.displayClientMessage(Component.translatable(error).withStyle(ChatFormatting.RED), true);
+                }
+            }
+            case POSTBOX_ORDER -> {
+                String[] parts = payload.argument().split("\\|");
+                if (building.type() == BuildingType.POSTBOX && parts.length == 2
+                        && dev.pikachux.hearthstead.colony.Logistics.postboxItem(parts[0]) != null) {
+                    try {
+                        int count = Math.clamp(Integer.parseInt(parts[1].strip()), 1, MAX_POSTBOX_ORDER);
+                        if (building.orders().size() < MAX_POSTBOX_ORDERS || building.orders().containsKey(parts[0])) {
+                            building.setOrder(parts[0], count);
+                            colony.markDirty();
+                        } else {
+                            player.displayClientMessage(Component.translatable("message.hearthstead.postbox_full")
+                                    .withStyle(ChatFormatting.RED), true);
+                        }
+                    } catch (NumberFormatException ignored) {
+                        // Not a number: nothing ordered.
+                    }
+                }
+            }
+            case SEND_EXPEDITION -> {
+                if (building.type() == BuildingType.TAVERN) {
+                    String error = colony.sendExpedition(player.level(), building);
+                    if (error != null) {
+                        player.displayClientMessage(Component.translatable(error).withStyle(ChatFormatting.RED), true);
+                    }
+                }
+            }
+            case POSTBOX_CANCEL -> {
+                if (building.type() == BuildingType.POSTBOX) {
+                    building.setOrder(payload.argument(), 0);
+                    colony.markDirty();
                 }
             }
             case CANCEL_DECORATION -> {

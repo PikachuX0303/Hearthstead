@@ -52,7 +52,9 @@ public enum BuildingType {
     ARCHERY("archery", "Archery", null, 0),
     SCHOOL("school", "School", JobType.TEACHER, 0),
     TAVERN("tavern", "Tavern", null, 0),
-    GRAVEYARD("graveyard", "Graveyard", JobType.UNDERTAKER, 0);
+    GRAVEYARD("graveyard", "Graveyard", JobType.UNDERTAKER, 0),
+    POSTBOX("postbox", "Postbox", null, 0),
+    MYSTICAL_SITE("mystical_site", "Mystical Site", null, 0);
 
     public static final int MAX_LEVEL = 5;
 

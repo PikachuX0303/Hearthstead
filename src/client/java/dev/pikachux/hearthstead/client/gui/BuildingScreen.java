@@ -24,6 +24,7 @@ public class BuildingScreen extends ColonyScreen {
 
     private enum Tab {
         OVERVIEW("gui.hearthstead.tab.overview"),
+        ORDERS("gui.hearthstead.tab.orders"),
         CONSTRUCTION("gui.hearthstead.tab.construction"),
         REQUESTS("gui.hearthstead.tab.requests"),
         SETTINGS("gui.hearthstead.tab.settings"),
@@ -42,6 +43,11 @@ public class BuildingScreen extends ColonyScreen {
     private Tab tab = Tab.OVERVIEW;
     /** Set after the first click on Deconstruct; the second click orders it. */
     private boolean confirmDemolish;
+    /** What is typed into the postbox's order fields, kept across refreshes. */
+    private String orderItemText = "";
+    private String orderCountText = "16";
+    private Component orderMessage = Component.empty();
+    private static final int ORDER_ROW = 20;
     private EditBox nameField;
     /** Research selected in the research tab, by id. */
     private String selectedResearch;
@@ -59,6 +65,10 @@ public class BuildingScreen extends ColonyScreen {
     /** Called when the server sends fresh data while the screen is open. */
     public void update(BuildingViewPayload view) {
         this.view = view;
+        if (tab == Tab.ORDERS && getFocused() instanceof EditBox) {
+            // Keep typing undisturbed; the order list is drawn from the new view anyway.
+            return;
+        }
         String typed = nameField == null ? null : nameField.getValue();
         boolean focused = nameField != null && nameField.isFocused();
         int oldScroll = scroll;
@@ -72,6 +82,9 @@ public class BuildingScreen extends ColonyScreen {
 
     private List<Tab> tabs() {
         List<Tab> tabs = new ArrayList<>(List.of(Tab.OVERVIEW, Tab.CONSTRUCTION, Tab.REQUESTS));
+        if (view.buildingType().equals(dev.pikachux.hearthstead.colony.BuildingType.POSTBOX.id())) {
+            tabs.add(1, Tab.ORDERS);
+        }
         if (!view.settings().isEmpty()) {
             tabs.add(Tab.SETTINGS);
         }
@@ -163,6 +176,38 @@ public class BuildingScreen extends ColonyScreen {
             }
         }
 
+        if (tab == Tab.OVERVIEW && view.buildingType().equals(dev.pikachux.hearthstead.colony.BuildingType.TAVERN.id())
+                && view.level() > 0) {
+            addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.expedition"),
+                            b -> send(HutActionPayload.Action.SEND_EXPEDITION, ""))
+                    .tooltip(Tooltip.create(Component.translatable("gui.hearthstead.expedition.tooltip",
+                            dev.pikachux.hearthstead.colony.Colony.EXPEDITION_FOOD)))
+                    .bounds(left + panelWidth - 118, top + panelHeight - 52, 110, 18).build());
+        }
+
+        if (tab == Tab.ORDERS) {
+            EditBox item = new EditBox(font, left + 10, top + 60, 170, 16, Component.translatable("gui.hearthstead.postbox.item"));
+            item.setMaxLength(64);
+            item.setValue(orderItemText);
+            item.setHint(Component.translatable("gui.hearthstead.postbox.item"));
+            item.setResponder(text -> orderItemText = text);
+            addRenderableWidget(item);
+            EditBox count = new EditBox(font, left + 184, top + 60, 36, 16, Component.translatable("gui.hearthstead.postbox.count"));
+            count.setMaxLength(4);
+            count.setFilter(text -> text.chars().allMatch(Character::isDigit));
+            count.setValue(orderCountText);
+            count.setResponder(text -> orderCountText = text);
+            addRenderableWidget(count);
+            addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.postbox.order"), b -> placeOrder())
+                    .bounds(left + 224, top + 59, 58, 18).build());
+            for (int i = 0; i < view.postboxOrders().size(); i++) {
+                String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(view.postboxOrders().get(i).item()).toString();
+                addRenderableWidget(ColonyButton.themed(Component.literal("✕"), b -> send(HutActionPayload.Action.POSTBOX_CANCEL, id))
+                        .tooltip(Tooltip.create(Component.translatable("gui.hearthstead.postbox.cancel")))
+                        .bounds(left + panelWidth - 30, top + 86 + i * ORDER_ROW, 18, 18).build());
+            }
+        }
+
         if (tab == Tab.CONSTRUCTION && !view.hasOrder() && view.level() > 0) {
             int rowY = top + panelHeight - 52;
             addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.repair"),
@@ -229,6 +274,7 @@ public class BuildingScreen extends ColonyScreen {
         int listBottom = top + panelHeight - 34;
         switch (tab) {
             case OVERVIEW -> renderOverview(g, x, y, w, listBottom);
+            case ORDERS -> renderOrders(g, x, y, w);
             case CONSTRUCTION -> renderConstruction(g, x, y, w, listBottom, mouseX, mouseY);
             case REQUESTS -> renderRequests(g, x, y, w, listBottom, mouseX, mouseY);
             case SETTINGS -> renderSettings(g, x, y, w);
@@ -301,6 +347,67 @@ public class BuildingScreen extends ColonyScreen {
                 gr.drawString(font, worker.name() + " (" + worker.job() + ")", rx, ry, 0xFFFFFFFF, true);
                 gr.drawString(font, font.plainSubstrByWidth(worker.status(), rw), rx, ry + 10, 0xFFE0E0E0, false);
             });
+        }
+    }
+
+    // ---------------------------------------------------------------- postbox
+
+    /** Finds the typed item by id ("bread", "minecraft:bread") or by its name ("Bread") and orders it. */
+    private void placeOrder() {
+        String text = orderItemText.strip();
+        int count;
+        try {
+            count = Integer.parseInt(orderCountText.isEmpty() ? "1" : orderCountText);
+        } catch (NumberFormatException e) {
+            count = 1;
+        }
+        net.minecraft.world.item.Item item = findItem(text);
+        if (item == null) {
+            orderMessage = Component.translatable("gui.hearthstead.postbox.unknown", text);
+            return;
+        }
+        orderMessage = Component.empty();
+        orderItemText = "";
+        send(HutActionPayload.Action.POSTBOX_ORDER,
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item) + "|" + Math.max(1, count));
+    }
+
+    @org.jetbrains.annotations.Nullable
+    private static net.minecraft.world.item.Item findItem(String text) {
+        if (text.isEmpty()) {
+            return null;
+        }
+        String id = text.toLowerCase(java.util.Locale.ROOT).replace(' ', '_');
+        net.minecraft.resources.Identifier key = net.minecraft.resources.Identifier.tryParse(id);
+        if (key != null && net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(key)) {
+            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(key);
+            return item == net.minecraft.world.item.Items.AIR ? null : item;
+        }
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (item != net.minecraft.world.item.Items.AIR && item.getDefaultInstance().getHoverName().getString().equalsIgnoreCase(text)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    private void renderOrders(GuiGraphics g, int x, int y, int w) {
+        text(g, Component.translatable("gui.hearthstead.postbox.title"), x, y, HEADER);
+        if (!orderMessage.getString().isEmpty()) {
+            text(g, orderMessage, x, y + 32, BAD);
+        }
+        if (view.postboxOrders().isEmpty()) {
+            wrapped(g, Component.translatable("gui.hearthstead.postbox.none"), x, y + 44, w, TEXT_LIGHT);
+            return;
+        }
+        for (int i = 0; i < view.postboxOrders().size(); i++) {
+            BuildingViewPayload.Cost order = view.postboxOrders().get(i);
+            int rowY = top + 86 + i * ORDER_ROW;
+            ItemStack stack = new ItemStack(order.item());
+            g.renderItem(stack, x, rowY + 1);
+            g.drawString(font, font.plainSubstrByWidth(stack.getHoverName().getString(), w - 110), x + 20, rowY + 5, 0xFFFFFFFF, true);
+            String count = Math.min(order.have(), order.count()) + " / " + order.count();
+            g.drawString(font, count, x + w - 26 - font.width(count), rowY + 5, order.have() >= order.count() ? GOOD : TEXT_LIGHT, true);
         }
     }
 

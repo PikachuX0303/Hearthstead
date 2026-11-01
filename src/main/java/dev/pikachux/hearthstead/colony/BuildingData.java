@@ -18,6 +18,8 @@ public class BuildingData {
     private String style = Styles.CLASSIC;
     /** Values of the hut's settings that differ from their defaults (see {@link HutSettings}). */
     private final Map<String, String> settings = new TreeMap<>();
+    /** A postbox's orders: item id to count, in the order they were made. */
+    private final Map<String, Integer> orders = new java.util.LinkedHashMap<>();
 
     public BuildingData(BlockPos pos, BuildingType type, int level) {
         this.pos = pos.immutable();
@@ -64,6 +66,20 @@ public class BuildingData {
         }
     }
 
+    /** Items a postbox has ordered for delivery, with how many (see {@link #setOrder}). */
+    public Map<String, Integer> orders() {
+        return orders;
+    }
+
+    /** Orders {@code count} of an item (by its id) for delivery to this postbox; 0 cancels the order. */
+    public void setOrder(String itemId, int count) {
+        if (count <= 0) {
+            orders.remove(itemId);
+        } else {
+            orders.put(itemId, count);
+        }
+    }
+
     /** Radius around the hut in which its worker operates. */
     public int workRadius() {
         return 8 + level * 4;
@@ -80,6 +96,11 @@ public class BuildingData {
             settings.forEach(saved::putString);
             tag.put("settings", saved);
         }
+        if (!orders.isEmpty()) {
+            CompoundTag saved = new CompoundTag();
+            orders.forEach(saved::putInt);
+            tag.put("orders", saved);
+        }
         return tag;
     }
 
@@ -88,6 +109,7 @@ public class BuildingData {
         BuildingData moved = new BuildingData(to, type, level);
         moved.style = style;
         moved.settings.putAll(settings);
+        moved.orders.putAll(orders);
         return moved;
     }
 
@@ -99,6 +121,11 @@ public class BuildingData {
         tag.getCompound("settings").ifPresent(saved -> {
             for (String key : saved.keySet()) {
                 saved.getString(key).ifPresent(value -> building.settings.put(key, value));
+            }
+        });
+        tag.getCompound("orders").ifPresent(saved -> {
+            for (String key : saved.keySet()) {
+                saved.getInt(key).ifPresent(count -> building.orders.put(key, count));
             }
         });
         return building;

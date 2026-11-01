@@ -44,6 +44,8 @@ public record BuildingViewPayload(
         ColonyInfo colony,
         List<RequestEntry> requests,
         List<ResearchEntry> research,
+        /** A postbox's orders: the item, how many were ordered and how many have arrived. */
+        List<Cost> postboxOrders,
         List<SettingEntry> settings,
         boolean updateOnly
 ) implements CustomPacketPayload {
@@ -144,6 +146,11 @@ public record BuildingViewPayload(
             b.writeUtf(r.blocker());
             b.writeUtf(r.blockerArgument());
         });
+        writeList(buf, postboxOrders, (b, c) -> {
+            ITEM_CODEC.encode(b, c.item());
+            b.writeVarInt(c.count());
+            b.writeVarInt(c.have());
+        });
         writeList(buf, settings, (b, s) -> {
             b.writeUtf(s.id());
             b.writeUtf(s.value());
@@ -206,6 +213,7 @@ public record BuildingViewPayload(
                 b.readEnum(ResearchEntry.State.class), b.readFloat(),
                 readList(b, b2 -> new Cost(ITEM_CODEC.decode(b2), b2.readVarInt(), b2.readVarInt())),
                 b.readUtf(), b.readUtf()));
+        List<Cost> postboxOrders = readList(buf, b -> new Cost(ITEM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
         List<SettingEntry> settings = readList(buf, b -> new SettingEntry(b.readUtf(), b.readUtf()));
         boolean updateOnly = buf.readBoolean();
         ColonyInfo colony = ColonyInfo.NONE;
@@ -233,7 +241,7 @@ public record BuildingViewPayload(
                     decorationHappiness);
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
-                orderLevel, orderAssigned, orderKind, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, settings, updateOnly);
+                orderLevel, orderAssigned, orderKind, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, postboxOrders, settings, updateOnly);
     }
 
     static void writeRequest(RegistryFriendlyByteBuf buf, RequestEntry request) {

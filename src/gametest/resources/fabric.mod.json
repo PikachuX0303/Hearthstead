@@ -22,7 +22,8 @@
       "dev.pikachux.hearthstead.test.DecorationGameTests",
       "dev.pikachux.hearthstead.test.GuardGameTests",
       "dev.pikachux.hearthstead.test.IllnessGameTests",
-      "dev.pikachux.hearthstead.test.BuilderJobGameTests"
+      "dev.pikachux.hearthstead.test.BuilderJobGameTests",
+      "dev.pikachux.hearthstead.test.ColonyLifeGameTests"
     ],
     "fabric-client-gametest": [
       "dev.pikachux.hearthstead.test.ScreenshotClientTest"

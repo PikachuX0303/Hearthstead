@@ -46,6 +46,11 @@ public class CitizenData {
     @org.jetbrains.annotations.Nullable
     private Illness illness;
     private long illnessDay;
+    /** Game time a netherworker's trip ends, or 0 when at home. */
+    private long awayUntil;
+    /** Day a visitor comes back from a tavern expedition, or 0 when not on one. */
+    private long expeditionReturnDay;
+    private boolean expeditionArmed;
     private long arrivalDay;
     private String recruitItem = "";
     private int recruitCount;
@@ -251,8 +256,43 @@ public class CitizenData {
         illness = null;
     }
 
+    public long awayUntil() {
+        return awayUntil;
+    }
+
+    public void setAwayUntil(long gameTime) {
+        this.awayUntil = gameTime;
+    }
+
+    /** Whether the citizen is away on a tavern expedition (and so not in the world). */
+    public boolean onExpedition() {
+        return expeditionReturnDay > 0;
+    }
+
+    public long expeditionReturnDay() {
+        return expeditionReturnDay;
+    }
+
+    public boolean expeditionArmed() {
+        return expeditionArmed;
+    }
+
+    public void startExpedition(long returnDay, boolean armed) {
+        this.expeditionReturnDay = returnDay;
+        this.expeditionArmed = armed;
+    }
+
+    public void endExpedition() {
+        expeditionReturnDay = 0;
+        expeditionArmed = false;
+    }
+
     public long arrivalDay() {
         return arrivalDay;
+    }
+
+    public void setArrivalDay(long day) {
+        this.arrivalDay = day;
     }
 
     /** What the visitor asks for to join: an item id and count. */
@@ -327,6 +367,13 @@ public class CitizenData {
             tag.putBoolean("child", true);
             tag.putInt("age", ageSeconds);
         }
+        if (awayUntil > 0) {
+            tag.putLong("awayUntil", awayUntil);
+        }
+        if (expeditionReturnDay > 0) {
+            tag.putLong("expeditionReturnDay", expeditionReturnDay);
+            tag.putBoolean("expeditionArmed", expeditionArmed);
+        }
         if (illness != null) {
             tag.putString("illness", illness.id());
             tag.putLong("illnessDay", illnessDay);
@@ -361,6 +408,9 @@ public class CitizenData {
         data.ageSeconds = tag.getIntOr("age", 0);
         data.visitor = tag.getBooleanOr("visitor", false);
         data.illness = Illness.byId(tag.getStringOr("illness", ""));
+        data.awayUntil = tag.getLongOr("awayUntil", 0);
+        data.expeditionReturnDay = tag.getLongOr("expeditionReturnDay", 0);
+        data.expeditionArmed = tag.getBooleanOr("expeditionArmed", false);
         data.illnessDay = tag.getLongOr("illnessDay", 0);
         data.arrivalDay = tag.getLongOr("arrivalDay", 0);
         data.recruitItem = tag.getStringOr("recruitItem", "");

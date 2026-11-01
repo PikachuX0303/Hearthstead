@@ -27,7 +27,13 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
         /** Orders a repair of the hut's current level. */
         REPAIR,
         /** Orders the hut to be taken down. */
-        DEMOLISH
+        DEMOLISH,
+        /** Orders items to a postbox; the argument is {@code <item id>|<count>}. */
+        POSTBOX_ORDER,
+        /** Cancels a postbox order; the argument is the item id. */
+        POSTBOX_CANCEL,
+        /** Sends a tavern visitor on an expedition. */
+        SEND_EXPEDITION
     }
 
     private static final int MAX_ARGUMENT = 256;

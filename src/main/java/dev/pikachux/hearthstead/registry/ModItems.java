@@ -33,6 +33,7 @@ public final class ModItems {
                     output.accept(BUILD_TOOL);
                     output.accept(CLIPBOARD);
                     output.accept(ModBlocks.ROPE_FENCE);
+                    output.accept(ModBlocks.SCARECROW);
                     ModBlocks.HUTS.values().forEach(output::accept);
                 })
                 .build();

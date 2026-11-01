@@ -63,6 +63,7 @@ public class ColonyHappenings {
                     tryBirth(colony, level);
                 }
             }
+            colony.returnExpeditions(level, day);
             sendVisitors(colony, level, day);
             colony.dailyIllness(level, day);
         }
@@ -98,7 +99,7 @@ public class ColonyHappenings {
     /** Visitors who stayed too long leave; a new one may arrive at a tavern with room. */
     private void sendVisitors(Colony colony, ServerLevel level, long day) {
         for (CitizenData visitor : List.copyOf(colony.citizens())) {
-            if (visitor.visitor() && day - visitor.arrivalDay() >= VISITOR_DAYS) {
+            if (visitor.visitor() && !visitor.onExpedition() && day - visitor.arrivalDay() >= VISITOR_DAYS) {
                 if (visitor.entityUuid() != null && level.getEntity(visitor.entityUuid()) != null) {
                     level.getEntity(visitor.entityUuid()).discard();
                 }

@@ -259,6 +259,19 @@ public final class Logistics {
                     }
                 }
             }
+            case POSTBOX -> {
+                for (Map.Entry<String, Integer> order : building.orders().entrySet()) {
+                    Item item = postboxItem(order.getKey());
+                    if (item == null) {
+                        continue;
+                    }
+                    int have = Storage.count(storage, s -> s.is(item));
+                    if (have < order.getValue()) {
+                        requests.add(new Request(building.pos(), s -> s.is(item), order.getValue() - have,
+                                item.getDefaultInstance().getHoverName().getString()));
+                    }
+                }
+            }
             case HOSPITAL -> {
                 // One cure for every sick citizen, by illness.
                 if (building.level() > 0) {
@@ -459,6 +472,17 @@ public final class Logistics {
             }
         }
         requests.add(new Request(building.pos(), matcher, 1, description));
+    }
+
+    /** The item a postbox order names, or null for an unknown id. */
+    @org.jetbrains.annotations.Nullable
+    public static Item postboxItem(String id) {
+        net.minecraft.resources.Identifier key = net.minecraft.resources.Identifier.tryParse(id);
+        if (key == null) {
+            return null;
+        }
+        Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(key);
+        return item == Items.AIR ? null : item;
     }
 
     /** Like {@link #tool}, for something the hut's workers carry in their off hand (a knight's shield). */

@@ -63,8 +63,19 @@ public class NetherworkerGoal extends WorkGoal {
 
     @Override
     public void start() {
+        resume();
         if (!away) {
             citizen.setInvisible(false);
+        }
+    }
+
+    /** Picks up a trip that was under way when the game was saved. */
+    private void resume() {
+        var data = citizen.data();
+        if (!away && data != null && data.awayUntil() > 0) {
+            away = true;
+            returnTime = data.awayUntil();
+            citizen.setInvisible(true);
         }
     }
 
@@ -84,6 +95,7 @@ public class NetherworkerGoal extends WorkGoal {
         if (hut == null || building == null) {
             return;
         }
+        resume();
         if (away) {
             citizen.getNavigation().stop();
             long left = Math.max(0, returnTime - level().getGameTime());
@@ -118,6 +130,9 @@ public class NetherworkerGoal extends WorkGoal {
         Storage.extract(storage, Logistics::isMeal, FOOD);
         away = true;
         returnTime = level().getGameTime() + breakDelay(TRIP_TICKS);
+        if (citizen.data() != null) {
+            citizen.data().setAwayUntil(returnTime);
+        }
         citizen.setInvisible(true);
         level().sendParticles(ParticleTypes.PORTAL, citizen.getX(), citizen.getY() + 1, citizen.getZ(), 40, 0.4, 0.8, 0.4, 0.4);
         level().playSound(null, hut, SoundEvents.PORTAL_TRIGGER, SoundSource.NEUTRAL, 0.3F, 1.2F);
@@ -125,6 +140,9 @@ public class NetherworkerGoal extends WorkGoal {
 
     private void comeBack() {
         away = false;
+        if (citizen.data() != null) {
+            citizen.data().setAwayUntil(0);
+        }
         citizen.setInvisible(false);
         BuildingData building = building();
         if (building == null) {

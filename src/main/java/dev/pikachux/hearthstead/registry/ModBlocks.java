@@ -26,6 +26,8 @@ public final class ModBlocks {
     public static BlockEntityType<HutBlockEntity> HUT_BLOCK_ENTITY;
     /** Wooden posts joined by rope; connects like any wooden fence. */
     public static FenceBlock ROPE_FENCE;
+    /** Marks a field for the colony's farmers. */
+    public static dev.pikachux.hearthstead.block.ScarecrowBlock SCARECROW;
 
     private ModBlocks() {
     }
@@ -59,6 +61,19 @@ public final class ModBlocks {
         ResourceKey<Item> ropeItemKey = ResourceKey.create(Registries.ITEM, Hearthstead.id("rope_fence"));
         Registry.register(BuiltInRegistries.ITEM, ropeItemKey,
                 new BlockItem(ROPE_FENCE, new Item.Properties().setId(ropeItemKey).useBlockDescriptionPrefix()));
+
+        ResourceKey<Block> scarecrowKey = ResourceKey.create(Registries.BLOCK, Hearthstead.id("scarecrow"));
+        SCARECROW = Registry.register(BuiltInRegistries.BLOCK, scarecrowKey, new dev.pikachux.hearthstead.block.ScarecrowBlock(
+                BlockBehaviour.Properties.of()
+                        .setId(scarecrowKey)
+                        .mapColor(MapColor.COLOR_YELLOW)
+                        .strength(1.0F)
+                        .sound(SoundType.GRASS)
+                        .noOcclusion()
+                        .ignitedByLava()));
+        ResourceKey<Item> scarecrowItemKey = ResourceKey.create(Registries.ITEM, Hearthstead.id("scarecrow"));
+        Registry.register(BuiltInRegistries.ITEM, scarecrowItemKey,
+                new BlockItem(SCARECROW, new Item.Properties().setId(scarecrowItemKey).useBlockDescriptionPrefix()));
 
         HUT_BLOCK_ENTITY = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Hearthstead.id("hut"),
                 FabricBlockEntityTypeBuilder.create(HutBlockEntity::new, HUTS.values().toArray(new Block[0])).build());

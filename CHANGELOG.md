@@ -5,6 +5,25 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.40.0-alpha] - 2026-11-01
+
+### Added
+- **Postbox:** a hut without a worker where you order items by name or id (up to 8 orders); the
+  deliveryman brings them from the warehouse, and members get a message when an order is
+  complete.
+- **Mystical Site:** a hut without a worker; the best one in the colony makes everyone happier
+  (+0.25 per level).
+- **Scarecrows and fields:** a scarecrow marks the 9 by 9 field around it, which the nearest
+  farmer with room works (one field per Farmer's Hut level).
+- **Tavern expeditions:** send a visitor away for a night with 6 meals (and a sword) from the
+  tavern; they usually come back the next morning with loot.
+
+### Changed
+- The hut row in the README shows the newest huts and the scarecrow.
+
+### Fixed
+- A Netherworker's trip carries on after the world is reloaded instead of being lost.
+
 ## [0.39.0-alpha] - 2026-11-01
 
 ### Added

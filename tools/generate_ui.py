@@ -116,6 +116,8 @@ ICONS = {
     "school": ["..........", ".wwww.www.", ".wkkw.wkw.", ".wwww.www.", ".wkkw.wkw.", ".wwwwbwww.", "BBBBBBBBBB", "..........", "....y.....", "...yyy...."],
     "tavern": ["..........", "..wwwww...", ".wwwwwww..", ".yyyyyyBB.", ".yYyyyyB.B", ".yyyyYyB.B", ".yyyyyyBB.", ".yYyyyyB..", ".BBBBBBB..", ".........."],
     "graveyard": ["....gg....", "....gg....", ".gggggggg.", ".gggggggg.", "....gg....", "....gg....", "....gg....", "...gGGg...", ".EEeEEeEE.", "EeEEEEEeEE"],
+    "postbox": ["..........", "...rrrr...", "..rRRRRr..", ".rrkkkkrr.", ".rrrrrrrr.", ".rrrrryrr.", ".rRRRRRRr.", "....bb....", "....bb....", "...BBBB..."],
+    "mysticalsite": ["....V.....", "...VvV....", "..VvVvV...", ".VvVwVvV..", "..VvVvV...", "...VvV....", "....V.....", "..g...g...", ".gGg.gGg..", "gGGGgGGGg."],
 }
 
 
@@ -191,6 +193,8 @@ PROPS = {
     "school": [box(3, 12, 4, 13, 14, 12, V + "white_wool"), box(5, 14, 5, 11, 17, 11, V + "bookshelf", V + "oak_planks")],
     "tavern": [box(4, 12, 4, 12, 19, 12, V + "barrel_side", V + "barrel_top")],
     "graveyard": [box(3, 12, 3, 13, 14, 13, V + "podzol_side", V + "podzol_top"), box(6, 14, 7, 10, 21, 9, V + "mossy_cobblestone")],
+    "postbox": [box(6, 12, 6, 10, 15, 10, V + "spruce_log", V + "spruce_log_top"), box(4, 15, 5, 12, 20, 11, V + "red_terracotta")],
+    "mysticalsite": [box(4, 12, 4, 12, 14, 12, V + "calcite"), box(6, 14, 6, 10, 21, 10, V + "amethyst_block")],
 }
 
 # Workbench wood per hut: (planks for the top and shelf, stripped log for the legs).
@@ -201,7 +205,8 @@ WOODS = {"townhall": ("dark_oak", "dark_oak"), "university": ("dark_oak", "dark_
          "blacksmith": ("spruce", "spruce"), "stonesmeltery": ("spruce", "spruce"),
          "barracks": ("spruce", "spruce"), "hospital": ("birch", "birch"),
          "library": ("dark_oak", "dark_oak"), "combatacademy": ("spruce", "spruce"),
-         "tavern": ("spruce", "spruce"), "graveyard": ("dark_oak", "dark_oak")}
+         "tavern": ("spruce", "spruce"), "graveyard": ("dark_oak", "dark_oak"),
+         "postbox": ("spruce", "spruce"), "mysticalsite": ("birch", "birch")}
 
 
 def cube(frm, to, faces):
@@ -312,6 +317,42 @@ def rope_fence_models():
         f.write("\n")
 
 
+def scarecrow_model():
+    """The scarecrow that marks a field: a post with arms, a hay body, a pumpkin head and a hat."""
+    root = os.path.join(ROOT, "..")
+    head = {f: {"texture": "#head"} for f in ("east", "south", "west")}
+    head["north"] = {"texture": "#face"}
+    head["up"] = {"texture": "#headtop"}
+    head["down"] = {"texture": "#headtop"}
+    model = {"parent": "minecraft:block/block",
+             "textures": {"post": V + "stripped_oak_log", "body": V + "hay_block_side", "bodytop": V + "hay_block_top",
+                          "head": V + "pumpkin_side", "face": V + "carved_pumpkin", "headtop": V + "pumpkin_top",
+                          "hat": V + "brown_wool", "particle": V + "hay_block_side"},
+             "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, -2.5, 0], "scale": [0.5] * 3},
+                         "ground": {"translation": [0, 2, 0], "scale": [0.3] * 3},
+                         "fixed": {"scale": [0.4] * 3},
+                         "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.3] * 3},
+                         "firstperson_righthand": {"rotation": [0, 45, 0], "scale": [0.3] * 3}},
+             "elements": [cube([7, 0, 7], [9, 19, 9], all_faces("#post")),
+                          cube([1, 15, 7.5], [15, 16.5, 8.5], all_faces("#post")),
+                          cube([5, 10, 6], [11, 19, 10], all_faces("#body", top="#bodytop")),
+                          cube([4.5, 19, 4.5], [11.5, 26, 11.5], head),
+                          cube([3.5, 26, 3.5], [12.5, 27, 12.5], all_faces("#hat")),
+                          cube([5.5, 27, 5.5], [10.5, 29, 10.5], all_faces("#hat"))]}
+    with open(os.path.join(root, "models", "block", "scarecrow.json"), "w") as f:
+        json.dump(model, f, indent=2)
+        f.write("\n")
+    variants = {"facing=north": {"model": "hearthstead:block/scarecrow"}}
+    for facing, y in (("east", 90), ("south", 180), ("west", 270)):
+        variants["facing=" + facing] = {"model": "hearthstead:block/scarecrow", "y": y}
+    with open(os.path.join(root, "blockstates", "scarecrow.json"), "w") as f:
+        json.dump({"variants": variants}, f, indent=2)
+        f.write("\n")
+    with open(os.path.join(root, "items", "scarecrow.json"), "w") as f:
+        json.dump({"model": {"type": "minecraft:model", "model": "hearthstead:block/scarecrow"}}, f, indent=2)
+        f.write("\n")
+
+
 # ----------------------------------------------------------------------------- GUI theme
 PARCHMENT = (232, 214, 172)
 PARCHMENT_DARK = (204, 182, 134)
@@ -412,6 +453,7 @@ def main():
     write_models()
     rope_fence_textures()
     rope_fence_models()
+    scarecrow_model()
     window()
     inset()
     slot()

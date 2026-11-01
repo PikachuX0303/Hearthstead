@@ -306,18 +306,39 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             }
             context.setScreen(() -> null);
 
+            // A postbox with two orders: its Orders tab.
+            BlockPos postboxPos = singleplayer.getServer().computeOnServer(server -> {
+                ServerLevel level = player(server).level();
+                BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, previewPos.offset(-10, 0, 0));
+                level.setBlockAndUpdate(pos, ModBlocks.HUTS.get(BuildingType.POSTBOX).defaultBlockState());
+                Colony colony = ColonyManager.get(server).colonyAt(level.dimension(), pos);
+                BuildingData postbox = new BuildingData(pos, BuildingType.POSTBOX, 1);
+                postbox.setOrder("minecraft:bread", 16);
+                postbox.setOrder("minecraft:torch", 32);
+                colony.addBuilding(postbox);
+                return pos;
+            });
+            singleplayer.getServer().runOnServer(server -> open(server, postboxPos));
+            context.waitForScreen(BuildingScreen.class);
+            context.clickScreenButton("gui.hearthstead.tab.orders");
+            context.waitTicks(5);
+            context.takeScreenshot("postbox_orders");
+            context.setScreen(() -> null);
+
             // A row of hut blocks, to show their models.
             singleplayer.getServer().runOnServer(server -> {
                 ServerPlayer player = player(server);
                 ServerLevel level = player.level();
                 BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, townHall.offset(-14, 0, -24));
-                BuildingType[] shown = {BuildingType.TOWN_HALL, BuildingType.BARRACKS, BuildingType.HOSPITAL,
-                        BuildingType.QUARRY, BuildingType.STASH, BuildingType.BLACKSMITH,
-                        BuildingType.FLETCHER, BuildingType.STONE_SMELTERY, BuildingType.MECHANIC};
+                BuildingType[] shown = {BuildingType.TOWN_HALL, BuildingType.LIBRARY, BuildingType.SCHOOL,
+                        BuildingType.TAVERN, BuildingType.GRAVEYARD, BuildingType.POSTBOX,
+                        BuildingType.MYSTICAL_SITE, BuildingType.HOSPITAL};
                 for (int i = 0; i < shown.length; i++) {
                     level.setBlockAndUpdate(base.offset(i - 2, 0, 0), ModBlocks.HUTS.get(shown[i]).defaultBlockState()
                             .setValue(HutBlock.FACING, Direction.NORTH));
                 }
+                level.setBlockAndUpdate(base.offset(shown.length - 2, 0, 0), ModBlocks.SCARECROW.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
                 // A timber-style residence with its fenced front yard behind the row of huts.
                 Colony colony = ColonyManager.get(server).colonyAt(level.dimension(), townHall);
                 BlockPos house = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.offset(1, 0, 14));
@@ -334,7 +355,12 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             });
             context.waitTicks(20);
             // Many blocks just changed nearby: rebuild every chunk mesh so none is left out of the picture.
-            context.runOnClient(client -> client.levelRenderer.allChanged());
+            // The mouse turns the camera when no screen is open, so the view is set on the client too.
+            context.runOnClient(client -> {
+                client.player.setYRot(0);
+                client.player.setXRot(32);
+                client.levelRenderer.allChanged();
+            });
             try {
                 singleplayer.getClientWorld().waitForChunksRender();
             } catch (AssertionError slowRendering) {

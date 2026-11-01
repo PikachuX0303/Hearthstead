@@ -47,6 +47,8 @@ public class Colony {
     private final Map<Integer, CitizenData> citizens = new LinkedHashMap<>();
     private final List<WorkOrder> workOrders = new ArrayList<>();
     private final List<Decoration> decorations = new ArrayList<>();
+    /** Scarecrows marking fields, in the order they were placed. */
+    private final List<BlockPos> fields = new ArrayList<>();
     private int decorationTimer;
     private final ColonyRaid raid = new ColonyRaid();
     private final ColonyHappenings happenings = new ColonyHappenings();
@@ -375,6 +377,56 @@ public class Colony {
         return moved;
     }
 
+    // ---------------------------------------------------------------- fields
+
+    /** How far a field reaches from its scarecrow in each direction (a 9 by 9 field). */
+    public static final int FIELD_RADIUS = 4;
+
+    public List<BlockPos> fields() {
+        return fields;
+    }
+
+    public void addField(BlockPos scarecrow) {
+        if (!fields.contains(scarecrow)) {
+            fields.add(scarecrow.immutable());
+            markDirty();
+        }
+    }
+
+    public void removeField(BlockPos scarecrow) {
+        if (fields.remove(scarecrow)) {
+            markDirty();
+        }
+    }
+
+    /**
+     * The fields a farmer's hut works: each field goes to the nearest farmer's hut that still has
+     * room (one field per hut level, at least one), in the order the fields were marked.
+     */
+    public List<BlockPos> fieldsOf(BuildingData farmerHut) {
+        List<BuildingData> farms = buildings.values().stream().filter(b -> b.type() == BuildingType.FARMER).toList();
+        Map<BlockPos, Integer> room = new java.util.HashMap<>();
+        farms.forEach(f -> room.put(f.pos(), Math.max(1, f.level())));
+        List<BlockPos> mine = new ArrayList<>();
+        for (BlockPos field : fields) {
+            BuildingData nearest = null;
+            for (BuildingData farm : farms) {
+                if (room.get(farm.pos()) > 0
+                        && (nearest == null || farm.pos().distSqr(field) < nearest.pos().distSqr(field))) {
+                    nearest = farm;
+                }
+            }
+            if (nearest == null) {
+                break;
+            }
+            room.merge(nearest.pos(), -1, Integer::sum);
+            if (nearest.pos().equals(farmerHut.pos())) {
+                mine.add(field);
+            }
+        }
+        return mine;
+    }
+
     // ---------------------------------------------------------------- decorations
 
     public List<Decoration> decorations() {
@@ -399,6 +451,36 @@ public class Colony {
 
     public long intactDecorations() {
         return decorations.stream().filter(Decoration::intact).count();
+    }
+
+    /** Happiness every citizen gets from the colony's best Mystical Site: 0.25 per level. */
+    public double mysticalHappiness() {
+        int best = buildings.values().stream().filter(b -> b.type() == BuildingType.MYSTICAL_SITE)
+                .mapToInt(BuildingData::level).max().orElse(0);
+        return MYSTICAL_HAPPINESS_PER_LEVEL * best;
+    }
+
+    public static final double MYSTICAL_HAPPINESS_PER_LEVEL = 0.25;
+
+    /** A postbox order is done once its items have all arrived; the members get a message. */
+    public void checkPostboxes(MinecraftServer server, ServerLevel level) {
+        for (BuildingData postbox : buildings.values()) {
+            if (postbox.type() != BuildingType.POSTBOX || postbox.orders().isEmpty() || !level.isLoaded(postbox.pos())) {
+                continue;
+            }
+            var storage = Storage.containers(level, postbox);
+            for (Map.Entry<String, Integer> order : List.copyOf(postbox.orders().entrySet())) {
+                net.minecraft.world.item.Item item = Logistics.postboxItem(order.getKey());
+                if (item == null || Storage.count(storage, s -> s.is(item)) >= order.getValue()) {
+                    postbox.setOrder(order.getKey(), 0);
+                    markDirty();
+                    if (item != null) {
+                        broadcast(server, Component.translatable("message.hearthstead.postbox_arrived", order.getValue(),
+                                item.getDefaultInstance().getHoverName()).withStyle(net.minecraft.ChatFormatting.GREEN));
+                    }
+                }
+            }
+        }
     }
 
     /** Happiness every citizen gets from the colony's intact decorations. */
@@ -461,6 +543,7 @@ public class Colony {
             decorationTimer = 0;
             checkDecorations(level);
         }
+        checkPostboxes(server, level);
 
         growChildren(level);
         if (residents() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get() / (research.has(Research.WELCOME_WAGONS) ? 2 : 1)) {
@@ -469,6 +552,10 @@ public class Colony {
         }
 
         for (CitizenData data : citizens.values()) {
+            if (data.onExpedition()) {
+                // Away on a tavern expedition: not in the world until they come back.
+                continue;
+            }
             Entity entity = data.entityUuid() == null ? null : level.getEntity(data.entityUuid());
             if (entity instanceof CitizenEntity && entity.isAlive()) {
                 continue;
@@ -520,6 +607,121 @@ public class Colony {
         broadcast(level.getServer(), Component.translatable("message.hearthstead.fell_ill", citizen.name(),
                 Component.translatable("illness.hearthstead." + illness.id()),
                 illness.cure().getDefaultInstance().getHoverName()).withStyle(net.minecraft.ChatFormatting.GOLD));
+    }
+
+    // ---------------------------------------------------------------- tavern expeditions
+
+    /** Meals an expedition takes along. */
+    public static final int EXPEDITION_FOOD = 6;
+    /** Chance that an expedition comes back, with and without a sword. */
+    public static final double EXPEDITION_SUCCESS = 0.85;
+    public static final double EXPEDITION_SUCCESS_ARMED = 0.95;
+
+    /**
+     * Sends a visitor staying at the tavern on an expedition with food (and a sword, if there is
+     * one) from the tavern. They come back the next morning with loot, or, rarely, not at all.
+     * Returns null on success or a translation key describing the problem.
+     */
+    @Nullable
+    public String sendExpedition(ServerLevel level, BuildingData tavern) {
+        if (tavern.type() != BuildingType.TAVERN || tavern.level() == 0) {
+            return "message.hearthstead.expedition_needs_tavern";
+        }
+        CitizenData visitor = citizens.values().stream().filter(c -> c.visitor() && !c.onExpedition()).findFirst().orElse(null);
+        if (visitor == null) {
+            return "message.hearthstead.expedition_no_visitor";
+        }
+        var storage = Storage.containers(level, tavern);
+        if (Storage.count(storage, Logistics::isMeal) < EXPEDITION_FOOD) {
+            return "message.hearthstead.expedition_needs_food";
+        }
+        Storage.extract(storage, Logistics::isMeal, EXPEDITION_FOOD);
+        boolean armed = !Storage.extract(storage, s -> s.is(net.minecraft.tags.ItemTags.SWORDS), 1).isEmpty();
+        long day = level.getDayTime() / 24000;
+        visitor.startExpedition(day + 1, armed);
+        visitor.setStatus("Away on an expedition (back tomorrow morning)");
+        if (visitor.entityUuid() != null && level.getEntity(visitor.entityUuid()) != null) {
+            level.getEntity(visitor.entityUuid()).discard();
+        }
+        markDirty();
+        broadcast(level.getServer(), Component.translatable("message.hearthstead.expedition_left", visitor.name())
+                .withStyle(net.minecraft.ChatFormatting.AQUA));
+        return null;
+    }
+
+    /** Each morning: expeditions due back return to the tavern with their loot, or are lost. */
+    public void returnExpeditions(ServerLevel level, long day) {
+        BuildingData tavern = trainingGround(BuildingType.TAVERN);
+        for (CitizenData traveller : List.copyOf(citizens.values())) {
+            if (!traveller.onExpedition() || day < traveller.expeditionReturnDay()) {
+                continue;
+            }
+            boolean armed = traveller.expeditionArmed();
+            traveller.endExpedition();
+            if (level.getRandom().nextDouble() >= (armed ? EXPEDITION_SUCCESS_ARMED : EXPEDITION_SUCCESS)) {
+                removeCitizen(traveller.id());
+                broadcast(level.getServer(), Component.translatable("message.hearthstead.expedition_lost", traveller.name())
+                        .withStyle(net.minecraft.ChatFormatting.RED));
+                continue;
+            }
+            List<ItemStack> loot = expeditionLoot(tavern == null ? 1 : tavern.level(), armed, level.getRandom());
+            BlockPos home = tavern != null ? tavern.pos() : center;
+            var storage = tavern != null ? Storage.containers(level, tavern) : List.<net.minecraft.world.Container>of();
+            for (ItemStack stack : loot) {
+                ItemStack rest = Storage.insert(storage, stack.copy());
+                if (!rest.isEmpty()) {
+                    net.minecraft.world.entity.item.ItemEntity drop = new net.minecraft.world.entity.item.ItemEntity(level,
+                            home.getX() + 0.5, home.getY() + 1, home.getZ() + 0.5, rest);
+                    level.addFreshEntity(drop);
+                }
+            }
+            // Back at the tavern for a few more days.
+            traveller.setArrivalDay(day);
+            spawnCitizen(level, traveller, home);
+            String found = String.join(", ", loot.stream().map(s -> s.getCount() + "x " + s.getHoverName().getString()).toList());
+            broadcast(level.getServer(), Component.translatable("message.hearthstead.expedition_back", traveller.name(), found)
+                    .withStyle(net.minecraft.ChatFormatting.GREEN));
+        }
+    }
+
+    /** What could turn up on an expedition: item, weight, smallest and largest count. */
+    private record Find(net.minecraft.world.item.Item item, int weight, int min, int max) {
+    }
+
+    private static final List<Find> FINDS = List.of(
+            new Find(net.minecraft.world.item.Items.EMERALD, 20, 1, 3),
+            new Find(net.minecraft.world.item.Items.IRON_INGOT, 20, 2, 5),
+            new Find(net.minecraft.world.item.Items.LEATHER, 12, 2, 6),
+            new Find(net.minecraft.world.item.Items.GOLD_INGOT, 10, 1, 3),
+            new Find(net.minecraft.world.item.Items.OAK_SAPLING, 6, 2, 4),
+            new Find(net.minecraft.world.item.Items.CHERRY_SAPLING, 4, 1, 3),
+            new Find(net.minecraft.world.item.Items.MELON_SEEDS, 5, 2, 6),
+            new Find(net.minecraft.world.item.Items.PUMPKIN_SEEDS, 5, 2, 6),
+            new Find(net.minecraft.world.item.Items.BOOK, 6, 1, 3),
+            new Find(net.minecraft.world.item.Items.ENDER_PEARL, 5, 1, 2),
+            new Find(net.minecraft.world.item.Items.SADDLE, 3, 1, 1),
+            new Find(net.minecraft.world.item.Items.NAME_TAG, 3, 1, 1),
+            new Find(net.minecraft.world.item.Items.GOLDEN_APPLE, 2, 1, 1),
+            new Find(net.minecraft.world.item.Items.DIAMOND, 2, 1, 2));
+
+    /** What an expedition brings back: 3 finds plus one per tavern level, and two more with a sword. */
+    public static List<ItemStack> expeditionLoot(int tavernLevel, boolean armed, net.minecraft.util.RandomSource random) {
+        int total = FINDS.stream().mapToInt(Find::weight).sum();
+        List<ItemStack> loot = new ArrayList<>();
+        int rolls = 3 + tavernLevel + (armed ? 2 : 0);
+        for (int i = 0; i < rolls; i++) {
+            int pick = random.nextInt(total);
+            for (Find find : FINDS) {
+                pick -= find.weight();
+                if (pick < 0) {
+                    int count = find.min() + random.nextInt(find.max() - find.min() + 1);
+                    loot.stream().filter(s -> s.is(find.item()) && s.getCount() + count <= s.getMaxStackSize()).findFirst()
+                            .ifPresentOrElse(s -> s.grow(count), () -> loot.add(new ItemStack(find.item(), count)));
+                    break;
+                }
+            }
+        }
+        return loot;
     }
 
     /** Citizens who live in the colony: everyone but the tavern's visitors. */
@@ -776,6 +978,9 @@ public class Colony {
         ListTag orderList = new ListTag();
         workOrders.forEach(o -> orderList.add(o.save()));
         tag.put("workOrders", orderList);
+        ListTag fieldList = new ListTag();
+        fields.forEach(f -> fieldList.add(net.minecraft.nbt.LongTag.valueOf(f.asLong())));
+        tag.put("fields", fieldList);
         ListTag decorationList = new ListTag();
         decorations.forEach(d -> decorationList.add(d.save()));
         tag.put("decorations", decorationList);
@@ -805,6 +1010,7 @@ public class Colony {
         colony.style = tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
         tag.getListOrEmpty("workOrders").compoundStream().map(WorkOrder::load).forEach(colony.workOrders::add);
         tag.getListOrEmpty("decorations").compoundStream().map(Decoration::load).forEach(colony.decorations::add);
+        tag.getListOrEmpty("fields").forEach(t -> t.asLong().ifPresent(l -> colony.fields.add(BlockPos.of(l))));
         colony.nextCitizenId = tag.getIntOr("nextCitizenId", colony.citizens.size() + 1);
         tag.getListOrEmpty("dead").forEach(t -> t.asCompound().ifPresent(c -> colony.dead.add(CitizenData.load(c))));
         colony.mourningUntil = tag.getLongOr("mourningUntil", 0);
