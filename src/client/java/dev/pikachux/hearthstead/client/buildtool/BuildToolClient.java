@@ -4,6 +4,7 @@ import dev.pikachux.hearthstead.block.HutBlock;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.network.BlueprintPayload;
 import dev.pikachux.hearthstead.network.BlueprintRequestPayload;
+import dev.pikachux.hearthstead.network.DecorationsPayload;
 import dev.pikachux.hearthstead.registry.ModItems;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
@@ -28,9 +29,13 @@ public final class BuildToolClient {
         WorldRenderEvents.AFTER_ENTITIES.register(PreviewRenderer::render);
 
         ClientPlayNetworking.registerGlobalReceiver(BlueprintPayload.TYPE, (payload, context) -> {
-            BuildingType type = BuildingType.byId(payload.buildingType());
             BuildPreview preview;
-            if (payload.existingHut().isPresent()) {
+            BuildingType type = payload.decoration().isEmpty() ? BuildingType.byId(payload.buildingType()) : null;
+            if (type == null) {
+                BlockPos pos = PendingPlacement.pos() != null ? PendingPlacement.pos() : context.player().blockPosition();
+                preview = BuildPreview.decoration(payload.decoration(), payload.blueprint(), pos, PendingPlacement.facing(),
+                        payload.style(), payload.styles());
+            } else if (payload.existingHut().isPresent()) {
                 BlockPos hut = payload.existingHut().get();
                 preview = new BuildPreview(type, payload.level(), payload.blueprint(), hut, payload.hutFacing(), hut,
                         payload.style(), payload.styles());
@@ -42,6 +47,9 @@ public final class BuildToolClient {
             BuildPreview.set(preview);
             context.client().setScreen(new BuildToolScreen());
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(DecorationsPayload.TYPE,
+                (payload, context) -> ClientDecorations.set(payload.decorations()));
 
         UseBlockCallback.EVENT.register((player, level, hand, hit) -> {
             if (!level.isClientSide() || !player.getItemInHand(hand).is(ModItems.BUILD_TOOL)) {

@@ -104,13 +104,15 @@ public final class BuildingViews {
                             (float) c.happiness(), (float) c.saturation(), c.status()))
                     .toList();
             List<BuildingViewPayload.WorkOrderEntry> orders = colony.workOrders().stream()
-                    .map(o -> new BuildingViewPayload.WorkOrderEntry(BuildingInfo.describe(colony, o), o.builder() != null))
+                    .map(o -> new BuildingViewPayload.WorkOrderEntry(BuildingInfo.describe(colony, o), o.builder() != null,
+                            o.isDecoration() ? java.util.Optional.of(o.buildingPos()) : java.util.Optional.empty()))
                     .toList();
             info = new BuildingViewPayload.ColonyInfo(true, colony.ownerName(), colony.citizens().size(),
                     colony.housingCapacity(), colony.buildings().size(), colony.owner().equals(player.getUUID()),
                     citizens, orders, colony.raid().enabled(), colony.raid().remaining(), colony.raid().total(), colony.style(),
                     colony.raid().culture() == dev.pikachux.hearthstead.colony.ColonyRaid.Culture.PIRATES,
-                    colony.happenings().festival(level.getGameTime()));
+                    colony.happenings().festival(level.getGameTime()), colony.decorations().size(),
+                    (int) colony.intactDecorations(), (float) colony.decorationHappiness());
         }
 
         return new BuildingViewPayload(building.pos(), type.id(), building.level(), BuildingType.MAX_LEVEL, colony.name(),

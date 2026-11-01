@@ -2,11 +2,14 @@ package dev.pikachux.hearthstead.blueprint;
 
 import dev.pikachux.hearthstead.block.HutBlock;
 import dev.pikachux.hearthstead.colony.BuildingData;
+import dev.pikachux.hearthstead.colony.Colony;
+import dev.pikachux.hearthstead.colony.WorkOrder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +34,17 @@ public final class Construction {
         return blueprint.placements(building.pos(), Blueprints.facing(level, building.pos()));
     }
 
+    /** What a builder has to build for a work order: a hut level or a decoration. */
+    @Nullable
+    public static List<Blueprint.Placement> plan(ServerLevel level, Colony colony, WorkOrder order) {
+        if (order.isDecoration()) {
+            Blueprint blueprint = Blueprints.decoration(level.getServer(), order.style(), order.decoration());
+            return blueprint == null ? null : blueprint.placements(order.buildingPos(), order.facing());
+        }
+        BuildingData target = colony.building(order.buildingPos());
+        return target == null ? null : plan(level, target, order.targetLevel());
+    }
+
     /** True if the world already matches this placement closely enough. */
     public static boolean isDone(ServerLevel level, Blueprint.Placement placement) {
         BlockState current = level.getBlockState(placement.pos());
@@ -49,6 +63,10 @@ public final class Construction {
     public static Item requiredItem(BlockState state) {
         if (state.isAir() || !state.getFluidState().isEmpty()) {
             return null;
+        }
+        // Ground that cannot be picked up as it is: builders lay dirt and shape it.
+        if (state.is(Blocks.DIRT_PATH) || state.is(Blocks.FARMLAND) || state.is(Blocks.GRASS_BLOCK)) {
+            return Items.DIRT;
         }
         Item item = state.getBlock().asItem();
         return item == Items.AIR ? null : item;

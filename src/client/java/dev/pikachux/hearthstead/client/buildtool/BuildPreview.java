@@ -9,13 +9,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * The building currently previewed with the build tool (client side only).
+ * The building or decoration currently previewed with the build tool (client side only).
+ * A decoration preview has no building type but the decoration's name.
  */
 public final class BuildPreview {
     @Nullable
     private static BuildPreview current;
 
+    @Nullable
     private final BuildingType type;
+    @Nullable
+    private final String decoration;
     private final int level;
     private final Blueprint blueprint;
     /** Set for an upgrade preview of an existing hut; such previews cannot be moved. */
@@ -28,7 +32,19 @@ public final class BuildPreview {
 
     public BuildPreview(BuildingType type, int level, Blueprint blueprint, BlockPos pos, Direction facing,
                         @Nullable BlockPos existingHut, String style, List<String> styles) {
+        this(type, null, level, blueprint, pos, facing, existingHut, style, styles);
+    }
+
+    /** A preview of a decoration. */
+    public static BuildPreview decoration(String name, Blueprint blueprint, BlockPos pos, Direction facing, String style,
+                                          List<String> styles) {
+        return new BuildPreview(null, name, 1, blueprint, pos, facing, null, style, styles);
+    }
+
+    private BuildPreview(@Nullable BuildingType type, @Nullable String decoration, int level, Blueprint blueprint, BlockPos pos,
+                         Direction facing, @Nullable BlockPos existingHut, String style, List<String> styles) {
         this.type = type;
+        this.decoration = decoration;
         this.level = level;
         this.blueprint = blueprint;
         this.pos = pos;
@@ -55,8 +71,19 @@ public final class BuildPreview {
         current = preview;
     }
 
+    /** The hut being previewed; null for a decoration. */
+    @Nullable
     public BuildingType type() {
         return type;
+    }
+
+    @Nullable
+    public String decoration() {
+        return decoration;
+    }
+
+    public boolean isDecoration() {
+        return decoration != null;
     }
 
     public int level() {

@@ -15,10 +15,11 @@ import java.util.Optional;
 
 /**
  * A blueprint sent to the client for the build tool preview. For an upgrade preview
- * {@code existingHut} is set and the preview is fixed to that hut.
+ * {@code existingHut} is set and the preview is fixed to that hut. For a decoration
+ * {@code decoration} holds its name and {@code buildingType} is empty.
  */
 public record BlueprintPayload(String buildingType, int level, Blueprint blueprint, Optional<BlockPos> existingHut,
-                               Direction hutFacing, String style, List<String> styles) implements CustomPacketPayload {
+                               Direction hutFacing, String style, List<String> styles, String decoration) implements CustomPacketPayload {
     public static final Type<BlueprintPayload> TYPE = new Type<>(Hearthstead.id("blueprint"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintPayload> CODEC =
             CustomPacketPayload.codec(BlueprintPayload::write, BlueprintPayload::read);
@@ -41,6 +42,7 @@ public record BlueprintPayload(String buildingType, int level, Blueprint bluepri
         buf.writeEnum(hutFacing);
         buf.writeUtf(style);
         buf.writeCollection(styles, (b, s) -> b.writeUtf(s));
+        buf.writeUtf(decoration);
     }
 
     private static BlueprintPayload read(RegistryFriendlyByteBuf buf) {
@@ -56,6 +58,7 @@ public record BlueprintPayload(String buildingType, int level, Blueprint bluepri
         Direction hutFacing = buf.readEnum(Direction.class);
         String style = buf.readUtf();
         List<String> styles = buf.readList(b -> b.readUtf());
-        return new BlueprintPayload(type, level, Blueprint.of(entries, anchorFacing), existingHut, hutFacing, style, styles);
+        String decoration = buf.readUtf();
+        return new BlueprintPayload(type, level, Blueprint.of(entries, anchorFacing), existingHut, hutFacing, style, styles, decoration);
     }
 }

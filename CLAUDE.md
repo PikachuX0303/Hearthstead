@@ -35,7 +35,8 @@ download section and in `fabric.mod.json` `depends` (optional ones in `suggests`
 
 ## Generated assets
 
-- `tools/generate_schematics.py`: hut blueprints for every style.
+- `tools/generate_schematics.py`: hut and decoration blueprints for every style, and the
+  decoration icons (`decoration_icons.json`).
 - `tools/generate_textures.py`: barbarian skins and the Build Tool and Clipboard icons.
 - `tools/generate_ui.py`: hut block textures, hut block models and the GUI theme sprites.
 - `tools/generate_worldgen.py`: structure templates for world generation (abandoned settlement).

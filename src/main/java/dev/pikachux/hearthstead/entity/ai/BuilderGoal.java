@@ -6,6 +6,7 @@ import dev.pikachux.hearthstead.blueprint.Construction;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingInfo;
 import dev.pikachux.hearthstead.colony.Colony;
+import dev.pikachux.hearthstead.colony.Decoration;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.WorkOrder;
@@ -101,8 +102,7 @@ public class BuilderGoal extends WorkGoal {
             idle(200);
             return;
         }
-        BuildingData target = colony.building(order.buildingPos());
-        plan = target == null ? null : Construction.plan(level(), target, order.targetLevel());
+        plan = Construction.plan(level(), colony, order);
         if (plan == null) {
             citizen.setStatus("Missing blueprint for " + BuildingInfo.describe(colony, order));
             colony.removeWorkOrder(order);
@@ -221,8 +221,13 @@ public class BuilderGoal extends WorkGoal {
     }
 
     private void finish(Colony colony) {
-        BuildingData target = colony.building(order.buildingPos());
-        if (target != null) {
+        BuildingData target = order.isDecoration() ? null : colony.building(order.buildingPos());
+        if (order.isDecoration()) {
+            colony.addDecoration(new Decoration(order.decoration(), order.buildingPos(), order.facing(), order.style()));
+            colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.decoration_done",
+                    Component.translatableWithFallback("decoration.hearthstead." + order.decoration(),
+                            Decoration.displayName(order.decoration()))).withStyle(ChatFormatting.GREEN));
+        } else if (target != null) {
             target.setLevel(order.targetLevel());
             colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.construction_done",
                     target.type().displayName(), order.targetLevel()).withStyle(ChatFormatting.GREEN));

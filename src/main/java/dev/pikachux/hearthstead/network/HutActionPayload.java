@@ -21,7 +21,9 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
         /** Moves a hut setting to its next value; the argument is the setting's id. */
         CHANGE_SETTING,
         /** Opens the colony's permissions screen (town hall only). */
-        OPEN_PERMISSIONS
+        OPEN_PERMISSIONS,
+        /** Cancels a decoration's work order (town hall only); the argument is its anchor as a long. */
+        CANCEL_DECORATION
     }
 
     private static final int MAX_ARGUMENT = 256;

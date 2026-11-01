@@ -442,11 +442,10 @@ public final class Logistics {
                 .filter(o -> builderHut.pos().equals(o.builder()))
                 .findFirst()
                 .orElse(null);
-        BuildingData target = order == null ? null : colony.building(order.buildingPos());
-        if (target == null) {
+        if (order == null) {
             return;
         }
-        List<Blueprint.Placement> plan = Construction.plan(level, target, order.targetLevel());
+        List<Blueprint.Placement> plan = Construction.plan(level, colony, order);
         if (plan == null) {
             return;
         }

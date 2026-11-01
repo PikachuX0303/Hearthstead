@@ -3,6 +3,9 @@
 
 Output: src/main/resources/data/hearthstead/structure/huts/<hut>/level<N>.nbt          (classic style)
         src/main/resources/data/hearthstead/structure/styles/<style>/<hut>/level<N>.nbt (other styles)
+        src/main/resources/data/hearthstead/structure/decorations/<name>.nbt           (decorations, classic)
+        src/main/resources/data/hearthstead/structure/styles/<style>/decorations/<name>.nbt
+        src/main/resources/data/hearthstead/decoration_icons.json                     (build tool icons)
 
 Every template is authored with the hut block facing north. The hut block marks
 the anchor: the template is rotated and positioned so that its hut block lines
@@ -359,6 +362,368 @@ def to_nbt(size, blocks):
     }
 
 
+# ----------------------------------------------------------------------------- decorations
+# Decorations have no hut block. Their anchor is the middle of the template one block above the
+# bottom layer (which replaces the ground), and their front faces north (towards z = 0).
+DECOR_STYLES = {
+    "classic":  dict(wood="oak", log="oak_log", stone="cobblestone", wall="cobblestone_wall",
+                     slab="cobblestone_slab", stairs="cobblestone_stairs", floor="stone_bricks",
+                     path="dirt_path", accent="red"),
+    "medieval": dict(wood="spruce", log="stripped_spruce_log", stone="stone_bricks", wall="stone_brick_wall",
+                     slab="stone_brick_slab", stairs="stone_brick_stairs", floor="polished_andesite",
+                     path="dirt_path", accent="blue"),
+    "desert":   dict(wood="acacia", log="stripped_acacia_log", stone="sandstone", wall="sandstone_wall",
+                     slab="sandstone_slab", stairs="sandstone_stairs", floor="smooth_sandstone",
+                     path="cut_sandstone", accent="orange"),
+    "nordic":   dict(wood="spruce", log="stripped_dark_oak_log", stone="polished_andesite", wall="andesite_wall",
+                     slab="polished_andesite_slab", stairs="polished_andesite_stairs", floor="cobblestone",
+                     path="dirt_path", accent="cyan"),
+    "timber":   dict(wood="dark_oak", log="stripped_dark_oak_log", stone="stone_bricks", wall="stone_brick_wall",
+                     slab="stone_brick_slab", stairs="stone_brick_stairs", floor="smooth_stone",
+                     path="dirt_path", accent="green"),
+}
+DECOR_OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources",
+                         "data", "hearthstead", "structure", "decorations")
+ICONS_OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources",
+                         "data", "hearthstead", "decoration_icons.json")
+NOT_FULL = ("slab", "stairs", "_wall", "fence", "lantern", "campfire", "chain", "trapdoor", "banner", "door",
+            "potted", "air", "water", "poppy", "dandelion", "cornflower", "allium", "oxeye", "torch", "dirt_path")
+
+
+def is_full(state):
+    return state is not None and not any(part in state[0] for part in NOT_FULL)
+
+
+def log(name, axis="y"):
+    return block(name, axis=axis) if name.endswith("_log") or name.endswith("_stem") else block(name)
+
+
+def connect(blocks):
+    """Sets the side connections of fences, walls and fence gates from their neighbours."""
+    sides = {"north": (0, -1), "south": (0, 1), "west": (-1, 0), "east": (1, 0)}
+    result = dict(blocks)
+    for (x, y, z), state in blocks.items():
+        name = state[0]
+        props = dict(state[1])
+        if name.endswith("_fence") or name.endswith("_wall"):
+            wall = name.endswith("_wall")
+            links = {}
+            for side, (dx, dz) in sides.items():
+                other = blocks.get((x + dx, y, z + dz))
+                gate = other is not None and other[0].endswith("_fence_gate")
+                if other is None:
+                    linked = False
+                elif wall:
+                    linked = other[0].endswith("_wall") or is_full(other) or gate
+                else:
+                    linked = (other[0].endswith("_fence") and not other[0].endswith("nether_brick_fence")) \
+                        or is_full(other) or gate
+                links[side] = linked
+            for side, linked in links.items():
+                props[side] = ("low" if linked else "none") if wall else str(linked).lower()
+            if wall:
+                straight = links == {"north": True, "south": True, "west": False, "east": False} \
+                    or links == {"north": False, "south": False, "west": True, "east": True}
+                above = blocks.get((x, y + 1, z))
+                props["up"] = str(not straight or (above is not None and above != AIR)).lower()
+                props["waterlogged"] = "false"
+            else:
+                props["waterlogged"] = "false"
+            result[(x, y, z)] = (name, tuple(sorted(props.items())))
+    return result
+
+
+def deco_well(p):
+    b = {}
+    for x in range(5):
+        for z in range(5):
+            b[(x, 0, z)] = block(p["path"])
+    for x in range(1, 4):
+        for z in range(1, 4):
+            ring = x in (1, 3) or z in (1, 3)
+            b[(x, 0, z)] = block(p["stone"]) if ring else block("water", level=0)
+            if ring:
+                b[(x, 1, z)] = block(p["wall"])
+    for x in (1, 3):
+        for y in (2, 3):
+            b[(x, y, 2)] = block(p["wood"] + "_fence")
+    for x in range(1, 4):
+        b[(x, 4, 2)] = log(p["log"], "x")
+        for z in range(1, 4):
+            b[(x, 5, z)] = block(p["wood"] + "_slab", type="bottom", waterlogged=False)
+    b[(2, 3, 2)] = block("iron_chain", axis="y", waterlogged=False)
+    return (5, 5), b
+
+
+def deco_fountain(p):
+    b = {}
+    for x in range(7):
+        for z in range(7):
+            inner = 1 <= x <= 5 and 1 <= z <= 5
+            b[(x, 0, z)] = block(p["floor"]) if inner else block(p["path"])
+    for x in range(1, 6):
+        for z in range(1, 6):
+            if x in (1, 5) or z in (1, 5):
+                b[(x, 1, z)] = block(p["stone"])
+            elif (x, z) != (3, 3):
+                b[(x, 1, z)] = block("water", level=0)
+    b[(3, 1, 3)] = block(p["stone"])
+    b[(3, 2, 3)] = block(p["wall"])
+    b[(3, 3, 3)] = block("sea_lantern")
+    for x, z in ((1, 1), (5, 1), (1, 5), (5, 5)):
+        b[(x, 2, z)] = block(p["slab"], type="bottom", waterlogged=False)
+    return (7, 7), b
+
+
+def deco_lamppost(p):
+    b = {}
+    for x in range(3):
+        for z in range(3):
+            b[(x, 0, z)] = block(p["path"])
+    b[(1, 0, 1)] = block(p["floor"])
+    b[(1, 1, 1)] = block(p["stone"])
+    for y in (2, 3, 4):
+        b[(1, y, 1)] = block(p["wood"] + "_fence")
+    b[(1, 4, 0)] = block(p["wood"] + "_fence")
+    b[(1, 3, 0)] = block("lantern", hanging=True, waterlogged=False)
+    b[(1, 5, 1)] = block(p["wood"] + "_slab", type="bottom", waterlogged=False)
+    return (3, 3), b
+
+
+def deco_bench(p):
+    b = {}
+    for x in range(5):
+        for z in range(3):
+            b[(x, 0, z)] = block(p["path"])
+    for x in (0, 4):
+        b[(x, 1, 1)] = log(p["log"])
+    for x in (1, 2, 3):
+        b[(x, 1, 1)] = block(p["wood"] + "_stairs", facing="south", half="bottom", shape="straight", waterlogged=False)
+        b[(x, 1, 2)] = block(p["wood"] + "_trapdoor", facing="south", half="bottom", open=True, powered=False,
+                             waterlogged=False)
+    b[(0, 2, 1)] = block("potted_poppy")
+    b[(4, 2, 1)] = block("potted_dandelion")
+    return (5, 3), b
+
+
+def deco_flowerbed(p):
+    b = {}
+    flowers = ["poppy", "dandelion", "cornflower", "allium", "oxeye_daisy"]
+    for x in range(7):
+        for z in range(3):
+            if 1 <= x <= 5 and z == 1:
+                b[(x, 0, z)] = block("grass_block", snowy=False)
+                b[(x, 1, z)] = block(flowers[x - 1])
+            else:
+                b[(x, 0, z)] = log(p["log"], "x" if z in (0, 2) else "z")
+    return (7, 3), b
+
+
+def deco_market_stall(p):
+    b = {}
+    wood = p["wood"]
+    for x in range(5):
+        for z in range(3):
+            b[(x, 0, z)] = block(wood + "_planks")
+            b[(x, 4, z)] = block((p["accent"] if x % 2 == 0 else "white") + "_wool")
+    for x, z in ((0, 0), (4, 0), (0, 2), (4, 2)):
+        for y in (1, 2, 3):
+            b[(x, y, z)] = block(wood + "_fence")
+    for x in (1, 2, 3):
+        b[(x, 1, 0)] = block(wood + "_slab", type="top", waterlogged=False)
+        b[(x, 1, 2)] = block("barrel", facing="up", open=False)
+    b[(1, 2, 0)] = block("melon")
+    b[(3, 2, 0)] = block("pumpkin")
+    b[(2, 2, 2)] = block("hay_block", axis="x")
+    return (5, 3), b
+
+
+def deco_pavilion(p):
+    b = {}
+    wood = p["wood"]
+    for x in range(7):
+        for z in range(7):
+            inner = 1 <= x <= 5 and 1 <= z <= 5
+            b[(x, 0, z)] = block(wood + "_planks") if inner else block(p["path"])
+    for x, z in ((1, 1), (5, 1), (1, 5), (5, 5)):
+        for y in (1, 2, 3):
+            b[(x, y, z)] = log(p["log"])
+    for i in (2, 3, 4):
+        if i != 3:
+            b[(i, 1, 1)] = block(wood + "_fence")
+        b[(i, 1, 5)] = block(wood + "_fence")
+        b[(1, 1, i)] = block(wood + "_fence")
+        b[(5, 1, i)] = block(wood + "_fence")
+    b[(3, 3, 3)] = block("lantern", hanging=True, waterlogged=False)
+    for k, y in enumerate((4, 5, 6)):
+        lo, hi = k, 6 - k
+        for x in range(lo, hi + 1):
+            for z in range(lo, hi + 1):
+                if x in (lo, hi) and z in (lo, hi):
+                    state = block(wood + "_planks")
+                elif z == lo:
+                    state = block(wood + "_stairs", facing="south", half="bottom", shape="straight", waterlogged=False)
+                elif z == hi:
+                    state = block(wood + "_stairs", facing="north", half="bottom", shape="straight", waterlogged=False)
+                elif x == lo:
+                    state = block(wood + "_stairs", facing="east", half="bottom", shape="straight", waterlogged=False)
+                elif x == hi:
+                    state = block(wood + "_stairs", facing="west", half="bottom", shape="straight", waterlogged=False)
+                else:
+                    state = block(wood + "_planks")
+                b[(x, y, z)] = state
+    b[(3, 7, 3)] = block(wood + "_slab", type="bottom", waterlogged=False)
+    return (7, 7), b
+
+
+def deco_campfire(p):
+    b = {}
+    for x in range(5):
+        for z in range(5):
+            inner = 1 <= x <= 3 and 1 <= z <= 3
+            b[(x, 0, z)] = block("coarse_dirt") if inner else block(p["path"])
+    b[(2, 0, 2)] = block(p["stone"])
+    b[(2, 1, 2)] = block("campfire", facing="north", lit=True, signal_fire=False, waterlogged=False)
+    b[(2, 1, 0)] = log(p["log"], "x")
+    b[(2, 1, 4)] = log(p["log"], "x")
+    b[(0, 1, 2)] = log(p["log"], "z")
+    b[(4, 1, 2)] = log(p["log"], "z")
+    return (5, 5), b
+
+
+def deco_banner_pole(p):
+    b = {}
+    for x in range(3):
+        for z in range(3):
+            b[(x, 0, z)] = block(p["path"])
+    b[(1, 0, 1)] = block(p["stone"])
+    b[(1, 1, 1)] = block(p["stone"])
+    for (x, z), facing in (((1, 0), "south"), ((1, 2), "north"), ((0, 1), "east"), ((2, 1), "west")):
+        b[(x, 1, z)] = block(p["stairs"], facing=facing, half="bottom", shape="straight", waterlogged=False)
+    for x, z in ((0, 0), (2, 0), (0, 2), (2, 2)):
+        b[(x, 1, z)] = block(p["slab"], type="bottom", waterlogged=False)
+    for y in (2, 3, 4, 5):
+        b[(1, y, 1)] = log(p["log"])
+    b[(1, 6, 1)] = block(p["accent"] + "_banner", rotation=8)
+    return (3, 3), b
+
+
+def deco_path(p):
+    b = {}
+    for x in range(3):
+        for z in range(7):
+            b[(x, 0, z)] = block(p["path"])
+    for z in (0, 3, 6):
+        b[(1, 0, z)] = block(p["floor"])
+    return (3, 7), b, 2
+
+
+def deco_path_crossing(p):
+    b = {}
+    for x in range(7):
+        for z in range(7):
+            if 2 <= x <= 4 or 2 <= z <= 4:
+                b[(x, 0, z)] = block(p["path"])
+    b[(3, 0, 3)] = block(p["floor"])
+    for x, z in ((1, 1), (5, 1), (1, 5), (5, 5)):
+        b[(x, 0, z)] = block(p["stone"])
+        b[(x, 1, z)] = block(p["wood"] + "_fence")
+        b[(x, 2, z)] = block("lantern", hanging=False, waterlogged=False)
+    return (7, 7), b
+
+
+def deco_wall(p):
+    b = {}
+    for x in range(7):
+        b[(x, 0, 0)] = block(p["stone"])
+        for y in (1, 2):
+            b[(x, y, 0)] = log(p["log"]) if x in (0, 3, 6) else block(p["stone"])
+        b[(x, 3, 0)] = block(p["wall"])
+    return (7, 1), b
+
+
+def deco_gate(p):
+    b = {}
+    for x in range(7):
+        b[(x, 0, 0)] = block(p["stone"])
+        b[(x, 3, 0)] = block(p["stone"])
+        if x in (2, 3, 4):
+            b[(x, 1, 0)] = block(p["wood"] + "_fence_gate", facing="north", in_wall=False, open=False, powered=False)
+            b[(x, 2, 0)] = AIR
+        else:
+            for y in (1, 2):
+                b[(x, y, 0)] = log(p["log"]) if x in (0, 6) else block(p["stone"])
+        b[(x, 4, 0)] = block(p["wall"]) if x != 3 else block("lantern", hanging=False, waterlogged=False)
+    return (7, 1), b
+
+
+def deco_hay_pile(p):
+    b = {}
+    for x in range(5):
+        for z in range(5):
+            b[(x, 0, z)] = block("coarse_dirt") if 1 <= x <= 3 and 1 <= z <= 3 else block(p["path"])
+    for x in range(1, 4):
+        for z in range(1, 4):
+            b[(x, 1, z)] = block("hay_block", axis="y")
+    for x, z in ((1, 2), (2, 2), (2, 3), (1, 3)):
+        b[(x, 2, z)] = block("hay_block", axis="y")
+    b[(2, 3, 3)] = block("hay_block", axis="y")
+    b[(4, 1, 1)] = block("hay_block", axis="z")
+    b[(3, 2, 1)] = block("composter", level=0)
+    return (5, 5), b
+
+
+DECORATIONS = {
+    "banner_pole": (deco_banner_pole, "{accent}_banner"),
+    "bench": (deco_bench, "{wood}_stairs"),
+    "campfire": (deco_campfire, "campfire"),
+    "flower_bed": (deco_flowerbed, "cornflower"),
+    "fountain": (deco_fountain, "sea_lantern"),
+    "gate": (deco_gate, "{wood}_fence_gate"),
+    "hay_pile": (deco_hay_pile, "hay_block"),
+    "lamppost": (deco_lamppost, "lantern"),
+    "market_stall": (deco_market_stall, "melon"),
+    "pavilion": (deco_pavilion, "{wood}_planks"),
+    "path": (deco_path, "dirt_path"),
+    "path_crossing": (deco_path_crossing, "{wood}_fence"),
+    "wall": (deco_wall, "{wall}"),
+    "well": (deco_well, "iron_chain"),
+}
+
+
+def build_decoration(name, style):
+    p = DECOR_STYLES[style]
+    result = DECORATIONS[name][0](p)
+    (sx, sz), blocks = result[0], result[1]
+    assert sx % 2 == 1 and sz % 2 == 1, name
+    assert any(pos[1] == 0 for pos in blocks), name
+    # Clear the space above the ground layer (plants, snow, a slope), up to the top of the
+    # decoration and at least two blocks so paths can be walked.
+    top = max(max(pos[1] for pos in blocks), result[2] if len(result) > 2 else 1)
+    for x in range(sx):
+        for z in range(sz):
+            for y in range(1, top + 1):
+                blocks.setdefault((x, y, z), AIR)
+    return connect(blocks)
+
+
+def write_decorations():
+    import json
+    count = 0
+    for style in DECOR_STYLES:
+        for name in DECORATIONS:
+            blocks = build_decoration(name, style)
+            folder = DECOR_OUT if style == "classic" else os.path.join(STYLE_OUT, style, "decorations")
+            write_nbt(os.path.join(folder, name + ".nbt"), to_nbt(None, blocks))
+            count += 1
+    classic = DECOR_STYLES["classic"]
+    icons = {name: "minecraft:" + icon.format(**classic) for name, (_, icon) in DECORATIONS.items()}
+    with open(ICONS_OUT, "w") as f:
+        json.dump(icons, f, indent=2, sort_keys=True)
+        f.write("\n")
+    return count
+
+
 def main():
     count = 0
     for style in ["classic"] + list(ARCH_STYLES):
@@ -369,6 +734,7 @@ def main():
                 write_nbt(os.path.join(folder, f"level{level}.nbt"), to_nbt(size, blocks))
                 count += 1
     print("wrote", count, "schematics")
+    print("wrote", write_decorations(), "decorations")
 
 
 if __name__ == "__main__":

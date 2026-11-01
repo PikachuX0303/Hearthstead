@@ -1,0 +1,16 @@
+{
+  "banner_pole": "minecraft:red_banner",
+  "bench": "minecraft:oak_stairs",
+  "campfire": "minecraft:campfire",
+  "flower_bed": "minecraft:cornflower",
+  "fountain": "minecraft:sea_lantern",
+  "gate": "minecraft:oak_fence_gate",
+  "hay_pile": "minecraft:hay_block",
+  "lamppost": "minecraft:lantern",
+  "market_stall": "minecraft:melon",
+  "path": "minecraft:dirt_path",
+  "path_crossing": "minecraft:oak_fence",
+  "pavilion": "minecraft:oak_planks",
+  "wall": "minecraft:cobblestone_wall",
+  "well": "minecraft:iron_chain"
+}

@@ -241,6 +241,31 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 throw new AssertionError("The build tool did not place the lumberjack hut");
             }
 
+            // Decorations: the build tool's second tab, a preview, and the order for the builders.
+            HutSelectScreen.showDecorations(true);
+            context.setScreen(() -> new HutSelectScreen(previewPos, Direction.NORTH));
+            context.waitTicks(5);
+            context.takeScreenshot("build_tool_decorations");
+            HutSelectScreen.showDecorations(false);
+            BlockPos fountainPos = singleplayer.getServer().computeOnServer(server -> freeDecorationSpot(server, townHall, previewPos));
+            context.runOnClient(client -> {
+                PendingPlacement.set(fountainPos, Direction.NORTH);
+                ClientPlayNetworking.send(BlueprintRequestPayload.decoration("fountain", ""));
+            });
+            context.waitForScreen(BuildToolScreen.class);
+            context.waitTicks(10);
+            context.takeScreenshot("build_tool_decoration_preview");
+            context.clickScreenButton("gui.hearthstead.build_tool.order_decoration");
+            context.waitTicks(10);
+            boolean ordered = singleplayer.getServer().computeOnServer(server -> {
+                Colony colony = ColonyManager.get(server).colonyAt(player(server).level().dimension(), townHall);
+                return colony.workOrders().stream().anyMatch(o -> o.isDecoration() && "fountain".equals(o.decoration())
+                        && o.buildingPos().equals(fountainPos));
+            });
+            if (!ordered) {
+                throw new AssertionError("The build tool did not order the fountain");
+            }
+
             // The lumberjack's Settings tab: turn replanting off.
             singleplayer.getServer().runOnServer(server -> open(server, previewPos));
             context.waitForScreen(BuildingScreen.class);
@@ -352,6 +377,86 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             if (!generated) {
                 throw new AssertionError("/place structure did not generate an abandoned settlement");
             }
+
+            // Every decoration in rows of five, fronts towards the camera. The server only sends chunks
+            // close to the player, so the camera looks down on the rows from above their front.
+            BlockPos showcase = camp.offset(0, 0, 70);
+            singleplayer.getServer().runCommand("forceload add " + (showcase.getX() - 40) + " " + (showcase.getZ() - 30) + " "
+                    + (showcase.getX() + 40) + " " + (showcase.getZ() + 20));
+            singleplayer.getServer().runOnServer(server -> {
+                ServerPlayer player = player(server);
+                player.teleportTo(player.level(), showcase.getX() + 0.5, showcase.getY() + 26, showcase.getZ() - 3.5,
+                        java.util.Set.of(), 0, 62, false);
+            });
+            context.waitTicks(40);
+            singleplayer.getServer().runOnServer(server -> buildDecorations(server, showcase));
+            // Wait until the client has every chunk of the showcase, then for them to be drawn.
+            for (int attempt = 0; attempt < 30; attempt++) {
+                context.waitTicks(20);
+                boolean received = context.computeOnClient(client -> {
+                    for (int x = showcase.getX() - 26; x <= showcase.getX() + 26; x += 8) {
+                        for (int z = showcase.getZ() - 6; z <= showcase.getZ() + 30; z += 8) {
+                            if (!client.level.hasChunk(x >> 4, z >> 4)) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                });
+                if (received) {
+                    break;
+                }
+            }
+            context.runOnClient(client -> {
+                // The mouse turns the camera when no screen is open, so set the view on the client.
+                client.player.setYRot(0);
+                client.player.setXRot(62);
+                client.levelRenderer.allChanged();
+            });
+            try {
+                singleplayer.getClientWorld().waitForChunksRender();
+            } catch (AssertionError slowRendering) {
+                context.waitTicks(100);
+            }
+            context.takeScreenshot("decorations");
+        }
+    }
+
+    /** A spot near the lumberjack, in the player's view, where a fountain may be ordered. */
+    private static BlockPos freeDecorationSpot(MinecraftServer server, BlockPos townHall, BlockPos near) {
+        ServerLevel level = player(server).level();
+        Colony colony = ColonyManager.get(server).colonyAt(level.dimension(), townHall);
+        BlockPos target = near.offset(2, 0, 9);
+        BlockPos best = null;
+        for (int dx = -15; dx <= 15; dx++) {
+            for (int dz = -12; dz <= 12; dz++) {
+                BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, target.offset(dx, 0, dz));
+                if ((best == null || pos.distManhattan(target) < best.distManhattan(target))
+                        && dev.pikachux.hearthstead.colony.Decoration.placementError(level, colony, "fountain", pos,
+                        Direction.NORTH, colony.style()) == null) {
+                    best = pos;
+                }
+            }
+        }
+        if (best == null) {
+            throw new AssertionError("No room for a fountain near " + near);
+        }
+        return best;
+    }
+
+    /** Builds every decoration, in the classic and medieval styles, in rows facing north. */
+    private static void buildDecorations(MinecraftServer server, BlockPos center) {
+        ServerLevel level = player(server).level();
+        java.util.List<String> names = dev.pikachux.hearthstead.blueprint.Blueprints.decorations(server);
+        int perRow = 5;
+        for (int i = 0; i < names.size(); i++) {
+            int column = i % perRow;
+            int row = i / perRow;
+            BlockPos spot = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    center.offset((column - perRow / 2) * 9, 0, row * 10));
+            var decoration = new dev.pikachux.hearthstead.colony.Decoration(names.get(i), spot, Direction.NORTH,
+                    i % 2 == 0 ? dev.pikachux.hearthstead.blueprint.Styles.CLASSIC : "medieval");
+            Construction.buildInstantly(level, decoration.plan(level));
         }
     }
 

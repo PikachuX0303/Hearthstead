@@ -45,6 +45,8 @@ public class Colony {
     private final Map<BlockPos, BuildingData> buildings = new LinkedHashMap<>();
     private final Map<Integer, CitizenData> citizens = new LinkedHashMap<>();
     private final List<WorkOrder> workOrders = new ArrayList<>();
+    private final List<Decoration> decorations = new ArrayList<>();
+    private int decorationTimer;
     private final ColonyRaid raid = new ColonyRaid();
     private final ColonyHappenings happenings = new ColonyHappenings();
     private final ColonyPermissions permissions = new ColonyPermissions(this);
@@ -153,7 +155,7 @@ public class Colony {
         if (removed == null) {
             return;
         }
-        workOrders.removeIf(o -> o.buildingPos().equals(pos));
+        workOrders.removeIf(o -> !o.isDecoration() && o.buildingPos().equals(pos));
         workOrders.forEach(o -> {
             if (pos.equals(o.builder())) {
                 o.setBuilder(null);
@@ -258,7 +260,7 @@ public class Colony {
     @Nullable
     public WorkOrder workOrder(BlockPos buildingPos) {
         for (WorkOrder order : workOrders) {
-            if (order.buildingPos().equals(buildingPos)) {
+            if (!order.isDecoration() && order.buildingPos().equals(buildingPos)) {
                 return order;
             }
         }
@@ -289,12 +291,11 @@ public class Colony {
         int maxLevel = Math.max(1, builderHut.level());
         WorkOrder best = null;
         for (WorkOrder order : workOrders) {
-            BuildingData target = buildings.get(order.buildingPos());
-            if (order.builder() != null || target == null || order.targetLevel() > maxLevel) {
+            BuildingData target = order.isDecoration() ? null : buildings.get(order.buildingPos());
+            if (order.builder() != null || (target == null && !order.isDecoration()) || order.targetLevel() > maxLevel) {
                 continue;
             }
-            if (best == null || (target.type() == BuildingType.BUILDER
-                    && buildings.get(best.buildingPos()).type() != BuildingType.BUILDER)) {
+            if (best == null || (target != null && target.type() == BuildingType.BUILDER && !isBuilderHutOrder(best))) {
                 best = order;
             }
         }
@@ -303,6 +304,62 @@ public class Colony {
             markDirty();
         }
         return best;
+    }
+
+    private boolean isBuilderHutOrder(WorkOrder order) {
+        BuildingData target = order.isDecoration() ? null : buildings.get(order.buildingPos());
+        return target != null && target.type() == BuildingType.BUILDER;
+    }
+
+    // ---------------------------------------------------------------- decorations
+
+    public List<Decoration> decorations() {
+        return decorations;
+    }
+
+    @Nullable
+    public Decoration decoration(BlockPos pos) {
+        for (Decoration decoration : decorations) {
+            if (decoration.pos().equals(pos)) {
+                return decoration;
+            }
+        }
+        return null;
+    }
+
+    public void addDecoration(Decoration decoration) {
+        decorations.removeIf(d -> d.pos().equals(decoration.pos()));
+        decorations.add(decoration);
+        markDirty();
+    }
+
+    public long intactDecorations() {
+        return decorations.stream().filter(Decoration::intact).count();
+    }
+
+    /** Happiness every citizen gets from the colony's intact decorations. */
+    public double decorationHappiness() {
+        return Math.min(Decoration.MAX_HAPPINESS, Decoration.HAPPINESS * intactDecorations());
+    }
+
+    /**
+     * Looks at every decoration in a loaded chunk: it counts while most of it stands, and is
+     * forgotten once it has been torn down.
+     */
+    public void checkDecorations(ServerLevel level) {
+        boolean changed = decorations.removeIf(d -> d.loaded(level) && d.completeness(level) < Decoration.REMOVED_SHARE);
+        for (Decoration decoration : decorations) {
+            if (decoration.loaded(level)) {
+                boolean intact = decoration.completeness(level) >= Decoration.INTACT_SHARE;
+                if (intact != decoration.intact()) {
+                    decoration.setIntact(intact);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            markDirty();
+        }
     }
 
     // ---------------------------------------------------------------- citizens
@@ -336,6 +393,10 @@ public class Colony {
         raid.tick(server, this, level);
         skillGainMultiplier = libraryBonus(level);
         happenings.tick(server, this, level);
+        if (++decorationTimer >= 60) {
+            decorationTimer = 0;
+            checkDecorations(level);
+        }
 
         growChildren(level);
         if (residents() < housingCapacity() && ++spawnTimer * 20 >= 20L * HearthsteadConfig.NEW_CITIZEN_INTERVAL.get() / (research.has(Research.WELCOME_WAGONS) ? 2 : 1)) {
@@ -608,6 +669,9 @@ public class Colony {
         ListTag orderList = new ListTag();
         workOrders.forEach(o -> orderList.add(o.save()));
         tag.put("workOrders", orderList);
+        ListTag decorationList = new ListTag();
+        decorations.forEach(d -> decorationList.add(d.save()));
+        tag.put("decorations", decorationList);
         tag.put("raid", raid.save());
         tag.put("events", happenings.save());
         tag.put("permissions", permissions.save());
@@ -633,6 +697,7 @@ public class Colony {
         colony.research.load(tag.getCompoundOrEmpty("research"));
         colony.style = tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
         tag.getListOrEmpty("workOrders").compoundStream().map(WorkOrder::load).forEach(colony.workOrders::add);
+        tag.getListOrEmpty("decorations").compoundStream().map(Decoration::load).forEach(colony.decorations::add);
         colony.nextCitizenId = tag.getIntOr("nextCitizenId", colony.citizens.size() + 1);
         tag.getListOrEmpty("dead").forEach(t -> t.asCompound().ifPresent(c -> colony.dead.add(CitizenData.load(c))));
         colony.mourningUntil = tag.getLongOr("mourningUntil", 0);

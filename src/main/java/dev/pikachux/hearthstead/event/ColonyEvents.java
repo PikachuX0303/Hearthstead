@@ -20,6 +20,9 @@ import dev.pikachux.hearthstead.colony.ColonyPermissions;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.pikachux.hearthstead.network.BuildToolHandler;
+import dev.pikachux.hearthstead.network.DecorationsPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.animal.Animal;
@@ -43,7 +46,13 @@ public final class ColonyEvents {
     }
 
     public static void register() {
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> Blueprints.clearCache());
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> {
+            Blueprints.clearCache();
+            DecorationsPayload decorations = BuildToolHandler.decorationList(server);
+            server.getPlayerList().getPlayers().stream()
+                    .filter(p -> ServerPlayNetworking.canSend(p, DecorationsPayload.TYPE))
+                    .forEach(p -> ServerPlayNetworking.send(p, decorations));
+        });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> Blueprints.clearCache());
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -105,6 +114,9 @@ public final class ColonyEvents {
             ServerPlayer player = handler.getPlayer();
             for (Colony colony : ColonyManager.get(server).colonies()) {
                 colony.permissions().rememberName(player.getUUID(), player.getName().getString());
+            }
+            if (ServerPlayNetworking.canSend(player, DecorationsPayload.TYPE)) {
+                BuildToolHandler.sendDecorations(player);
             }
         });
     }

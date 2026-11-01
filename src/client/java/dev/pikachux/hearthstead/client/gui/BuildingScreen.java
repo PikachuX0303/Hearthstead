@@ -327,6 +327,7 @@ public class BuildingScreen extends ColonyScreen {
     }
 
     private void renderColony(GuiGraphics g, int x, int y, int w, int bottom) {
+        cancelButtons.clear();
         BuildingViewPayload.ColonyInfo colony = view.colony();
         text(g, Component.translatable("gui.hearthstead.colony", view.colonyName()), x, y, TEXT);
         text(g, Component.translatable("gui.hearthstead.owner", colony.owner()), x, y + 11, TEXT);
@@ -336,6 +337,11 @@ public class BuildingScreen extends ColonyScreen {
         Component raids = Component.translatable("gui.hearthstead.raids",
                 Component.translatable(colony.raidsEnabled() ? "gui.hearthstead.raids_on" : "gui.hearthstead.raids_off"));
         text(g, raids, x + w / 2, y + 33, colony.raidsEnabled() ? BAD : GOOD);
+        Component decorations = colony.decorations() == 0
+                ? Component.translatable("gui.hearthstead.decorations_none")
+                : Component.translatable("gui.hearthstead.decorations", colony.intactDecorations(),
+                        String.format("%.2f", colony.decorationHappiness()));
+        text(g, decorations, x + w / 2, y + 11, colony.decorations() == 0 ? TEXT_LIGHT : GOOD);
         if (colony.isOwner()) {
             text(g, Component.translatable("gui.hearthstead.colony_name"), x, y + 51, TEXT_LIGHT);
         }
@@ -349,9 +355,34 @@ public class BuildingScreen extends ColonyScreen {
         int listTop = y;
         renderList(g, x, listTop, w, bottom - listTop, 11, colony.workOrders().size(), (gr, i, rx, ry, rw) -> {
             BuildingViewPayload.WorkOrderEntry order = colony.workOrders().get(i);
-            gr.drawString(font, font.plainSubstrByWidth(order.description(), rw), rx, ry,
+            int textWidth = order.decoration().isPresent() ? rw - 10 : rw;
+            gr.drawString(font, font.plainSubstrByWidth(order.description(), textWidth), rx, ry,
                     order.assigned() ? 0xFF8BE38B : 0xFFFFFFFF, true);
+            if (order.decoration().isPresent() && ry + ROW_CANCEL <= bottom) {
+                gr.drawString(font, "✕", rx + rw - 7, ry, 0xFFFF8A80, true);
+                cancelButtons.add(new CancelButton(rx + rw - 8, ry - 1, order.decoration().get()));
+            }
         });
+    }
+
+    private static final int ROW_CANCEL = 9;
+
+    /** Where a decoration order's cancel mark was drawn this frame. */
+    private record CancelButton(int x, int y, net.minecraft.core.BlockPos decoration) {
+    }
+
+    private final List<CancelButton> cancelButtons = new java.util.ArrayList<>();
+
+    private boolean clickCancel(double mouseX, double mouseY) {
+        for (CancelButton button : cancelButtons) {
+            if (mouseX >= button.x() && mouseX < button.x() + 9 && mouseY >= button.y() && mouseY < button.y() + 10) {
+                playClick();
+                ClientPlayNetworking.send(new HutActionPayload(view.pos(), HutActionPayload.Action.CANCEL_DECORATION,
+                        Long.toString(button.decoration().asLong())));
+                return true;
+            }
+        }
+        return false;
     }
 
     // ---------------------------------------------------------------- settings tab
@@ -495,6 +526,9 @@ public class BuildingScreen extends ColonyScreen {
     @Override
     public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
         if (tab == Tab.REQUESTS && event.button() == 0 && clickRequest(event.x(), event.y())) {
+            return true;
+        }
+        if (tab == Tab.COLONY && event.button() == 0 && clickCancel(event.x(), event.y())) {
             return true;
         }
         if (tab == Tab.RESEARCH) {

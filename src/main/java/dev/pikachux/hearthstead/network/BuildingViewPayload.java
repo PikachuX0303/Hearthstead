@@ -12,6 +12,7 @@ import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -59,7 +60,8 @@ public record BuildingViewPayload(
     public record Citizen(int id, String name, String job, float happiness, float saturation, String status) {
     }
 
-    public record WorkOrderEntry(String description, boolean assigned) {
+    /** A work order in the town hall's list; {@code decoration} holds a decoration's anchor so it can be cancelled. */
+    public record WorkOrderEntry(String description, boolean assigned, Optional<BlockPos> decoration) {
     }
 
     public record Cost(Item item, int count, int have) {
@@ -86,8 +88,10 @@ public record BuildingViewPayload(
     /** Colony wide information, only filled in for the town hall. */
     public record ColonyInfo(boolean present, String owner, int citizenCount, int housing, int buildingCount,
                              boolean isOwner, List<Citizen> citizens, List<WorkOrderEntry> workOrders,
-                             boolean raidsEnabled, int raidersLeft, int raidSize, String style, boolean pirates, boolean festival) {
-        public static final ColonyInfo NONE = new ColonyInfo(false, "", 0, 0, 0, false, List.of(), List.of(), true, 0, 0, "", false, false);
+                             boolean raidsEnabled, int raidersLeft, int raidSize, String style, boolean pirates, boolean festival,
+                             int decorations, int intactDecorations, float decorationHappiness) {
+        public static final ColonyInfo NONE = new ColonyInfo(false, "", 0, 0, 0, false, List.of(), List.of(), true, 0, 0, "", false, false,
+                0, 0, 0);
     }
 
     @Override
@@ -160,6 +164,7 @@ public record BuildingViewPayload(
             writeList(buf, colony.workOrders(), (b, o) -> {
                 b.writeUtf(o.description());
                 b.writeBoolean(o.assigned());
+                b.writeOptional(o.decoration(), (b2, p) -> b2.writeBlockPos(p));
             });
             buf.writeBoolean(colony.raidsEnabled());
             buf.writeVarInt(colony.raidersLeft());
@@ -167,6 +172,9 @@ public record BuildingViewPayload(
             buf.writeUtf(colony.style());
             buf.writeBoolean(colony.pirates());
             buf.writeBoolean(colony.festival());
+            buf.writeVarInt(colony.decorations());
+            buf.writeVarInt(colony.intactDecorations());
+            buf.writeFloat(colony.decorationHappiness());
         }
     }
 
@@ -205,15 +213,20 @@ public record BuildingViewPayload(
             boolean isOwner = buf.readBoolean();
             List<Citizen> citizens = readList(buf, b -> new Citizen(b.readVarInt(), b.readUtf(), b.readUtf(),
                     b.readFloat(), b.readFloat(), b.readUtf()));
-            List<WorkOrderEntry> orders = readList(buf, b -> new WorkOrderEntry(b.readUtf(), b.readBoolean()));
+            List<WorkOrderEntry> orders = readList(buf, b -> new WorkOrderEntry(b.readUtf(), b.readBoolean(),
+                    b.readOptional(b2 -> b2.readBlockPos())));
             boolean raidsEnabled = buf.readBoolean();
             int raidersLeft = buf.readVarInt();
             int raidSize = buf.readVarInt();
             String colonyStyle = buf.readUtf();
             boolean pirates = buf.readBoolean();
             boolean festival = buf.readBoolean();
+            int decorations = buf.readVarInt();
+            int intactDecorations = buf.readVarInt();
+            float decorationHappiness = buf.readFloat();
             colony = new ColonyInfo(true, owner, citizenCount, colonyHousing, buildingCount, isOwner, citizens, orders,
-                    raidsEnabled, raidersLeft, raidSize, colonyStyle, pirates, festival);
+                    raidsEnabled, raidersLeft, raidSize, colonyStyle, pirates, festival, decorations, intactDecorations,
+                    decorationHappiness);
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
                 orderLevel, orderAssigned, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, settings, updateOnly);

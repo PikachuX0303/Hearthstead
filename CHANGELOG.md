@@ -5,6 +5,23 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.34.0-alpha] - 2026-11-01
+
+### Added
+- **Decorations.** A new Decorations tab in the Build Tool: a well, a fountain, a lamppost, a
+  bench, a flower bed, a market stall, a pavilion, a campfire circle, a banner pole, a hay pile,
+  a path, a path crossing, a wall and a gate, each in every building style. Ordering one gives
+  the builders a work order; they clear the area and build it from the Builder's Hut's
+  materials.
+- Every decoration that is still mostly standing gives all citizens +0.25 happiness (up to +1);
+  torn-down decorations are forgotten. The town hall's Colony tab shows the bonus, and
+  decoration orders can be cancelled from its work order list.
+- Data packs can add decorations at `structure/decorations/<name>` (and per style), with icons
+  in `decoration_icons.json`.
+
+### Changed
+- Builders lay dirt for dirt paths, farmland and grass blocks in blueprints.
+
 ## [0.33.0-alpha] - 2026-10-31
 
 ### Added

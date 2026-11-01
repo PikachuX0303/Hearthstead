@@ -5,6 +5,7 @@ import dev.pikachux.hearthstead.client.gui.ColonyButton;
 import dev.pikachux.hearthstead.client.gui.ColonyScreen;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.network.BlueprintRequestPayload;
+import dev.pikachux.hearthstead.network.DecorationsPayload;
 import dev.pikachux.hearthstead.registry.ModBlocks;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,7 +24,8 @@ import java.util.Optional;
 
 /**
  * First step of the build tool: a scrollable grid of the huts in the player's inventory
- * (every hut in creative mode), each shown with its job sign.
+ * (every hut in creative mode), each shown with its job sign, or of the decorations the
+ * colony's builders can build, each shown with an item.
  */
 public class HutSelectScreen extends ColonyScreen {
     private static final int COLUMNS = 4;
@@ -37,6 +39,8 @@ public class HutSelectScreen extends ColonyScreen {
     private final BlockPos target;
     private final Direction facing;
     private final List<BuildingType> available = new ArrayList<>();
+    /** Whether the decorations are shown instead of the huts; remembered between openings. */
+    private static boolean decorationsTab;
     private int row;
 
     public HutSelectScreen(BlockPos target, Direction facing) {
@@ -58,26 +62,55 @@ public class HutSelectScreen extends ColonyScreen {
         }
         addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.close"), b -> onClose())
                 .bounds(left + panelWidth - 78, top + panelHeight - 28, 70, 20).build());
+        var huts = ColonyButton.themed(Component.translatable("gui.hearthstead.build_tool.huts"), b -> switchTab(false))
+                .bounds(left + panelWidth - 172, top + 4, 76, 14).build();
+        var decorations = ColonyButton.themed(Component.translatable("gui.hearthstead.build_tool.decorations"), b -> switchTab(true))
+                .bounds(left + panelWidth - 92, top + 4, 84, 14).build();
+        huts.active = decorationsTab;
+        decorations.active = !decorationsTab;
+        addRenderableWidget(huts);
+        addRenderableWidget(decorations);
+    }
+
+    private void switchTab(boolean decorations) {
+        decorationsTab = decorations;
+        row = 0;
+        rebuildWidgets();
+    }
+
+    /** Opens the screen on the decorations (true) or the huts (false). */
+    public static void showDecorations(boolean decorations) {
+        decorationsTab = decorations;
+    }
+
+    private int entries() {
+        return decorationsTab ? ClientDecorations.all().size() : available.size();
     }
 
     private int rows() {
-        return (available.size() + COLUMNS - 1) / COLUMNS;
+        return (entries() + COLUMNS - 1) / COLUMNS;
     }
 
     private static Identifier sign(BuildingType type) {
         return Hearthstead.id("textures/block/hut_sign_" + type.blockName().substring("blockhut".length()) + ".png");
     }
 
-    /** The hut under the mouse, or null. */
-    private BuildingType hutAt(double mouseX, double mouseY) {
+    /** Index of the tile under the mouse, or -1. */
+    private int indexAt(double mouseX, double mouseY) {
         int gridX = left + 10;
         int gridY = top + GRID_TOP;
         if (mouseX < gridX || mouseY < gridY || mouseY >= gridY + VISIBLE_ROWS * TILE_HEIGHT) {
-            return null;
+            return -1;
         }
         int column = (int) (mouseX - gridX) / TILE_WIDTH;
         int index = (row + (int) (mouseY - gridY) / TILE_HEIGHT) * COLUMNS + column;
-        return column < COLUMNS && index < available.size() ? available.get(index) : null;
+        return column < COLUMNS && index < entries() ? index : -1;
+    }
+
+    private void chooseDecoration(String name) {
+        PendingPlacement.set(target, facing);
+        ClientPlayNetworking.send(BlueprintRequestPayload.decoration(name, ""));
+        onClose();
     }
 
     private void choose(BuildingType type) {
@@ -89,19 +122,32 @@ public class HutSelectScreen extends ColonyScreen {
     @Override
     protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         text(g, getTitle(), left + 8, top + 8, HEADER);
-        text(g, Component.translatable("gui.hearthstead.build_tool.choose"), left + 8, top + 19, TEXT_LIGHT);
-        if (available.isEmpty()) {
-            wrapped(g, Component.translatable("gui.hearthstead.build_tool.no_huts"), left + 12, top + 36, panelWidth - 24, BAD);
+        text(g, Component.translatable(decorationsTab ? "gui.hearthstead.build_tool.choose_decoration"
+                : "gui.hearthstead.build_tool.choose"), left + 8, top + 19, TEXT_LIGHT);
+        if (entries() == 0) {
+            wrapped(g, Component.translatable(decorationsTab ? "gui.hearthstead.build_tool.no_decorations"
+                    : "gui.hearthstead.build_tool.no_huts"), left + 12, top + 36, panelWidth - 24, BAD);
             return;
         }
-        BuildingType hovered = hutAt(mouseX, mouseY);
-        for (int i = row * COLUMNS; i < Math.min(available.size(), (row + VISIBLE_ROWS) * COLUMNS); i++) {
-            BuildingType type = available.get(i);
+        int hovered = indexAt(mouseX, mouseY);
+        for (int i = row * COLUMNS; i < Math.min(entries(), (row + VISIBLE_ROWS) * COLUMNS); i++) {
             int x = left + 10 + (i % COLUMNS) * TILE_WIDTH;
             int y = top + GRID_TOP + (i / COLUMNS - row) * TILE_HEIGHT;
-            g.blitSprite(RenderPipelines.GUI_TEXTURED, type == hovered ? TILE_HOVER : TILE, x, y, TILE_WIDTH - 4, TILE_HEIGHT - 4);
-            g.blit(RenderPipelines.GUI_TEXTURED, sign(type), x + (TILE_WIDTH - 4 - 32) / 2, y + 4, 0, 0, 32, 32, 32, 32);
-            Component name = Component.translatable(ModBlocks.HUTS.get(type).getDescriptionId());
+            g.blitSprite(RenderPipelines.GUI_TEXTURED, i == hovered ? TILE_HOVER : TILE, x, y, TILE_WIDTH - 4, TILE_HEIGHT - 4);
+            Component name;
+            if (decorationsTab) {
+                DecorationsPayload.Entry decoration = ClientDecorations.all().get(i);
+                g.pose().pushMatrix();
+                g.pose().translate(x + (TILE_WIDTH - 4 - 32) / 2F, y + 4);
+                g.pose().scale(2F, 2F);
+                g.renderItem(new ItemStack(decoration.icon()), 0, 0);
+                g.pose().popMatrix();
+                name = ClientDecorations.displayName(decoration.name());
+            } else {
+                BuildingType type = available.get(i);
+                g.blit(RenderPipelines.GUI_TEXTURED, sign(type), x + (TILE_WIDTH - 4 - 32) / 2, y + 4, 0, 0, 32, 32, 32, 32);
+                name = Component.translatable(ModBlocks.HUTS.get(type).getDescriptionId());
+            }
             List<FormattedCharSequence> lines = font.split(name, TILE_WIDTH - 8);
             for (int line = 0; line < Math.min(2, lines.size()); line++) {
                 FormattedCharSequence text = lines.get(line);
@@ -129,9 +175,14 @@ public class HutSelectScreen extends ColonyScreen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        BuildingType type = hutAt(event.x(), event.y());
-        if (type != null && event.button() == 0) {
-            choose(type);
+        int index = indexAt(event.x(), event.y());
+        if (index >= 0 && event.button() == 0) {
+            playClick();
+            if (decorationsTab) {
+                chooseDecoration(ClientDecorations.all().get(index).name());
+            } else {
+                choose(available.get(index));
+            }
             return true;
         }
         return super.mouseClicked(event, doubleClick);

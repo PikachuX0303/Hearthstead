@@ -30,6 +30,9 @@ public final class BuildingInfo {
     }
 
     public static String describe(Colony colony, WorkOrder order) {
+        if (order.isDecoration()) {
+            return Decoration.displayName(order.decoration()) + " (decoration) at " + order.buildingPos().toShortString();
+        }
         BuildingData target = colony.building(order.buildingPos());
         String name = target == null ? "?" : target.type().displayName();
         return name + " level " + order.targetLevel() + " at " + order.buildingPos().toShortString();
