@@ -182,6 +182,33 @@ public class GuardGameTests {
         });
     }
 
+    /** Jobs wear their outfit (both versions exist); knights and rangers wear theirs, druids an everyday skin. */
+    @GameTest(environment = "hearthstead-gametest:outfits", structure = PLATFORM)
+    public void jobsWearOutfits(GameTestHelper helper) {
+        Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
+        BuildingData tower = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.GUARD_TOWER, 1);
+        CitizenData citizen = CitizenData.create(1, helper.getLevel().getRandom());
+        citizen.assignJob(JobType.COOK, BlockPos.ZERO);
+        check(helper, CitizenEntity.outfit(colony, citizen).equals("chef"), "cooks to wear the chef's outfit");
+        citizen.assignJob(JobType.SAWMILL, BlockPos.ZERO);
+        check(helper, CitizenEntity.outfit(colony, citizen).equals("carpenter"), "sawmill workers to wear the carpenter's outfit");
+        citizen.assignJob(JobType.FARMER, BlockPos.ZERO);
+        check(helper, CitizenEntity.outfit(colony, citizen).isEmpty(), "farmers to wear an everyday skin");
+        citizen.assignJob(JobType.GUARD, tower.pos());
+        check(helper, CitizenEntity.outfit(colony, citizen).equals("cavalry"), "knights to wear the cavalry outfit");
+        tower.setSetting(HutSettings.GUARD_CLASS.id(), "ranger");
+        check(helper, CitizenEntity.outfit(colony, citizen).equals("archer"), "rangers to wear the archer's outfit");
+        tower.setSetting(HutSettings.GUARD_CLASS.id(), "druid");
+        check(helper, CitizenEntity.outfit(colony, citizen).isEmpty(), "druids to wear an everyday skin");
+        for (String outfit : List.of("alchemist", "archer", "baker", "beekeeper", "blacksmith", "builder", "carpenter", "cavalry", "chef")) {
+            for (String gender : List.of("male", "female")) {
+                String path = "/assets/hearthstead/textures/entity/citizen/" + outfit + "_" + gender + ".png";
+                check(helper, GuardGameTests.class.getResource(path) != null, "the texture " + path);
+            }
+        }
+        helper.succeed();
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private static List<String> requests(ServerLevel level, Colony colony, BuildingData building) {

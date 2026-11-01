@@ -94,6 +94,11 @@ public class CitizenEntity extends PathfinderMob {
             SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> DATA_CHILD =
             SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.BOOLEAN);
+    /** The job outfit the citizen wears (see {@link #outfit}), or "" for an everyday skin. */
+    private static final EntityDataAccessor<String> DATA_OUTFIT =
+            SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Boolean> DATA_FEMALE =
+            SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final Identifier GUARD_HEALTH = Hearthstead.id("guard_health");
     private static final Identifier GUARD_SPEED = Hearthstead.id("guard_speed");
@@ -139,6 +144,8 @@ public class CitizenEntity extends PathfinderMob {
         builder.define(DATA_SKIN, 0);
         builder.define(DATA_JOB, JobType.UNEMPLOYED.id());
         builder.define(DATA_CHILD, false);
+        builder.define(DATA_OUTFIT, "");
+        builder.define(DATA_FEMALE, false);
     }
 
     @Override
@@ -250,6 +257,45 @@ public class CitizenEntity extends PathfinderMob {
         return entityData.get(DATA_SKIN);
     }
 
+    public String outfit() {
+        return entityData.get(DATA_OUTFIT);
+    }
+
+    public boolean female() {
+        return entityData.get(DATA_FEMALE);
+    }
+
+    /**
+     * The job outfit a citizen wears: the skins at {@code textures/entity/citizen/<outfit>_<male|female>.png},
+     * drawn by FallenStar114. Jobs without an outfit (and children and visitors) wear an everyday skin.
+     */
+    public static String outfit(@Nullable Colony colony, CitizenData data) {
+        if (data.child() || data.visitor()) {
+            return "";
+        }
+        return switch (data.job()) {
+            case ALCHEMIST -> "alchemist";
+            case BAKER -> "baker";
+            case BEEKEEPER -> "beekeeper";
+            case BLACKSMITH -> "blacksmith";
+            case BUILDER -> "builder";
+            case SAWMILL -> "carpenter";
+            case COOK -> "chef";
+            case GUARD -> switch (dev.pikachux.hearthstead.colony.Guards.kind(colony, data)) {
+                case RANGER -> "archer";
+                case KNIGHT -> "cavalry";
+                case DRUID -> "";
+            };
+            default -> "";
+        };
+    }
+
+    /** Shows an outfit without a colony behind it, for pictures; the citizen must have no AI or it leaves. */
+    public void showOutfit(String outfit, boolean female) {
+        entityData.set(DATA_OUTFIT, outfit);
+        entityData.set(DATA_FEMALE, female);
+    }
+
     public SimpleContainer inventory() {
         return inventory;
     }
@@ -274,6 +320,8 @@ public class CitizenEntity extends PathfinderMob {
         entityData.set(DATA_SKIN, data.skin());
         entityData.set(DATA_JOB, data.job().id());
         entityData.set(DATA_CHILD, data.child());
+        entityData.set(DATA_OUTFIT, outfit(colony, data));
+        entityData.set(DATA_FEMALE, data.female());
         Component name = Component.literal(data.name())
                 .append(Component.literal(" (" + role(colony(), data) + ")").withStyle(ChatFormatting.GRAY));
         if (!name.equals(getCustomName())) {

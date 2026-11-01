@@ -41,6 +41,10 @@ download section and in `fabric.mod.json` `depends` (optional ones in `suggests`
 - `tools/generate_ui.py`: hut block textures, hut block models and the GUI theme sprites.
 - `tools/generate_worldgen.py`: structure templates for world generation (abandoned settlement).
 
+Hand-drawn art: the citizens' job outfits in `assets/hearthstead/textures/entity/citizen/`
+(`<outfit>_male.png` and `<outfit>_female.png`) are by FallenStar114; keep them credited in the
+README's "Job outfits" and "Credits" sections.
+
 All art is original; do not copy textures from MineColonies or other mods.
 
 ## Commits and GitHub posts

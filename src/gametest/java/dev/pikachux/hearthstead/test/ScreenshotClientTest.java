@@ -441,6 +441,16 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 context.waitTicks(100);
             }
             context.takeScreenshot("decorations");
+
+            // Every job outfit, male and female, in a row on the open ground in front of the decorations.
+            singleplayer.getServer().runOnServer(server -> lineUpOutfits(server, showcase.offset(0, 0, -18)));
+            context.waitTicks(20);
+            context.runOnClient(client -> {
+                client.player.setYRot(0);
+                client.player.setXRot(10);
+            });
+            context.waitTicks(20);
+            context.takeScreenshot("citizen_outfits");
         }
     }
 
@@ -498,6 +508,28 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             raider.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.COMMAND, null);
             raider.setNoAi(true);
             level.addFreshEntity(raider);
+        }
+    }
+
+    /** One frozen citizen per job outfit and gender, facing the player, who stands at {@code spot}. */
+    private void lineUpOutfits(MinecraftServer server, BlockPos spot) {
+        ServerPlayer player = player(server);
+        ServerLevel level = player.level();
+        player.getAbilities().flying = false;
+        player.onUpdateAbilities();
+        BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spot);
+        player.teleportTo(level, base.getX() + 0.5, base.getY(), base.getZ() + 0.5, java.util.Set.of(), 0, 8, false);
+        String[] outfits = {"alchemist", "archer", "baker", "beekeeper", "blacksmith", "builder", "carpenter", "cavalry", "chef"};
+        for (int i = 0; i < outfits.length * 2; i++) {
+            CitizenEntity citizen = dev.pikachux.hearthstead.registry.ModEntities.CITIZEN.create(level, EntitySpawnReason.COMMAND);
+            double x = base.getX() + 0.5 + (i - outfits.length + 0.5) * 0.72;
+            BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(x, base.getY(), base.getZ() + 7));
+            citizen.snapTo(x, pos.getY(), base.getZ() + 7.5, 180, 0);
+            citizen.setYHeadRot(180);
+            citizen.setYBodyRot(180);
+            citizen.setNoAi(true);
+            citizen.showOutfit(outfits[i / 2], i % 2 == 1);
+            level.addFreshEntity(citizen);
         }
     }
 

@@ -5,6 +5,17 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.38.0-alpha] - 2026-11-01
+
+### Added
+- **Job outfits** by FallenStar114: alchemists, bakers, beekeepers, blacksmiths, builders, sawmill
+  workers (carpenter), cooks (chef), knights (cavalry) and rangers (archer) wear their job's
+  outfit, in a male or a female version to match the citizen.
+
+### Changed
+- Citizens are drawn with the player model, so skins show their outer layer (jackets, sleeves,
+  trousers) too.
+
 ## [0.37.0-alpha] - 2026-11-01
 
 ### Added

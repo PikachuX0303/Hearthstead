@@ -71,7 +71,7 @@ links to the releases and the changelog.
 |---|---|
 | **Colonies** | Place a **Town Hall** to found a colony (one per player). It claims a 129×129 area. Colonies must be at least 144 blocks apart. |
 | **Protection** | Inside a colony, players can only do what its [permissions](#permissions) allow them. Creative-mode operators can bypass this. |
-| **Citizens** | New citizens arrive every minute while there is free housing. Each one has a name, a skin, saturation and happiness. If a citizen goes missing (for example, unloaded), the colony respawns them at the town hall. If one dies, the owner is notified. |
+| **Citizens** | New citizens arrive every minute while there is free housing. Each one has a name, a skin, saturation and happiness. Many jobs come with their own outfit, in a male and a female version ([outfits](#job-outfits)). If a citizen goes missing (for example, unloaded), the colony respawns them at the town hall. If one dies, the owner is notified. |
 | **Housing** | Town Hall: 4 settlers per level (also 4 before it is built). Residence: 2 beds per level. |
 | **Food** | Citizens get hungry. They eat food stored in their home, the Town Hall, a Residence or a Warehouse. Starving citizens become unhappy and take damage. |
 | **Happiness** | Housing, employment and food raise happiness. Happiness scales work speed. |
@@ -394,6 +394,21 @@ Rangers and druids without their gear fight up close like knights.
 | **Hold** | Stay at their building. |
 | **Follow me** | Stay with the nearest colony member (owner or officer) within 64 blocks, and attack whatever hurts them or whatever they fight. Without anyone to follow, they hold their building. |
 
+## Job outfits
+
+Citizens wear an outfit for their job, drawn by **FallenStar114**, each in a male and a female
+version. Citizens in other jobs, children and visitors wear an everyday skin.
+
+| Job | Outfit |
+| --- | --- |
+| Alchemist, Baker, Beekeeper, Blacksmith, Builder | their own |
+| Sawmill worker | carpenter |
+| Cook | chef |
+| Knight (guard) | cavalry |
+| Ranger (guard) | archer |
+
+![Job outfits](docs/screenshots/citizen_outfits.png)
+
 ## Illness
 
 Each morning a citizen may fall ill (3% by default; twice as likely when hungry or homeless, half
@@ -621,7 +636,7 @@ official Mojang mappings.
 
 - **PikachuX0303**
 - **PerniciousPx**
-- **FallenStar114**
+- **FallenStar114**: also drew the citizens' job outfits
 
 In collaboration with claude.
 
