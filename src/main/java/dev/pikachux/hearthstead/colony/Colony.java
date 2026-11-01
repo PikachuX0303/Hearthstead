@@ -415,6 +415,49 @@ public class Colony {
         }
     }
 
+    /**
+     * Each morning: sick citizens get better once their illness has run its course, pass it on to
+     * the people they live with, and healthy ones may fall ill.
+     */
+    public void dailyIllness(ServerLevel level, long day) {
+        net.minecraft.util.RandomSource random = level.getRandom();
+        List<CitizenData> residents = citizens.values().stream().filter(c -> !c.visitor()).toList();
+        for (CitizenData citizen : residents) {
+            if (citizen.sick() && day - citizen.illnessDay() >= citizen.illness().recoveryDays()) {
+                Illness illness = citizen.illness();
+                citizen.cure();
+                broadcast(level.getServer(), Component.translatable("message.hearthstead.recovered", citizen.name(),
+                        Component.translatable("illness.hearthstead." + illness.id())).withStyle(net.minecraft.ChatFormatting.GRAY));
+            }
+        }
+        double contagion = dev.pikachux.hearthstead.config.HearthsteadConfig.CONTAGION_CHANCE.get();
+        for (CitizenData sick : residents.stream().filter(CitizenData::sick).toList()) {
+            for (CitizenData other : residents) {
+                if (!other.sick() && sick.homePos() != null && sick.homePos().equals(other.homePos())
+                        && random.nextDouble() < contagion) {
+                    fallIll(level, other, sick.illness(), day);
+                }
+            }
+        }
+        double chance = dev.pikachux.hearthstead.config.HearthsteadConfig.ILLNESS_CHANCE.get()
+                * (research.has(Research.HERBAL_REMEDIES) ? 0.5 : 1);
+        for (CitizenData citizen : residents) {
+            double odds = chance * (citizen.saturation() <= 0 ? 2 : 1) * (citizen.homePos() == null ? 2 : 1);
+            if (!citizen.sick() && random.nextDouble() < odds) {
+                fallIll(level, citizen, Illness.values()[random.nextInt(Illness.values().length)], day);
+            }
+        }
+        markDirty();
+    }
+
+    public void fallIll(ServerLevel level, CitizenData citizen, Illness illness, long day) {
+        citizen.fallIll(illness, day);
+        markDirty();
+        broadcast(level.getServer(), Component.translatable("message.hearthstead.fell_ill", citizen.name(),
+                Component.translatable("illness.hearthstead." + illness.id()),
+                illness.cure().getDefaultInstance().getHoverName()).withStyle(net.minecraft.ChatFormatting.GOLD));
+    }
+
     /** Citizens who live in the colony: everyone but the tavern's visitors. */
     public int residents() {
         return (int) citizens.values().stream().filter(c -> !c.visitor()).count();

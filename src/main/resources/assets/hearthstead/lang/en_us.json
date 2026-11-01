@@ -447,5 +447,13 @@
   "setting.hearthstead.guard_order.patrol": "Patrol here",
   "setting.hearthstead.guard_order.colony": "Patrol colony",
   "setting.hearthstead.guard_order.hold": "Hold",
-  "setting.hearthstead.guard_order.follow": "Follow me"
+  "setting.hearthstead.guard_order.follow": "Follow me",
+  "illness.hearthstead.cold": "cold",
+  "illness.hearthstead.fever": "fever",
+  "illness.hearthstead.stomach_bug": "stomach bug",
+  "message.hearthstead.fell_ill": "%s has caught a %s (a healer can cure it with a %s).",
+  "message.hearthstead.recovered": "%s got over their %s.",
+  "message.hearthstead.cured": "%s cured %s's %s.",
+  "config.hearthstead.citizens.illnessChance": "Illness",
+  "config.hearthstead.citizens.contagionChance": "Contagion"
 }

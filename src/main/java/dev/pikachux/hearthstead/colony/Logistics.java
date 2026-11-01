@@ -259,6 +259,18 @@ public final class Logistics {
                     }
                 }
             }
+            case HOSPITAL -> {
+                // One cure for every sick citizen, by illness.
+                if (building.level() > 0) {
+                    for (Illness illness : Illness.values()) {
+                        long sick = colony.citizens().stream().filter(c -> c.illness() == illness).count();
+                        if (sick > 0) {
+                            restock(building, storage, s -> s.is(illness.cure()), (int) sick, (int) sick,
+                                    illness.cure().getDefaultInstance().getHoverName().getString(), requests);
+                        }
+                    }
+                }
+            }
             case LIBRARY -> {
                 if (building.level() > 0) {
                     restock(building, storage, s -> s.is(Items.BOOK), 2, 8, "Books", requests);

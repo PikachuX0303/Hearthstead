@@ -27,7 +27,7 @@ public class ChildSchoolGoal extends WorkGoal {
     public boolean canUse() {
         CitizenData data = citizen.data();
         Colony colony = citizen.colony();
-        if (data == null || colony == null || !data.child() || !citizen.level().isBrightOutside()) {
+        if (data == null || colony == null || !data.child() || data.sick() || !citizen.level().isBrightOutside()) {
             return false;
         }
         school = null;

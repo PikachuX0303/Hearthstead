@@ -45,7 +45,7 @@ public abstract class WorkGoal extends Goal {
     @Override
     public boolean canUse() {
         CitizenData data = citizen.data();
-        return data != null && data.job() == job && data.workPos() != null
+        return data != null && data.job() == job && data.workPos() != null && !data.sick()
                 && citizen.level().isBrightOutside() && data.saturation() > 2 && citizen.getTarget() == null;
     }
 

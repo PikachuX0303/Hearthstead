@@ -33,7 +33,7 @@ public class GuardTrainingGoal extends WorkGoal {
     public boolean canUse() {
         CitizenData data = citizen.data();
         Colony colony = citizen.colony();
-        if (data == null || colony == null || data.job() != JobType.GUARD || citizen.getTarget() != null
+        if (data == null || colony == null || data.job() != JobType.GUARD || citizen.getTarget() != null || data.sick()
                 || data.saturation() <= 2 || !citizen.level().isBrightOutside()) {
             return false;
         }

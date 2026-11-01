@@ -111,7 +111,7 @@ links to the releases and the changelog.
 | **Fletcher** | Makes bows, crossbows, arrows, fishing rods and leads for the huts that ask for them, such as the fisherman's rod. Asks for sticks, string, flint and feathers. |
 | **Stone Smelter** | Runs the furnaces of the Stone Smeltery (one per level): cobblestone into stone, clay into bricks and terracotta, netherrack into nether bricks, cobbled deepslate into deepslate, sandstone, quartz and basalt into their smooth forms. Asks for cobblestone and fuel. |
 | **Guard (Barracks)** | The Barracks employs 2 guards per level (up to 10), with the same classes and orders as Guard Tower guards. |
-| **Healer** | Works at the Hospital and heals hurt citizens around it. Citizens below half health leave their work and go to a staffed Hospital until they have mostly recovered. |
+| **Healer** | Works at the Hospital and heals hurt citizens around it, and cures the sick ([illness](#illness)). Citizens below half health leave their work and go to a staffed Hospital until they have mostly recovered. |
 | **Quarrier** | Digs an open pit behind the Quarry, layer by layer from the top: 5x5 and 8 deep at level 1, up to 13x13 and 24 deep at level 5. Brings the stone and ores to the hut. Needs a pickaxe. |
 | **Librarian** | Studies the Library's books. While a staffed Library has books, every citizen gains skill experience 25% faster per Library level; one book is used up every quarter day. |
 | **Teacher** | Keeps the School open. While it is staffed, children go there during the day, learn a little of every skill and grow up twice as fast. |
@@ -244,6 +244,8 @@ to worlds you host (singleplayer and LAN); on a server, the server's own file st
 | `citizens` | `hungerRate` | `1.0` | How fast citizens get hungry (0 = never) |
 | `citizens` | `workSpeed` | `1.0` | How fast citizens build, craft, farm and so on |
 | `citizens` | `researchSpeed` | `1.0` | How fast research progresses |
+| `citizens` | `illnessChance` | `0.03` | Chance each morning that a citizen falls ill (0 turns illness off) |
+| `citizens` | `contagionChance` | `0.2` | Chance each morning that a sick citizen infects each person they live with |
 | `raids` | `enabled` | `true` | Whether colonies can be raided at all |
 | `raids` | `minCitizens` | `4` | Citizens a colony needs before raids start |
 | `raids` | `maxRaiders` | `16` | Largest raid |
@@ -391,6 +393,22 @@ Rangers and druids without their gear fight up close like knights.
 | **Patrol colony** | Walk from hut to hut across the whole colony, and train like patrolling guards. |
 | **Hold** | Stay at their building. |
 | **Follow me** | Stay with the nearest colony member (owner or officer) within 64 blocks, and attack whatever hurts them or whatever they fight. Without anyone to follow, they hold their building. |
+
+## Illness
+
+Each morning a citizen may fall ill (3% by default; twice as likely when hungry or homeless, half
+as likely with the Herbal Remedies research), and a sick citizen may pass it on to the people they
+live with (20%). A sick citizen stops working, is slower and less happy, and sneezes now and then.
+
+| Illness | Cure | Gets better by itself after |
+| --- | --- | --- |
+| Cold | Honey Bottle | 3 days |
+| Fever | Golden Carrot | 4 days |
+| Stomach bug | Milk Bucket | 2 days |
+
+Sick citizens go to a Hospital with a healer, who cures them with the cure from the hospital's
+stock (the hospital asks for one per sick citizen; empty bottles and buckets go back on its
+shelf). Without a hospital they rest at home by day and get better on their own.
 
 ## Families, visitors and the dead
 

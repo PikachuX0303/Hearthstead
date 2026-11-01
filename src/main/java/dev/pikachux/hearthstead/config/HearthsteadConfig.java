@@ -69,6 +69,15 @@ public final class HearthsteadConfig {
     public static final DoubleOption RESEARCH_SPEED = add(new DoubleOption(CITIZENS, "researchSpeed",
             "How fast researchers make progress at the university. 1.0 is normal.", 1.0, 0.1, 100.0));
 
+    public static final DoubleOption ILLNESS_CHANCE = add(new DoubleOption(CITIZENS, "illnessChance",
+            "Chance each morning that a citizen falls ill (doubled when hungry or homeless, halved with\n"
+                    + "Herbal Remedies). Sick citizens stop working until a healer cures them or they get better.\n"
+                    + "0 turns illness off.", 0.03, 0.0, 1.0));
+
+    public static final DoubleOption CONTAGION_CHANCE = add(new DoubleOption(CITIZENS, "contagionChance",
+            "Chance each morning that a sick citizen passes their illness on to each person they live with.",
+            0.2, 0.0, 1.0));
+
     // ---------------------------------------------------------------- raids
 
     private static final String RAIDS = section("raids", "Barbarian raids. Colony owners can also turn raids off for their\n"

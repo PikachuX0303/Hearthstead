@@ -102,6 +102,9 @@ public class CitizenEntity extends PathfinderMob {
     private static final Identifier GUARD_ATTACK = Hearthstead.id("guard_attack");
     private static final Identifier KNIGHT_ARMOR = Hearthstead.id("knight_armor");
     private static final Identifier RANGER_SPEED = Hearthstead.id("ranger_speed");
+    private static final Identifier ILL_SPEED = Hearthstead.id("ill_speed");
+    /** Happiness a sick citizen loses. */
+    public static final double ILLNESS_UNHAPPINESS = 1.5;
     /** Extra armour knights get on top of every guard's. */
     public static final double KNIGHT_ARMOR_BONUS = 4.0;
     /** Share of a melee or projectile hit a knight's shield takes. */
@@ -310,9 +313,14 @@ public class CitizenEntity extends PathfinderMob {
         happiness += colony.research().has(Research.GOLDEN_AGE) ? 1 : 0;
         happiness -= colony.mourning(level().getGameTime()) ? 1 : 0;
         happiness += colony.decorationHappiness();
+        happiness -= data.sick() ? ILLNESS_UNHAPPINESS : 0;
         happiness += colony.happenings().festival(level().getGameTime()) ? dev.pikachux.hearthstead.colony.ColonyHappenings.FESTIVAL_HAPPINESS : 0;
         happiness += data.saturation() > CitizenData.MAX_SATURATION / 2 ? 2 : (data.saturation() <= 0 ? -3 : 0);
         data.setHappiness(happiness);
+        apply(Attributes.MOVEMENT_SPEED, ILL_SPEED, -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, data.sick());
+        if (data.sick() && getRandom().nextInt(8) == 0) {
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.SNEEZE, getX(), getEyeY(), getZ(), 3, 0.2, 0.1, 0.2, 0.01);
+        }
 
         if (data.saturation() <= 0 && level.getGameTime() % 200 == 0) {
             hurtServer(level, damageSources().starve(), 1.0F);

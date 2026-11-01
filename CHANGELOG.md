@@ -5,6 +5,17 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.37.0-alpha] - 2026-11-01
+
+### Added
+- **Illness.** Citizens may catch a cold, a fever or a stomach bug in the morning (more likely
+  when hungry or homeless, less with Herbal Remedies) and pass it on to the people they live
+  with. Sick citizens stop working, are slower and less happy, and go to a hospital, or rest at
+  home without one.
+- Healers cure the sick with a honey bottle, golden carrot or milk bucket from the hospital,
+  which asks for one per sick citizen. Without a cure, illnesses pass after two to four days.
+- Config: `illnessChance` and `contagionChance` in `[citizens]`, also in the settings screen.
+
 ## [0.36.0-alpha] - 2026-11-01
 
 ### Added

@@ -44,7 +44,7 @@ public class GuardPatrolGoal extends WorkGoal {
     @Override
     public boolean canUse() {
         CitizenData data = citizen.data();
-        return data != null && data.job() == JobType.GUARD && data.workPos() != null
+        return data != null && data.job() == JobType.GUARD && data.workPos() != null && !data.sick()
                 && data.saturation() > 2 && citizen.getTarget() == null;
     }
 

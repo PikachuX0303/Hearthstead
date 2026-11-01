@@ -43,7 +43,7 @@ public class GuardGameTests {
     }
 
     /** Each class asks for its own gear. */
-    @GameTest(environment = "hearthstead-gametest:guard_hold", structure = PLATFORM)
+    @GameTest(environment = "hearthstead-gametest:guard_gear", structure = PLATFORM)
     public void guardsRequestTheirGear(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));

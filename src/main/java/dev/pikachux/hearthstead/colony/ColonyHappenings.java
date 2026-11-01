@@ -64,6 +64,7 @@ public class ColonyHappenings {
                 }
             }
             sendVisitors(colony, level, day);
+            colony.dailyIllness(level, day);
         }
         // A rocket now and then while the festival lasts (the colony ticks once a second).
         if (festival(level.getGameTime()) && ++fireworkTimer >= 30) {

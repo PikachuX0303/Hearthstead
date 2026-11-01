@@ -43,6 +43,9 @@ public class CitizenData {
     private int ageSeconds;
     /** Visitors stay at the tavern until recruited for {@link #recruitCost()} or until they leave. */
     private boolean visitor;
+    @org.jetbrains.annotations.Nullable
+    private Illness illness;
+    private long illnessDay;
     private long arrivalDay;
     private String recruitItem = "";
     private int recruitCount;
@@ -224,6 +227,30 @@ public class CitizenData {
         return visitor;
     }
 
+    /** The illness the citizen has, or null when healthy. */
+    @org.jetbrains.annotations.Nullable
+    public Illness illness() {
+        return illness;
+    }
+
+    public boolean sick() {
+        return illness != null;
+    }
+
+    /** The day the citizen fell ill. */
+    public long illnessDay() {
+        return illnessDay;
+    }
+
+    public void fallIll(Illness illness, long day) {
+        this.illness = illness;
+        this.illnessDay = day;
+    }
+
+    public void cure() {
+        illness = null;
+    }
+
     public long arrivalDay() {
         return arrivalDay;
     }
@@ -300,6 +327,10 @@ public class CitizenData {
             tag.putBoolean("child", true);
             tag.putInt("age", ageSeconds);
         }
+        if (illness != null) {
+            tag.putString("illness", illness.id());
+            tag.putLong("illnessDay", illnessDay);
+        }
         if (visitor) {
             tag.putBoolean("visitor", true);
             tag.putLong("arrivalDay", arrivalDay);
@@ -329,6 +360,8 @@ public class CitizenData {
         data.child = tag.getBooleanOr("child", false);
         data.ageSeconds = tag.getIntOr("age", 0);
         data.visitor = tag.getBooleanOr("visitor", false);
+        data.illness = Illness.byId(tag.getStringOr("illness", ""));
+        data.illnessDay = tag.getLongOr("illnessDay", 0);
         data.arrivalDay = tag.getLongOr("arrivalDay", 0);
         data.recruitItem = tag.getStringOr("recruitItem", "");
         data.recruitCount = tag.getIntOr("recruitCount", 0);
