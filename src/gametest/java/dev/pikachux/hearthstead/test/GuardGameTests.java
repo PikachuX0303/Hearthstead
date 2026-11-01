@@ -126,16 +126,17 @@ public class GuardGameTests {
         stock(helper, tower, new ItemStack(Items.NETHER_WART, 8));
         CitizenData guard = colony.addNewCitizen(helper.getLevel());
         CitizenData patient = colony.addNewCitizen(helper.getLevel());
-        // The patient has no job and would wander off the platform; keep them still.
-        entity(helper, patient).setNoAi(true);
+        // The patient has no job and would wander off the platform: keep them still, on the hut
+        // block in the middle of the tower, where the druid holds.
+        CitizenEntity still = entity(helper, patient);
+        still.setNoAi(true);
+        still.teleportTo(tower.pos().getX() + 0.5, tower.pos().getY() + 1, tower.pos().getZ() + 0.5);
         helper.succeedWhen(() -> {
             CitizenEntity druid = entity(helper, guard);
             CitizenEntity hurt = entity(helper, patient);
             check(helper, druid.inventory().countItem(Items.NETHER_WART) > 0, "nether wart (" + guard.status() + ")");
             if (hurt.getHealth() > 5 && !hurt.hasEffect(MobEffects.REGENERATION)) {
                 hurt.setHealth(4);
-                // Right beside the druid, so the colonist cannot end up inside the tower's walls.
-                hurt.teleportTo(druid.getX() + 0.6, druid.getY(), druid.getZ());
             }
             check(helper, hurt.hasEffect(MobEffects.REGENERATION), "the druid to heal the hurt colonist");
         });
