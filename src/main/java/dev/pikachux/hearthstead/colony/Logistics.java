@@ -134,7 +134,8 @@ public final class Logistics {
             case LUMBERJACK -> s -> s.is(ItemTags.AXES) || s.is(ItemTags.SAPLINGS);
             case FARMER -> s -> s.is(ItemTags.HOES) || s.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) || s.is(Items.BONE_MEAL);
             case MINER -> s -> s.is(ItemTags.PICKAXES) || s.is(Items.TORCH);
-            case GUARD_TOWER, BARRACKS -> s -> s.is(ItemTags.SWORDS) || s.is(Items.ARROW);
+            case GUARD_TOWER, BARRACKS -> s -> s.is(ItemTags.SWORDS) || s.is(Items.ARROW) || s.is(Items.SHIELD)
+                    || s.is(Items.BOW) || s.is(Items.NETHER_WART);
             case LIBRARY -> s -> s.is(Items.BOOK);
             case QUARRY -> s -> s.is(ItemTags.PICKAXES);
             case STASH -> s -> false;
@@ -239,10 +240,23 @@ public final class Logistics {
                 }
             }
             case GUARD_TOWER, BARRACKS -> {
-                tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
-                // Guards trained at an Archery shoot arrows from their tower's stock.
-                if (building.level() > 0 && colony.trainingGround(BuildingType.ARCHERY) != null) {
-                    restock(building, storage, s -> s.is(Items.ARROW), 8, 32, "Arrows", requests);
+                switch (Guards.kind(building)) {
+                    case KNIGHT -> {
+                        tool(level, colony, building, storage, s -> s.is(ItemTags.SWORDS), "Sword", requests);
+                        offhandTool(level, colony, building, storage, s -> s.is(Items.SHIELD), "Shield", requests);
+                        // Knights trained at an Archery also shoot arrows from their tower's stock.
+                        if (building.level() > 0 && colony.trainingGround(BuildingType.ARCHERY) != null) {
+                            restock(building, storage, s -> s.is(Items.ARROW), 8, 32, "Arrows", requests);
+                        }
+                    }
+                    case RANGER -> {
+                        tool(level, colony, building, storage, s -> s.is(Items.BOW), "Bow", requests);
+                        restock(building, storage, s -> s.is(Items.ARROW), 16, 64, "Arrows", requests);
+                    }
+                    case DRUID -> {
+                        // Druids brew their potions from nether wart.
+                        restock(building, storage, s -> s.is(Items.NETHER_WART), 4, 16, "Nether Wart", requests);
+                    }
                 }
             }
             case LIBRARY -> {
@@ -429,6 +443,22 @@ public final class Logistics {
             if (building.pos().equals(citizen.workPos()) && citizen.entityUuid() != null
                     && level.getEntity(citizen.entityUuid()) instanceof CitizenEntity entity
                     && matcher.test(entity.getMainHandItem())) {
+                return;
+            }
+        }
+        requests.add(new Request(building.pos(), matcher, 1, description));
+    }
+
+    /** Like {@link #tool}, for something the hut's workers carry in their off hand (a knight's shield). */
+    private static void offhandTool(ServerLevel level, Colony colony, BuildingData building, List<Container> storage,
+                                    Predicate<ItemStack> matcher, String description, List<Request> requests) {
+        if (Storage.count(storage, matcher) > 0) {
+            return;
+        }
+        for (CitizenData citizen : colony.citizens()) {
+            if (building.pos().equals(citizen.workPos()) && citizen.entityUuid() != null
+                    && level.getEntity(citizen.entityUuid()) instanceof CitizenEntity entity
+                    && matcher.test(entity.getOffhandItem())) {
                 return;
             }
         }

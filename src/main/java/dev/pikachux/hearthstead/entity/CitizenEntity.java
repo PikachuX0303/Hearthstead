@@ -100,6 +100,12 @@ public class CitizenEntity extends PathfinderMob {
     private static final Identifier DELIVERY_SPEED = Hearthstead.id("delivery_speed");
     private static final Identifier GUARD_ARMOR = Hearthstead.id("guard_armor");
     private static final Identifier GUARD_ATTACK = Hearthstead.id("guard_attack");
+    private static final Identifier KNIGHT_ARMOR = Hearthstead.id("knight_armor");
+    private static final Identifier RANGER_SPEED = Hearthstead.id("ranger_speed");
+    /** Extra armour knights get on top of every guard's. */
+    public static final double KNIGHT_ARMOR_BONUS = 4.0;
+    /** Share of a melee or projectile hit a knight's shield takes. */
+    public static final float SHIELD_BLOCK = 0.4F;
 
     /** Saturation lost per second. */
     private static final double HUNGER_RATE = 0.01;
@@ -138,9 +144,17 @@ public class CitizenEntity extends PathfinderMob {
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.1, true) {
             @Override
             public boolean canUse() {
-                return job() == JobType.GUARD && super.canUse();
+                return job() == JobType.GUARD && !dev.pikachux.hearthstead.entity.ai.GuardCasterGoal.fightsAtRange(CitizenEntity.this)
+                        && super.canUse();
+            }
+
+            @Override
+            public boolean canContinueToUse() {
+                return !dev.pikachux.hearthstead.entity.ai.GuardCasterGoal.fightsAtRange(CitizenEntity.this) && super.canContinueToUse();
             }
         });
+        goalSelector.addGoal(1, new dev.pikachux.hearthstead.entity.ai.GuardCasterGoal(this));
+        goalSelector.addGoal(1, new dev.pikachux.hearthstead.entity.ai.DruidSupportGoal(this));
         goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Monster.class, 8.0F, 0.8, 1.0, e -> job() != JobType.GUARD));
         goalSelector.addGoal(3, new CitizenEatGoal(this));
         goalSelector.addGoal(3, new dev.pikachux.hearthstead.entity.ai.SeekHealingGoal(this));
@@ -258,7 +272,7 @@ public class CitizenEntity extends PathfinderMob {
         entityData.set(DATA_JOB, data.job().id());
         entityData.set(DATA_CHILD, data.child());
         Component name = Component.literal(data.name())
-                .append(Component.literal(" (" + role(data) + ")").withStyle(ChatFormatting.GRAY));
+                .append(Component.literal(" (" + role(colony(), data) + ")").withStyle(ChatFormatting.GRAY));
         if (!name.equals(getCustomName())) {
             setCustomName(name);
         }
@@ -333,6 +347,10 @@ public class CitizenEntity extends PathfinderMob {
         apply(Attributes.ATTACK_DAMAGE, GUARD_ATTACK, 2.0 + (drills ? 2.0 : 0) + (veterans ? 3.0 : 0) + combatDamage(combat), guard);
         apply(Attributes.MOVEMENT_SPEED, GUARD_SPEED, 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
                 guard && has(research, Research.SWIFT_PATROLS));
+        dev.pikachux.hearthstead.colony.Guards.Kind kind = dev.pikachux.hearthstead.colony.Guards.kind(colony(), data);
+        apply(Attributes.ARMOR, KNIGHT_ARMOR, KNIGHT_ARMOR_BONUS, guard && kind == dev.pikachux.hearthstead.colony.Guards.Kind.KNIGHT);
+        apply(Attributes.MOVEMENT_SPEED, RANGER_SPEED, 0.1, AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                guard && kind == dev.pikachux.hearthstead.colony.Guards.Kind.RANGER);
         if (getHealth() > getMaxHealth()) {
             setHealth(getMaxHealth());
         }
@@ -409,7 +427,34 @@ public class CitizenEntity extends PathfinderMob {
 
     /** What a citizen is called in name tags and windows: their job, or child or visitor. */
     public static String role(CitizenData data) {
-        return data.child() ? "Child" : data.visitor() ? "Visitor" : data.job().displayName();
+        return role(null, data);
+    }
+
+    /** What a citizen is called in windows and name tags: their job, or for guards their class. */
+    public static String role(@Nullable Colony colony, CitizenData data) {
+        if (data.child()) {
+            return "Child";
+        }
+        if (data.visitor()) {
+            return "Visitor";
+        }
+        if (dev.pikachux.hearthstead.colony.Guards.post(colony, data) != null) {
+            return dev.pikachux.hearthstead.colony.Guards.kind(colony, data).displayName();
+        }
+        return data.job().displayName();
+    }
+
+    /** Knights take part of every hit from the front on their shield. */
+    @Override
+    public boolean hurtServer(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) {
+        if (amount > 0 && getOffhandItem().is(net.minecraft.world.item.Items.SHIELD) && source.getEntity() != null
+                && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_SHIELD) && job() == JobType.GUARD
+                && dev.pikachux.hearthstead.colony.Guards.kind(colony(), data()) == dev.pikachux.hearthstead.colony.Guards.Kind.KNIGHT) {
+            amount *= 1 - SHIELD_BLOCK;
+            playSound(net.minecraft.sounds.SoundEvents.SHIELD_BLOCK.value(), 0.8F, 0.8F + getRandom().nextFloat() * 0.4F);
+            getOffhandItem().hurtAndBreak(1, this, EquipmentSlot.OFFHAND);
+        }
+        return super.hurtServer(level, source, amount);
     }
 
     @Override

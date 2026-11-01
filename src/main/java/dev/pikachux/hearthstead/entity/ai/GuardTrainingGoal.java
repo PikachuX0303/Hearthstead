@@ -4,6 +4,7 @@ import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.Colony;
+import dev.pikachux.hearthstead.colony.Guards;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Skill;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -40,10 +41,21 @@ public class GuardTrainingGoal extends WorkGoal {
         if (shift % 2 != 0) {
             return false;
         }
+        // Guards on hold or following someone stay on duty; druids learn by brewing instead.
+        Guards.Order order = Guards.order(colony, data);
+        Guards.Kind kind = Guards.kind(colony, data);
+        if (order == Guards.Order.HOLD || order == Guards.Order.FOLLOW || kind == Guards.Kind.DRUID) {
+            return false;
+        }
         BuildingData academy = colony.trainingGround(BuildingType.COMBAT_ACADEMY);
         BuildingData archery = colony.trainingGround(BuildingType.ARCHERY);
-        // With both grounds, guards alternate between them from one training stretch to the next.
-        ground = academy != null && archery != null ? (shift / 2 % 2 == 0 ? academy : archery) : academy != null ? academy : archery;
+        if (kind == Guards.Kind.RANGER) {
+            // Rangers train at the archery whenever there is one.
+            ground = archery != null ? archery : academy;
+        } else {
+            // With both grounds, knights alternate between them from one training stretch to the next.
+            ground = academy != null && archery != null ? (shift / 2 % 2 == 0 ? academy : archery) : academy != null ? academy : archery;
+        }
         return ground != null;
     }
 

@@ -29,6 +29,8 @@ public final class HutSettings {
     public static final Setting BREED = new Setting("breed", List.of("on", "off"));
     public static final Setting CRUSH = new Setting("crush", List.of("gravel", "sand"));
     public static final Setting SIFT = new Setting("sift", List.of("gravel", "sand", "dirt"));
+    public static final Setting GUARD_CLASS = new Setting("guard_class", List.of("knight", "ranger", "druid"));
+    public static final Setting GUARD_ORDER = new Setting("guard_order", List.of("patrol", "colony", "hold", "follow"));
 
     private HutSettings() {
     }
@@ -44,6 +46,7 @@ public final class HutSettings {
             case SHEPHERD, COWHAND, CHICKEN_HERDER, SWINEHERD, RABBIT_HERDER -> List.of(HERD_SIZE, BREED);
             case CRUSHER -> List.of(CRUSH);
             case SIFTER -> List.of(SIFT);
+            case GUARD_TOWER, BARRACKS -> List.of(GUARD_CLASS, GUARD_ORDER);
             default -> List.of();
         };
     }

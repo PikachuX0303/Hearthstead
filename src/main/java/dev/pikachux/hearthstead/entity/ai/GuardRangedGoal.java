@@ -45,7 +45,9 @@ public class GuardRangedGoal extends Goal {
     public boolean canUse() {
         CitizenData data = citizen.data();
         LivingEntity target = citizen.getTarget();
+        // Knights who trained at the Archery; rangers and druids have their own goal.
         return data != null && data.job() == JobType.GUARD && data.skill(Skill.MARKSMANSHIP) >= MIN_MARKSMANSHIP
+                && dev.pikachux.hearthstead.colony.Guards.kind(citizen.colony(), data) == dev.pikachux.hearthstead.colony.Guards.Kind.KNIGHT
                 && target != null && target.isAlive() && citizen.inventory().countItem(Items.ARROW) > 0
                 && citizen.distanceToSqr(target) > 16 && citizen.distanceToSqr(target) < 256;
     }

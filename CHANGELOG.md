@@ -5,6 +5,23 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.36.0-alpha] - 2026-11-01
+
+### Added
+- **Guard classes.** Guard Towers and Barracks have a Guard class setting:
+  - **Knights** (the default) fight with a sword and shield; they get +4 armour and the shield
+    takes 40% of each hit.
+  - **Rangers** keep their distance and shoot arrows with a bow.
+  - **Druids** throw harming potions at enemies (healing ones at the undead) and regeneration
+    potions at hurt colonists, brewed from nether wart.
+  Each building asks for its class's gear, and windows and name tags show the class.
+- **Guard orders.** Patrol around the building, patrol the whole colony, hold the building, or
+  follow the nearest colony member and defend them.
+
+### Changed
+- Rangers train at the Archery; druids and guards on hold or following someone don't train.
+- Guards only walk back to their building for gear that is actually there.
+
 ## [0.35.0-alpha] - 2026-11-01
 
 ### Added

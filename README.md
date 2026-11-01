@@ -79,7 +79,7 @@ links to the releases and the changelog.
 | **Lumberjack** | Needs an **axe** in the hut. Fells nearby trees from the top down, picks up drops, replants saplings and brings the wood back. |
 | **Farmer** | Needs a **hoe** in the hut. Tills, sows and harvests a field that surrounds the farmer's building, at floor level. Takes seeds from the hut, and uses bone meal from the hut on growing crops. Field width = 2 + level blocks. |
 | **Miner** | Needs a **pickaxe** in the hut. Digs a 2-high tunnel out of the front of the miner's building (16 blocks per level), mines exposed ores and places torches from the hut. Place the hut underground. |
-| **Guard Tower** | Employs one guard per level. Guards patrol the tower and attack hostile mobs, including barbarians. They use a sword if one is stored in the tower, and have +20 health, +6 armour and +2 attack. Other citizens flee from monsters. |
+| **Guard Tower** | Employs one guard per level. Guards attack hostile mobs, including raiders, and have +20 health, +6 armour and +2 attack. Their class (knight, ranger or druid) and orders are chosen in the tower's Settings tab ([guards](#guards)). Other citizens flee from monsters. |
 | **Raids** | See [Raids](#raids) below. |
 | **Research** | See [Research](#research) below. |
 | **Warehouse** | The colony's central storage. Its building is lined with barrels, and the hut plus every chest and barrel inside the building count as storage. Citizens can eat from it. |
@@ -110,7 +110,7 @@ links to the releases and the changelog.
 | **Blacksmith** | Forges the tools and weapons huts ask for (axes, hoes, pickaxes, shovels, swords), plus iron armour and shields, with the game's recipes. Prefers iron, then stone; diamond gear from hut level 3. Asks for iron ingots and sticks. |
 | **Fletcher** | Makes bows, crossbows, arrows, fishing rods and leads for the huts that ask for them, such as the fisherman's rod. Asks for sticks, string, flint and feathers. |
 | **Stone Smelter** | Runs the furnaces of the Stone Smeltery (one per level): cobblestone into stone, clay into bricks and terracotta, netherrack into nether bricks, cobbled deepslate into deepslate, sandstone, quartz and basalt into their smooth forms. Asks for cobblestone and fuel. |
-| **Guard (Barracks)** | The Barracks employs 2 guards per level (up to 10), who patrol around it like Guard Tower guards. Asks for swords. |
+| **Guard (Barracks)** | The Barracks employs 2 guards per level (up to 10), with the same classes and orders as Guard Tower guards. |
 | **Healer** | Works at the Hospital and heals hurt citizens around it. Citizens below half health leave their work and go to a staffed Hospital until they have mostly recovered. |
 | **Quarrier** | Digs an open pit behind the Quarry, layer by layer from the top: 5x5 and 8 deep at level 1, up to 13x13 and 24 deep at level 5. Brings the stone and ores to the hut. Needs a pickaxe. |
 | **Librarian** | Studies the Library's books. While a staffed Library has books, every citizen gains skill experience 25% faster per Library level; one book is used up every quarter day. |
@@ -373,6 +373,25 @@ arrows for their marksmen (the Fletcher makes them).
 
 ![Citizen window with skills](docs/screenshots/citizen.png)
 
+## Guards
+
+Each Guard Tower and Barracks has a **Settings** tab with the class and orders of its guards.
+
+| Class | Gear (requested from the colony) | How they fight |
+| --- | --- | --- |
+| **Knight** (default) | sword and shield | Up close. +4 armour, and the shield takes 40% of every hit. Knights who trained at the Archery also shoot arrows at enemies out of reach. |
+| **Ranger** | bow and arrows | Keeps 5 to 14 blocks away and shoots; 3 damage per arrow plus 1 per 10 Marksmanship, faster with skill. 10% faster on foot. |
+| **Druid** | nether wart (one per 4 potions) | Keeps its distance and throws harming potions (healing potions at the undead, which hurts them), and regeneration potions at hurt colonists nearby. Learns Knowledge by brewing. |
+
+Rangers and druids without their gear fight up close like knights.
+
+| Order | What the guards do when all is calm |
+| --- | --- |
+| **Patrol here** (default) | Walk around their building; train at the Combat Academy or Archery every other stretch of the day. |
+| **Patrol colony** | Walk from hut to hut across the whole colony, and train like patrolling guards. |
+| **Hold** | Stay at their building. |
+| **Follow me** | Stay with the nearest colony member (owner or officer) within 64 blocks, and attack whatever hurts them or whatever they fight. Without anyone to follow, they hold their building. |
+
 ## Families, visitors and the dead
 
 - **Children:** each morning (25% chance) a child may be born in a Residence where two adults
@@ -403,6 +422,8 @@ value; the worker and the hut's requests follow it right away.
 | Cook's Hut | Cook | all raw food, meat, fish, vegetables |
 | Shepherd, Cowhand, Chicken Herder, Swineherd, Rabbit Hutch | Herd size | auto (grows with the hut level), 2 to 24 |
 | (same) | Breed animals | yes / no (no feed is requested when off) |
+| Guard Tower, Barracks | Guard class | knight, ranger, druid ([guards](#guards)) |
+| (same) | Orders | patrol here, patrol the colony, hold, follow me |
 
 The swineherd and rabbit herder butcher animals above the herd size.
 

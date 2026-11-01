@@ -436,5 +436,16 @@
   "config.hearthstead.events.birthChance": "Births",
   "config.hearthstead.events.visitorChance": "Tavern visitors",
   "config.hearthstead.worldgen.abandonedSettlements": "Abandoned settlements",
-  "config.hearthstead.worldgen.settlementChance": "Settlement chance"
+  "config.hearthstead.worldgen.settlementChance": "Settlement chance",
+  "setting.hearthstead.guard_class": "Guard class",
+  "setting.hearthstead.guard_class.desc": "Knights use a sword and shield, rangers a bow and arrows, druids potions.",
+  "setting.hearthstead.guard_class.knight": "Knight",
+  "setting.hearthstead.guard_class.ranger": "Ranger",
+  "setting.hearthstead.guard_class.druid": "Druid",
+  "setting.hearthstead.guard_order": "Orders",
+  "setting.hearthstead.guard_order.desc": "What guards do when all is calm: patrol, hold the building, or follow you.",
+  "setting.hearthstead.guard_order.patrol": "Patrol here",
+  "setting.hearthstead.guard_order.colony": "Patrol colony",
+  "setting.hearthstead.guard_order.hold": "Hold",
+  "setting.hearthstead.guard_order.follow": "Follow me"
 }
