@@ -59,7 +59,7 @@ public class SawmillGoal extends WorkGoal {
             return;
         }
         List<Container> storage = Storage.containers(level(), building);
-        if (Storage.count(storage, s -> s.is(ItemTags.LOGS)) == 0) {
+        if (Storage.count(storage, s -> s.is(ItemTags.LOGS)) == 0 && building.recipes().isEmpty()) {
             citizen.setStatus("Needs logs");
             timer = 0;
             return;
@@ -72,10 +72,20 @@ public class SawmillGoal extends WorkGoal {
         }
         timer = 0;
         ItemStack made = ItemStack.EMPTY;
-        for (Item wanted : Logistics.shortages(level(), colony, Crafters::isWoodwork, storage)) {
-            made = Woodworking.craft(level(), storage, wanted);
+        java.util.function.Predicate<Item> taught = Crafters.taught(building);
+        for (Item wanted : Logistics.shortages(level(), colony, ((java.util.function.Predicate<Item>) Crafters::isWoodwork).or(taught), storage)) {
+            made = Crafters.isWoodwork(wanted) ? Woodworking.craft(level(), storage, wanted)
+                    : dev.pikachux.hearthstead.colony.Crafting.craftFromStorage(level(), storage, wanted);
             if (!made.isEmpty()) {
                 break;
+            }
+        }
+        // Taught recipes with a stock to keep.
+        for (var recipe : building.recipes().entrySet()) {
+            Item item = Logistics.postboxItem(recipe.getKey());
+            if (made.isEmpty() && item != null && Logistics.belowStock(level(), colony, building, item, recipe.getValue())) {
+                made = Crafters.isWoodwork(item) ? Woodworking.craft(level(), storage, item)
+                        : dev.pikachux.hearthstead.colony.Crafting.craftFromStorage(level(), storage, item);
             }
         }
         if (made.isEmpty() && warehousePlanks(colony) < PLANKS_STOCK) {

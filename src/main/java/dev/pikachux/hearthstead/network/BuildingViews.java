@@ -122,6 +122,7 @@ public final class BuildingViews {
                 materials, blocker, needsBuilder, builderJob, building.style(), info, requests,
                 type == BuildingType.UNIVERSITY ? research(level, colony, building) : List.of(),
                 postboxOrders(level, building),
+                recipes(level, colony, building),
                 HutSettings.of(type).stream()
                         .map(s -> new BuildingViewPayload.SettingEntry(s.id(), HutSettings.get(building, s)))
                         .toList(),
@@ -193,6 +194,20 @@ public final class BuildingViews {
                                 .mapToInt(ItemStack::getCount).sum(),
                         e.crafter() == null ? "" : e.crafter().type().id()))
                 .toList();
+    }
+
+    private static List<BuildingViewPayload.Cost> recipes(ServerLevel level, Colony colony, BuildingData building) {
+        List<BuildingViewPayload.Cost> recipes = new ArrayList<>();
+        List<net.minecraft.world.Container> held = new ArrayList<>(dev.pikachux.hearthstead.colony.Storage.containers(level, building));
+        colony.buildings().stream().filter(b -> b.type() == BuildingType.WAREHOUSE)
+                .forEach(b -> held.addAll(dev.pikachux.hearthstead.colony.Storage.containers(level, b)));
+        building.recipes().forEach((id, stock) -> {
+            Item item = dev.pikachux.hearthstead.colony.Logistics.postboxItem(id);
+            if (item != null) {
+                recipes.add(new BuildingViewPayload.Cost(item, stock, dev.pikachux.hearthstead.colony.Storage.count(held, s -> s.is(item))));
+            }
+        });
+        return recipes;
     }
 
     private static List<BuildingViewPayload.Cost> postboxOrders(ServerLevel level, BuildingData building) {

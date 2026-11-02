@@ -36,7 +36,6 @@ Hearthstead has the core colony loop, 49 huts, citizen skills and job outfits, f
 guard classes, decorations, five building styles, research and raids. Things that are **not there
 yet** (some of which MineColonies has):
 
-- Teaching crafters recipes (crafters work out what to make from the colony's shortages).
 - Hand-built style packs. The five styles are generated.
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook, herders and guard
   buildings have them).
@@ -383,6 +382,20 @@ the Requests tab like any request. When an order has fully arrived, members get 
 the items wait in the postbox.
 
 ![Postbox orders](docs/screenshots/postbox_orders.png)
+
+## Teaching recipes
+
+The **Sawmill**, **Mechanic's Workshop**, **Blacksmith's Hut** and **Fletcher's Hut** make their
+trade's goods on their own whenever a hut is short of them. On their **Recipes** tab you can teach
+them more: type anything a crafting table makes (`chest`, `minecraft:barrel`, `Bowl`) and press
+**Teach**. Each hut learns two recipes per level.
+
+- With **Keep** at 0 (shown as —) the worker makes it when a hut or a postbox asks for it.
+- With **Keep** above 0 the worker also keeps that many in the warehouse (and its own hut).
+- The hut asks for the ingredients it lacks, so the deliveryman brings them from the warehouse;
+  what is made goes to the warehouse like any product.
+
+![Recipes tab](docs/screenshots/recipes.png)
 
 ## Mystical Site
 

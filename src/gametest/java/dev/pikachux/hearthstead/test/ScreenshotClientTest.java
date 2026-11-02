@@ -325,6 +325,26 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.takeScreenshot("postbox_orders");
             context.setScreen(() -> null);
 
+            // A sawmill taught two recipes: its Recipes tab.
+            BlockPos sawmillPos = singleplayer.getServer().computeOnServer(server -> {
+                ServerLevel level = player(server).level();
+                BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, previewPos.offset(-10, 0, 4));
+                level.setBlockAndUpdate(pos, ModBlocks.HUTS.get(BuildingType.SAWMILL).defaultBlockState());
+                Colony colony = ColonyManager.get(server).colonyAt(level.dimension(), pos);
+                BuildingData sawmill = new BuildingData(pos, BuildingType.SAWMILL, 2);
+                sawmill.teach("minecraft:chest", 4);
+                sawmill.teach("minecraft:barrel", 0);
+                sawmill.teach("minecraft:bowl", 8);
+                colony.addBuilding(sawmill);
+                return pos;
+            });
+            singleplayer.getServer().runOnServer(server -> open(server, sawmillPos));
+            context.waitForScreen(BuildingScreen.class);
+            context.clickScreenButton("gui.hearthstead.tab.recipes");
+            context.waitTicks(5);
+            context.takeScreenshot("recipes");
+            context.setScreen(() -> null);
+
             // A row of hut blocks, to show their models.
             singleplayer.getServer().runOnServer(server -> {
                 ServerPlayer player = player(server);

@@ -44,6 +44,37 @@ public final class Crafters {
             Items.REDSTONE_LAMP, Items.NOTE_BLOCK, Items.IRON_DOOR, Items.IRON_TRAPDOOR, Items.IRON_BARS, Items.LANTERN,
             Items.TORCH, Items.BUCKET, Items.SHEARS, Items.FLINT_AND_STEEL);
 
+    /** Crafting huts that can be taught recipes for anything a crafting table makes. */
+    public static final Set<BuildingType> TEACHABLE = Set.of(BuildingType.SAWMILL, BuildingType.MECHANIC,
+            BuildingType.BLACKSMITH, BuildingType.FLETCHER);
+
+    /** How many recipes a crafting hut of this level can be taught: two per level. */
+    public static int recipeSlots(int level) {
+        return 2 * Math.max(1, level);
+    }
+
+    /** The items a crafting hut has been taught to make. */
+    public static Predicate<Item> taught(@Nullable BuildingData building) {
+        if (building == null || building.recipes().isEmpty()) {
+            return item -> false;
+        }
+        Set<Item> items = new HashSet<>();
+        for (String id : building.recipes().keySet()) {
+            Item item = Logistics.postboxItem(id);
+            if (item != null) {
+                items.add(item);
+            }
+        }
+        return items::contains;
+    }
+
+    /** What this crafting hut makes: its trade's products and what it has been taught. */
+    @Nullable
+    public static Predicate<Item> products(ServerLevel level, BuildingData building) {
+        Predicate<Item> base = products(level, building.type());
+        return base == null ? null : base.or(taught(building));
+    }
+
     private static RecipeManager cachedRecipes;
     private static Set<Item> cachedMasonry = Set.of();
 
@@ -122,11 +153,11 @@ public final class Crafters {
     @Nullable
     public static BuildingData crafterFor(ServerLevel level, Colony colony, Logistics.Request request) {
         for (BuildingType type : TYPES) {
-            Predicate<Item> products = products(level, type);
             for (BuildingData building : colony.buildings()) {
                 if (building.type() != type || building.level() == 0 || !staffed(colony, building)) {
                     continue;
                 }
+                Predicate<Item> products = products(level, building);
                 for (Item item : BuiltInRegistries.ITEM) {
                     if (products.test(item) && request.matcher().test(new ItemStack(item))) {
                         return building;

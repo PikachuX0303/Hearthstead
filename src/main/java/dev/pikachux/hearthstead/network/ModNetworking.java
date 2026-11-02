@@ -34,6 +34,35 @@ public final class ModNetworking {
     /** Most different items a postbox can have on order at once. */
     public static final int MAX_POSTBOX_ORDERS = 8;
 
+    /** Teaches a crafting hut a recipe; returns null or a translation key describing the problem. */
+    @Nullable
+    public static String teach(ServerPlayer player, Colony colony, BuildingData building, String argument) {
+        if (!dev.pikachux.hearthstead.colony.Crafters.TEACHABLE.contains(building.type())) {
+            return "message.hearthstead.recipe_not_teachable";
+        }
+        String[] parts = argument.split("\\|");
+        net.minecraft.world.item.Item item = parts.length == 2 ? dev.pikachux.hearthstead.colony.Logistics.postboxItem(parts[0]) : null;
+        if (item == null) {
+            return "message.hearthstead.recipe_unknown_item";
+        }
+        int stock;
+        try {
+            stock = Math.clamp(Integer.parseInt(parts[1].strip()), 0, MAX_POSTBOX_ORDER);
+        } catch (NumberFormatException e) {
+            stock = 0;
+        }
+        if (!building.recipes().containsKey(parts[0])
+                && building.recipes().size() >= dev.pikachux.hearthstead.colony.Crafters.recipeSlots(building.level())) {
+            return "message.hearthstead.recipe_slots_full";
+        }
+        if (!dev.pikachux.hearthstead.colony.Crafting.hasRecipe(player.level(), item)) {
+            return "message.hearthstead.recipe_none";
+        }
+        building.teach(parts[0], stock);
+        colony.markDirty();
+        return null;
+    }
+
     private ModNetworking() {
     }
 
@@ -129,6 +158,16 @@ public final class ModNetworking {
                         // Not a number: nothing ordered.
                     }
                 }
+            }
+            case TEACH_RECIPE -> {
+                String error = teach(player, colony, building, payload.argument());
+                if (error != null) {
+                    player.displayClientMessage(Component.translatable(error).withStyle(ChatFormatting.RED), true);
+                }
+            }
+            case FORGET_RECIPE -> {
+                building.forget(payload.argument());
+                colony.markDirty();
             }
             case SEND_EXPEDITION -> {
                 if (building.type() == BuildingType.TAVERN) {

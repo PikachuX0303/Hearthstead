@@ -5,6 +5,17 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.43.0-alpha] - 2026-11-02
+
+### Added
+- **Teaching recipes:** the Sawmill, Mechanic's Workshop, Blacksmith's Hut and Fletcher's Hut have
+  a Recipes tab. Teach them anything a crafting table makes (two recipes per hut level); they
+  make it when a hut or postbox asks for it, and keep a stock in the warehouse if you set one.
+  The hut asks for the ingredients it lacks.
+
+### Changed
+- Postbox orders and taught recipes are listed in two columns, so all of them fit.
+
 ## [0.42.0-alpha] - 2026-11-02
 
 ### Added

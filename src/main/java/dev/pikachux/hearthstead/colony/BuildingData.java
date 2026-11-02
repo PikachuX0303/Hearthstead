@@ -20,6 +20,8 @@ public class BuildingData {
     private final Map<String, String> settings = new TreeMap<>();
     /** A postbox's orders: item id to count, in the order they were made. */
     private final Map<String, Integer> orders = new java.util.LinkedHashMap<>();
+    /** Recipes taught to a crafting hut: item id to how many to keep in stock (0: only on request). */
+    private final Map<String, Integer> recipes = new java.util.LinkedHashMap<>();
 
     public BuildingData(BlockPos pos, BuildingType type, int level) {
         this.pos = pos.immutable();
@@ -80,6 +82,20 @@ public class BuildingData {
         }
     }
 
+    /** Recipes taught to this crafting hut, with how many of each to keep in stock (see {@link #teach}). */
+    public Map<String, Integer> recipes() {
+        return recipes;
+    }
+
+    /** Teaches the hut to make an item (by id), keeping {@code stock} of them (0: only when asked for). */
+    public void teach(String itemId, int stock) {
+        recipes.put(itemId, Math.max(0, stock));
+    }
+
+    public void forget(String itemId) {
+        recipes.remove(itemId);
+    }
+
     /** Radius around the hut in which its worker operates. */
     public int workRadius() {
         return 8 + level * 4;
@@ -101,6 +117,11 @@ public class BuildingData {
             orders.forEach(saved::putInt);
             tag.put("orders", saved);
         }
+        if (!recipes.isEmpty()) {
+            CompoundTag saved = new CompoundTag();
+            recipes.forEach(saved::putInt);
+            tag.put("recipes", saved);
+        }
         return tag;
     }
 
@@ -110,6 +131,7 @@ public class BuildingData {
         moved.style = style;
         moved.settings.putAll(settings);
         moved.orders.putAll(orders);
+        moved.recipes.putAll(recipes);
         return moved;
     }
 
@@ -126,6 +148,11 @@ public class BuildingData {
         tag.getCompound("orders").ifPresent(saved -> {
             for (String key : saved.keySet()) {
                 saved.getInt(key).ifPresent(count -> building.orders.put(key, count));
+            }
+        });
+        tag.getCompound("recipes").ifPresent(saved -> {
+            for (String key : saved.keySet()) {
+                saved.getInt(key).ifPresent(stock -> building.recipes.put(key, stock));
             }
         });
         return building;

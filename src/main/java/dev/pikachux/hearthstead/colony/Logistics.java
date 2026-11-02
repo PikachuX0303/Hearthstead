@@ -128,6 +128,26 @@ public final class Logistics {
         return stack.is(Items.FISHING_ROD);
     }
 
+    /**
+     * Items this building keeps. A crafting hut also keeps the ingredients of the recipes it was
+     * taught, while what it makes from them is output.
+     */
+    public static Predicate<ItemStack> keeps(ServerLevel level, BuildingData building) {
+        Predicate<ItemStack> base = keeps(building.type());
+        if (building.recipes().isEmpty()) {
+            return base;
+        }
+        Predicate<Item> taught = Crafters.taught(building);
+        List<net.minecraft.world.item.crafting.Ingredient> ingredients = new ArrayList<>();
+        for (String id : building.recipes().keySet()) {
+            Item item = postboxItem(id);
+            if (item != null) {
+                ingredients.addAll(Crafting.ingredients(level, item));
+            }
+        }
+        return s -> !taught.test(s.getItem()) && (base.test(s) || ingredients.stream().anyMatch(i -> i.test(s)));
+    }
+
     /** Items a building keeps; anything else in a worker hut is its output. */
     public static Predicate<ItemStack> keeps(BuildingType type) {
         return switch (type) {
@@ -225,6 +245,9 @@ public final class Logistics {
         List<Request> requests = new ArrayList<>();
         List<Container> storage = Storage.containers(level, building);
         BlockPos pos = building.pos();
+        if (Crafters.TEACHABLE.contains(building.type()) && !building.recipes().isEmpty() && building.level() > 0) {
+            taughtRequests(level, colony, building, storage, requests);
+        }
         switch (building.type()) {
             case BUILDER -> builderRequests(level, colony, building, storage, requests);
             case LUMBERJACK -> tool(level, colony, building, storage, s -> s.is(ItemTags.AXES), "Axe", requests);
@@ -472,6 +495,61 @@ public final class Logistics {
             }
         }
         requests.add(new Request(building.pos(), matcher, 1, description));
+    }
+
+    /**
+     * Ingredients a crafting hut lacks for the recipes it was taught: for every taught item that is
+     * below the stock to keep, or that another hut (or a postbox) is waiting for.
+     */
+    private static void taughtRequests(ServerLevel level, Colony colony, BuildingData crafter, List<Container> storage,
+                                       List<Request> requests) {
+        for (Map.Entry<String, Integer> recipe : crafter.recipes().entrySet()) {
+            Item item = postboxItem(recipe.getKey());
+            if (item == null || !(belowStock(level, colony, crafter, item, recipe.getValue()) || demanded(level, colony, item))) {
+                continue;
+            }
+            Crafting.missing(level, storage, item).forEach((ingredient, count) -> {
+                String name = ingredient.items().findFirst()
+                        .map(h -> h.value().getDefaultInstance().getHoverName().getString()).orElse("?");
+                requests.add(new Request(crafter.pos(), ingredient::test, count, name));
+            });
+        }
+    }
+
+    /** Whether the warehouse and the crafting hut together hold fewer of the item than the stock to keep. */
+    public static boolean belowStock(ServerLevel level, Colony colony, BuildingData crafter, Item item, int stock) {
+        if (stock <= 0) {
+            return false;
+        }
+        List<Container> held = new ArrayList<>(Storage.containers(level, crafter));
+        for (BuildingData building : colony.buildings()) {
+            if (building.type() == BuildingType.WAREHOUSE) {
+                held.addAll(Storage.containers(level, building));
+            }
+        }
+        return Storage.count(held, s -> s.is(item)) < stock;
+    }
+
+    /** Whether a hut other than a crafter (a postbox, a builder, ...) waits for the item and the warehouse has none. */
+    private static boolean demanded(ServerLevel level, Colony colony, Item item) {
+        List<Container> warehouse = new ArrayList<>();
+        for (BuildingData building : colony.buildings()) {
+            if (building.type() == BuildingType.WAREHOUSE) {
+                warehouse.addAll(Storage.containers(level, building));
+            }
+        }
+        if (Storage.count(warehouse, s -> s.is(item)) > 0) {
+            return false;
+        }
+        ItemStack stack = new ItemStack(item);
+        for (BuildingData building : colony.buildings()) {
+            // Crafters are left out: their own ingredient requests would ask this again.
+            if (!Crafters.TYPES.contains(building.type())
+                    && requests(level, colony, building).stream().anyMatch(r -> r.matcher().test(stack))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The item a postbox order names, or null for an unknown id. */

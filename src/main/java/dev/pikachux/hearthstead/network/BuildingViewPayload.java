@@ -46,6 +46,8 @@ public record BuildingViewPayload(
         List<ResearchEntry> research,
         /** A postbox's orders: the item, how many were ordered and how many have arrived. */
         List<Cost> postboxOrders,
+        /** A crafting hut's taught recipes: the item, the stock to keep and how many there are. */
+        List<Cost> recipes,
         List<SettingEntry> settings,
         boolean updateOnly
 ) implements CustomPacketPayload {
@@ -151,6 +153,11 @@ public record BuildingViewPayload(
             b.writeVarInt(c.count());
             b.writeVarInt(c.have());
         });
+        writeList(buf, recipes, (b, c) -> {
+            ITEM_CODEC.encode(b, c.item());
+            b.writeVarInt(c.count());
+            b.writeVarInt(c.have());
+        });
         writeList(buf, settings, (b, s) -> {
             b.writeUtf(s.id());
             b.writeUtf(s.value());
@@ -214,6 +221,7 @@ public record BuildingViewPayload(
                 readList(b, b2 -> new Cost(ITEM_CODEC.decode(b2), b2.readVarInt(), b2.readVarInt())),
                 b.readUtf(), b.readUtf()));
         List<Cost> postboxOrders = readList(buf, b -> new Cost(ITEM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
+        List<Cost> recipes = readList(buf, b -> new Cost(ITEM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
         List<SettingEntry> settings = readList(buf, b -> new SettingEntry(b.readUtf(), b.readUtf()));
         boolean updateOnly = buf.readBoolean();
         ColonyInfo colony = ColonyInfo.NONE;
@@ -241,7 +249,7 @@ public record BuildingViewPayload(
                     decorationHappiness);
         }
         return new BuildingViewPayload(pos, type, level, maxLevel, colonyName, residents, housing, workers, hasOrder,
-                orderLevel, orderAssigned, orderKind, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, postboxOrders, settings, updateOnly);
+                orderLevel, orderAssigned, orderKind, done, total, materials, blocker, needsBuilder, builderJob, style, colony, requests, research, postboxOrders, recipes, settings, updateOnly);
     }
 
     static void writeRequest(RegistryFriendlyByteBuf buf, RequestEntry request) {

@@ -41,6 +41,16 @@ public abstract class RecipeCrafterGoal extends WorkGoal {
         return wanted;
     }
 
+    private boolean make(BlockPos hut, List<Container> storage, Item wanted) {
+        ItemStack made = Crafting.craftFromStorage(level(), storage, wanted);
+        if (made.isEmpty()) {
+            return false;
+        }
+        level().playSound(null, hut, workSound(), SoundSource.BLOCKS, 0.6F, 1.0F);
+        citizen.setStatus("Making " + made.getHoverName().getString());
+        return true;
+    }
+
     @Override
     public void stop() {
         citizen.getNavigation().stop();
@@ -71,11 +81,16 @@ public abstract class RecipeCrafterGoal extends WorkGoal {
         }
         timer = 0;
         List<Container> storage = Storage.containers(level(), building);
-        for (Item wanted : order(Logistics.shortages(level(), colony, products(), storage), building)) {
-            ItemStack made = Crafting.craftFromStorage(level(), storage, wanted);
-            if (!made.isEmpty()) {
-                level().playSound(null, hut, workSound(), SoundSource.BLOCKS, 0.6F, 1.0F);
-                citizen.setStatus("Making " + made.getHoverName().getString());
+        Predicate<Item> makes = products().or(dev.pikachux.hearthstead.colony.Crafters.taught(building));
+        for (Item wanted : order(Logistics.shortages(level(), colony, makes, storage), building)) {
+            if (make(hut, storage, wanted)) {
+                return;
+            }
+        }
+        // Taught recipes with a stock to keep.
+        for (var recipe : building.recipes().entrySet()) {
+            Item item = Logistics.postboxItem(recipe.getKey());
+            if (item != null && Logistics.belowStock(level(), colony, building, item, recipe.getValue()) && make(hut, storage, item)) {
                 return;
             }
         }

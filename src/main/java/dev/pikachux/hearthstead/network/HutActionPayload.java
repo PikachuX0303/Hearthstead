@@ -33,7 +33,11 @@ public record HutActionPayload(BlockPos pos, Action action, String argument) imp
         /** Cancels a postbox order; the argument is the item id. */
         POSTBOX_CANCEL,
         /** Sends a tavern visitor on an expedition. */
-        SEND_EXPEDITION
+        SEND_EXPEDITION,
+        /** Teaches a crafting hut a recipe; the argument is {@code <item id>|<stock to keep>}. */
+        TEACH_RECIPE,
+        /** Makes a crafting hut forget a recipe; the argument is the item id. */
+        FORGET_RECIPE
     }
 
     private static final int MAX_ARGUMENT = 256;

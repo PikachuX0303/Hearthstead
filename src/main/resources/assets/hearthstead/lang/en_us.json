@@ -498,5 +498,19 @@
   "message.hearthstead.expedition_needs_food": "The tavern needs 6 meals for the trip.",
   "message.hearthstead.expedition_left": "%s set out on an expedition.",
   "message.hearthstead.expedition_back": "%s is back from the expedition with: %s",
-  "message.hearthstead.expedition_lost": "%s did not come back from the expedition."
+  "message.hearthstead.expedition_lost": "%s did not come back from the expedition.",
+  "gui.hearthstead.tab.recipes": "Recipes",
+  "gui.hearthstead.recipes.title": "Recipes taught",
+  "gui.hearthstead.recipes.count": "%s of %s",
+  "gui.hearthstead.recipes.item": "Item name or id",
+  "gui.hearthstead.recipes.stock": "Keep",
+  "gui.hearthstead.recipes.stock.tooltip": "How many to keep in the warehouse. 0: make it only when a hut or a postbox asks for it.",
+  "gui.hearthstead.recipes.teach": "Teach",
+  "gui.hearthstead.recipes.forget": "Forget this recipe",
+  "gui.hearthstead.recipes.on_request": "—",
+  "gui.hearthstead.recipes.none": "Nothing taught yet. Type something a crafting table makes and press Teach: the worker makes it when a hut or postbox asks for it, and keeps the number in Keep in stock. The hut asks for the ingredients. Two recipes per hut level.",
+  "message.hearthstead.recipe_not_teachable": "This hut cannot be taught recipes.",
+  "message.hearthstead.recipe_unknown_item": "Unknown item.",
+  "message.hearthstead.recipe_slots_full": "This hut knows as many recipes as it can (two per level).",
+  "message.hearthstead.recipe_none": "No crafting table recipe makes that."
 }

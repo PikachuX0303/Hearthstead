@@ -92,7 +92,7 @@ public class DeliverymanGoal extends WorkGoal {
                 }
                 BuildingData building = colony.building(target);
                 if (building != null) {
-                    Predicate<ItemStack> keep = Logistics.keeps(building.type());
+                    Predicate<ItemStack> keep = Logistics.keeps(level(), building);
                     for (ItemStack stack : Storage.extract(Storage.containers(level(), building), s -> !keep.test(s),
                             64 * CARRY_SLOTS)) {
                         ItemStack rest = citizen.inventory().addItem(stack);
@@ -167,7 +167,7 @@ public class DeliverymanGoal extends WorkGoal {
             if (!Logistics.producesOutput(building.type())) {
                 continue;
             }
-            Predicate<ItemStack> keep = Logistics.keeps(building.type());
+            Predicate<ItemStack> keep = Logistics.keeps(level(), building);
             List<Container> storage = Storage.containers(level(), building);
             // Crafted goods another hut is waiting for are fetched right away, not only once the hut fills up.
             boolean wanted = dev.pikachux.hearthstead.colony.Crafters.TYPES.contains(building.type())

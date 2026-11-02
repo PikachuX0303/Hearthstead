@@ -25,6 +25,7 @@ public class BuildingScreen extends ColonyScreen {
     private enum Tab {
         OVERVIEW("gui.hearthstead.tab.overview"),
         ORDERS("gui.hearthstead.tab.orders"),
+        RECIPES("gui.hearthstead.tab.recipes"),
         CONSTRUCTION("gui.hearthstead.tab.construction"),
         REQUESTS("gui.hearthstead.tab.requests"),
         SETTINGS("gui.hearthstead.tab.settings"),
@@ -46,6 +47,8 @@ public class BuildingScreen extends ColonyScreen {
     /** What is typed into the postbox's order fields, kept across refreshes. */
     private String orderItemText = "";
     private String orderCountText = "16";
+    private String recipeItemText = "";
+    private String recipeStockText = "0";
     private Component orderMessage = Component.empty();
     private static final int ORDER_ROW = 20;
     private EditBox nameField;
@@ -65,7 +68,7 @@ public class BuildingScreen extends ColonyScreen {
     /** Called when the server sends fresh data while the screen is open. */
     public void update(BuildingViewPayload view) {
         this.view = view;
-        if (tab == Tab.ORDERS && getFocused() instanceof EditBox) {
+        if ((tab == Tab.ORDERS || tab == Tab.RECIPES) && getFocused() instanceof EditBox) {
             // Keep typing undisturbed; the order list is drawn from the new view anyway.
             return;
         }
@@ -84,6 +87,10 @@ public class BuildingScreen extends ColonyScreen {
         List<Tab> tabs = new ArrayList<>(List.of(Tab.OVERVIEW, Tab.CONSTRUCTION, Tab.REQUESTS));
         if (view.buildingType().equals(dev.pikachux.hearthstead.colony.BuildingType.POSTBOX.id())) {
             tabs.add(1, Tab.ORDERS);
+        }
+        if (dev.pikachux.hearthstead.colony.Crafters.TEACHABLE.contains(
+                dev.pikachux.hearthstead.colony.BuildingType.byId(view.buildingType()))) {
+            tabs.add(1, Tab.RECIPES);
         }
         if (!view.settings().isEmpty()) {
             tabs.add(Tab.SETTINGS);
@@ -185,6 +192,30 @@ public class BuildingScreen extends ColonyScreen {
                     .bounds(left + panelWidth - 118, top + panelHeight - 52, 110, 18).build());
         }
 
+        if (tab == Tab.RECIPES) {
+            EditBox item = new EditBox(font, left + 10, top + 60, 170, 16, Component.translatable("gui.hearthstead.recipes.item"));
+            item.setMaxLength(64);
+            item.setValue(recipeItemText);
+            item.setHint(Component.translatable("gui.hearthstead.recipes.item"));
+            item.setResponder(text -> recipeItemText = text);
+            addRenderableWidget(item);
+            EditBox stock = new EditBox(font, left + 184, top + 60, 36, 16, Component.translatable("gui.hearthstead.recipes.stock"));
+            stock.setMaxLength(4);
+            stock.setFilter(text -> text.chars().allMatch(Character::isDigit));
+            stock.setValue(recipeStockText);
+            stock.setResponder(text -> recipeStockText = text);
+            stock.setTooltip(Tooltip.create(Component.translatable("gui.hearthstead.recipes.stock.tooltip")));
+            addRenderableWidget(stock);
+            addRenderableWidget(ColonyButton.themed(Component.translatable("gui.hearthstead.recipes.teach"), b -> teachRecipe())
+                    .bounds(left + 224, top + 59, 58, 18).build());
+            for (int i = 0; i < view.recipes().size(); i++) {
+                String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(view.recipes().get(i).item()).toString();
+                addRenderableWidget(ColonyButton.themed(Component.literal("✕"), b -> send(HutActionPayload.Action.FORGET_RECIPE, id))
+                        .tooltip(Tooltip.create(Component.translatable("gui.hearthstead.recipes.forget")))
+                        .bounds(entryX(i) + ENTRY_WIDTH - 20, entryY(i), 18, 18).build());
+            }
+        }
+
         if (tab == Tab.ORDERS) {
             EditBox item = new EditBox(font, left + 10, top + 60, 170, 16, Component.translatable("gui.hearthstead.postbox.item"));
             item.setMaxLength(64);
@@ -204,7 +235,7 @@ public class BuildingScreen extends ColonyScreen {
                 String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(view.postboxOrders().get(i).item()).toString();
                 addRenderableWidget(ColonyButton.themed(Component.literal("✕"), b -> send(HutActionPayload.Action.POSTBOX_CANCEL, id))
                         .tooltip(Tooltip.create(Component.translatable("gui.hearthstead.postbox.cancel")))
-                        .bounds(left + panelWidth - 30, top + 86 + i * ORDER_ROW, 18, 18).build());
+                        .bounds(entryX(i) + ENTRY_WIDTH - 20, entryY(i), 18, 18).build());
             }
         }
 
@@ -275,6 +306,7 @@ public class BuildingScreen extends ColonyScreen {
         switch (tab) {
             case OVERVIEW -> renderOverview(g, x, y, w, listBottom);
             case ORDERS -> renderOrders(g, x, y, w);
+            case RECIPES -> renderRecipes(g, x, y, w);
             case CONSTRUCTION -> renderConstruction(g, x, y, w, listBottom, mouseX, mouseY);
             case REQUESTS -> renderRequests(g, x, y, w, listBottom, mouseX, mouseY);
             case SETTINGS -> renderSettings(g, x, y, w);
@@ -350,6 +382,66 @@ public class BuildingScreen extends ColonyScreen {
         }
     }
 
+    // ---------------------------------------------------------------- item lists (orders, recipes)
+
+    /** Orders and recipes are listed in two columns of five rows. */
+    private static final int ENTRY_WIDTH = 134;
+
+    private int entryX(int i) {
+        return left + 10 + (i % 2) * (ENTRY_WIDTH + 4);
+    }
+
+    private int entryY(int i) {
+        return top + 86 + (i / 2) * ORDER_ROW;
+    }
+
+    /** One entry: the item, its name and a short count, next to its ✕ button. */
+    private void entry(GuiGraphics g, int i, ItemStack stack, Component count, int countColor) {
+        int x = entryX(i);
+        int y = entryY(i);
+        g.renderItem(stack, x, y + 1);
+        int countX = x + ENTRY_WIDTH - 24 - font.width(count);
+        g.drawString(font, font.plainSubstrByWidth(stack.getHoverName().getString(), countX - x - 22), x + 18, y + 5, 0xFFFFFFFF, true);
+        g.drawString(font, count, countX, y + 5, countColor, true);
+    }
+
+    // ---------------------------------------------------------------- recipes
+
+    private void teachRecipe() {
+        String text = recipeItemText.strip();
+        net.minecraft.world.item.Item item = findItem(text);
+        if (item == null) {
+            orderMessage = Component.translatable("gui.hearthstead.postbox.unknown", text);
+            return;
+        }
+        orderMessage = Component.empty();
+        recipeItemText = "";
+        send(HutActionPayload.Action.TEACH_RECIPE, net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item) + "|"
+                + (recipeStockText.isEmpty() ? "0" : recipeStockText));
+    }
+
+    private void renderRecipes(GuiGraphics g, int x, int y, int w) {
+        Component title = Component.translatable("gui.hearthstead.recipes.title");
+        text(g, title, x, y, HEADER);
+        Component count = Component.translatable("gui.hearthstead.recipes.count", view.recipes().size(),
+                dev.pikachux.hearthstead.colony.Crafters.recipeSlots(view.level()));
+        text(g, count, x + w - font.width(count), y, TEXT_LIGHT);
+        if (!orderMessage.getString().isEmpty()) {
+            text(g, orderMessage, x, y + 32, BAD);
+        }
+        if (view.recipes().isEmpty()) {
+            wrapped(g, Component.translatable("gui.hearthstead.recipes.none"), x, y + 44, w, TEXT_LIGHT);
+            return;
+        }
+        for (int i = 0; i < view.recipes().size(); i++) {
+            BuildingViewPayload.Cost recipe = view.recipes().get(i);
+            Component keep = recipe.count() > 0
+                    ? Component.literal(Math.min(recipe.have(), recipe.count()) + "/" + recipe.count())
+                    : Component.translatable("gui.hearthstead.recipes.on_request");
+            entry(g, i, new ItemStack(recipe.item()), keep, recipe.count() > 0 && recipe.have() < recipe.count() ? TEXT_LIGHT : GOOD);
+        }
+    }
+
     // ---------------------------------------------------------------- postbox
 
     /** Finds the typed item by id ("bread", "minecraft:bread") or by its name ("Bread") and orders it. */
@@ -402,12 +494,8 @@ public class BuildingScreen extends ColonyScreen {
         }
         for (int i = 0; i < view.postboxOrders().size(); i++) {
             BuildingViewPayload.Cost order = view.postboxOrders().get(i);
-            int rowY = top + 86 + i * ORDER_ROW;
-            ItemStack stack = new ItemStack(order.item());
-            g.renderItem(stack, x, rowY + 1);
-            g.drawString(font, font.plainSubstrByWidth(stack.getHoverName().getString(), w - 110), x + 20, rowY + 5, 0xFFFFFFFF, true);
-            String count = Math.min(order.have(), order.count()) + " / " + order.count();
-            g.drawString(font, count, x + w - 26 - font.width(count), rowY + 5, order.have() >= order.count() ? GOOD : TEXT_LIGHT, true);
+            entry(g, i, new ItemStack(order.item()), Component.literal(Math.min(order.have(), order.count()) + "/" + order.count()),
+                    order.have() >= order.count() ? GOOD : TEXT_LIGHT);
         }
     }
 
