@@ -14,17 +14,21 @@ import java.util.Map;
 /**
  * Renders citizens with the player model, so skins show their outer layer too. Citizens with a
  * job outfit wear it (the job skins by FallenStar114, in a male and a female version); everyone
- * else wears one of the built-in default player skins for variety.
+ * else wears one of the built-in default player skins that fits them. Grown-up women get a small
+ * chest shape ({@link CitizenChestLayer}).
  */
 public class CitizenRenderer extends HumanoidMobRenderer<CitizenEntity, CitizenRenderState, HumanoidModel<CitizenRenderState>> {
-    private static final String[] SKINS = {"steve", "alex", "ari", "efe", "kai", "makena", "noor", "sunny", "zuri"};
-    private static final Identifier[] TEXTURES = new Identifier[SKINS.length];
+    /** The built-in default skins, split so that men and women get a fitting one. */
+    private static final Identifier[] MALE_SKINS = defaults("steve", "kai", "sunny", "zuri");
+    private static final Identifier[] FEMALE_SKINS = defaults("alex", "ari", "efe", "makena", "noor");
     private static final Map<String, Identifier> OUTFITS = new HashMap<>();
 
-    static {
-        for (int i = 0; i < SKINS.length; i++) {
-            TEXTURES[i] = Identifier.withDefaultNamespace("textures/entity/player/wide/" + SKINS[i] + ".png");
+    private static Identifier[] defaults(String... names) {
+        Identifier[] textures = new Identifier[names.length];
+        for (int i = 0; i < names.length; i++) {
+            textures[i] = Identifier.withDefaultNamespace("textures/entity/player/wide/" + names[i] + ".png");
         }
+        return textures;
     }
 
     private final HumanoidModel<CitizenRenderState> wide;
@@ -34,6 +38,7 @@ public class CitizenRenderer extends HumanoidMobRenderer<CitizenEntity, CitizenR
         super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER)), 0.5F);
         wide = model;
         slim = new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM));
+        addLayer(new CitizenChestLayer(this, context.bakeLayer(CitizenChestLayer.LAYER), this::getTextureLocation));
     }
 
     /** Draws slim-armed skins with the slim player model, all others with the wide one. */
@@ -66,6 +71,7 @@ public class CitizenRenderer extends HumanoidMobRenderer<CitizenEntity, CitizenR
             return OUTFITS.computeIfAbsent(state.outfit + (state.female ? "_female" : "_male"),
                     name -> Hearthstead.id("textures/entity/citizen/" + name + ".png"));
         }
-        return TEXTURES[Math.floorMod(state.skin, TEXTURES.length)];
+        Identifier[] defaults = state.female ? FEMALE_SKINS : MALE_SKINS;
+        return defaults[Math.floorMod(state.skin, defaults.length)];
     }
 }

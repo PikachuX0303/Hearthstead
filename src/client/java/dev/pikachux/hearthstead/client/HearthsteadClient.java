@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 public class HearthsteadClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry.registerModelLayer(CitizenChestLayer.LAYER,
+                CitizenChestLayer::create);
         EntityRenderers.register(ModEntities.CITIZEN, CitizenRenderer::new);
         EntityRenderers.register(ModEntities.BARBARIAN, context -> new BarbarianRenderer(context, "barbarian", 1.0F));
         EntityRenderers.register(ModEntities.ARCHER_BARBARIAN, context -> new BarbarianRenderer(context, "archer_barbarian", 1.0F));

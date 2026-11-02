@@ -477,6 +477,19 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             });
             context.waitTicks(20);
             context.takeScreenshot("citizen_outfits");
+            // A closer look at the last few (the row ends with a woman), almost from the side.
+            singleplayer.getServer().runOnServer(server -> {
+                ServerPlayer player = player(server);
+                BlockPos base = player.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, showcase.offset(0, 0, -18));
+                player.teleportTo(player.level(), base.getX() + 12.3, base.getY(), base.getZ() + 11.3, java.util.Set.of(), 70, 8, false);
+            });
+            context.waitTicks(10);
+            context.runOnClient(client -> {
+                client.player.setYRot(70);
+                client.player.setXRot(8);
+            });
+            context.waitTicks(10);
+            context.takeScreenshot("citizen_outfits_close");
         }
     }
 

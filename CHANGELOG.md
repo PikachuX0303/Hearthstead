@@ -5,6 +5,16 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.42.0-alpha] - 2026-11-02
+
+### Added
+- Grown-up female citizens have a small chest shape, textured from their own skin (shirt and
+  jacket layer) so it matches every outfit; it follows the body's pose. Children don't have it.
+
+### Changed
+- Citizens without a job outfit get a default skin that fits them: Alex, Ari, Efe, Makena or Noor
+  for women, Steve, Kai, Sunny or Zuri for men.
+
 ## [0.41.0-alpha] - 2026-11-02
 
 ### Added

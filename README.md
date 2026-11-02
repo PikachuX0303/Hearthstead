@@ -449,7 +449,9 @@ Rangers and druids without their gear fight up close like knights.
 ## Job outfits
 
 Citizens wear an outfit for their job, drawn by **FallenStar114**, each in a male and a female
-version. Citizens in other jobs, children and visitors wear an everyday skin.
+version. Citizens in other jobs, children and visitors wear one of Minecraft's default skins,
+chosen to fit whether they are a man or a woman. Grown-up women have a small chest shape, cut
+from their own skin so it matches every outfit.
 
 | Job | Outfit |
 | --- | --- |
