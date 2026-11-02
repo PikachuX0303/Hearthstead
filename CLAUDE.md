@@ -43,7 +43,9 @@ download section and in `fabric.mod.json` `depends` (optional ones in `suggests`
 
 Hand-drawn art: the citizens' job outfits in `assets/hearthstead/textures/entity/citizen/`
 (`<outfit>_male.png` and `<outfit>_female.png`) are by FallenStar114; keep them credited in the
-README's "Job outfits" and "Credits" sections.
+README's "Job outfits" and "Credits" sections. New outfits go into `CitizenEntity.OUTFITS` and the
+job mapping in `CitizenEntity.outfit`; skins with slim (3 pixel) arms also into `SLIM_OUTFITS`
+(a game test checks that list against the textures).
 
 All art is original; do not copy textures from MineColonies or other mods.
 

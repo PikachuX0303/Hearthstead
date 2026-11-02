@@ -27,8 +27,22 @@ public class CitizenRenderer extends HumanoidMobRenderer<CitizenEntity, CitizenR
         }
     }
 
+    private final HumanoidModel<CitizenRenderState> wide;
+    private final HumanoidModel<CitizenRenderState> slim;
+
     public CitizenRenderer(EntityRendererProvider.Context context) {
         super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER)), 0.5F);
+        wide = model;
+        slim = new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM));
+    }
+
+    /** Draws slim-armed skins with the slim player model, all others with the wide one. */
+    @Override
+    public void submit(CitizenRenderState state, com.mojang.blaze3d.vertex.PoseStack poseStack,
+                       net.minecraft.client.renderer.SubmitNodeCollector collector,
+                       net.minecraft.client.renderer.state.CameraRenderState camera) {
+        model = state.slim ? slim : wide;
+        super.submit(state, poseStack, collector, camera);
     }
 
     @Override
@@ -42,6 +56,8 @@ public class CitizenRenderer extends HumanoidMobRenderer<CitizenEntity, CitizenR
         state.skin = entity.skin();
         state.outfit = entity.outfit();
         state.female = entity.female();
+        state.slim = !state.outfit.isEmpty()
+                && CitizenEntity.SLIM_OUTFITS.contains(state.outfit + (state.female ? "_female" : "_male"));
     }
 
     @Override

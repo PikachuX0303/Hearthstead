@@ -7,4 +7,6 @@ public class CitizenRenderState extends HumanoidRenderState {
     /** The job outfit, or "" for an everyday skin. */
     public String outfit = "";
     public boolean female;
+    /** Whether the skin has slim (3 pixel) arms. */
+    public boolean slim;
 }

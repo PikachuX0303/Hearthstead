@@ -193,17 +193,30 @@ public class GuardGameTests {
         citizen.assignJob(JobType.SAWMILL, BlockPos.ZERO);
         check(helper, CitizenEntity.outfit(colony, citizen).equals("carpenter"), "sawmill workers to wear the carpenter's outfit");
         citizen.assignJob(JobType.FARMER, BlockPos.ZERO);
-        check(helper, CitizenEntity.outfit(colony, citizen).isEmpty(), "farmers to wear an everyday skin");
+        check(helper, CitizenEntity.outfit(colony, citizen).equals("farmer"), "farmers to wear the farmer's outfit");
+        citizen.assignJob(JobType.LUMBERJACK, BlockPos.ZERO);
+        check(helper, CitizenEntity.outfit(colony, citizen).isEmpty(), "lumberjacks to wear an everyday skin");
         citizen.assignJob(JobType.GUARD, tower.pos());
         check(helper, CitizenEntity.outfit(colony, citizen).equals("cavalry"), "knights to wear the cavalry outfit");
         tower.setSetting(HutSettings.GUARD_CLASS.id(), "ranger");
         check(helper, CitizenEntity.outfit(colony, citizen).equals("archer"), "rangers to wear the archer's outfit");
         tower.setSetting(HutSettings.GUARD_CLASS.id(), "druid");
         check(helper, CitizenEntity.outfit(colony, citizen).isEmpty(), "druids to wear an everyday skin");
-        for (String outfit : List.of("alchemist", "archer", "baker", "beekeeper", "blacksmith", "builder", "carpenter", "cavalry", "chef")) {
+        for (String outfit : CitizenEntity.OUTFITS) {
             for (String gender : List.of("male", "female")) {
                 String path = "/assets/hearthstead/textures/entity/citizen/" + outfit + "_" + gender + ".png";
-                check(helper, GuardGameTests.class.getResource(path) != null, "the texture " + path);
+                try (var in = GuardGameTests.class.getResourceAsStream(path)) {
+                    check(helper, in != null, "the texture " + path);
+                    java.awt.image.BufferedImage skin = javax.imageio.ImageIO.read(in);
+                    check(helper, skin.getWidth() == 64 && skin.getHeight() == 64, path + " to be 64x64");
+                    // Slim arms leave the outer column of the arms empty.
+                    boolean slim = java.util.stream.IntStream.range(20, 32).allMatch(y -> (skin.getRGB(47, y) >>> 24) == 0)
+                            || java.util.stream.IntStream.range(20, 32).allMatch(y -> (skin.getRGB(55, y) >>> 24) == 0);
+                    check(helper, slim == CitizenEntity.SLIM_OUTFITS.contains(outfit + "_" + gender),
+                            path + (slim ? " to be listed as slim" : " not to be listed as slim"));
+                } catch (java.io.IOException e) {
+                    throw helper.assertionException("Could not read " + path + ": " + e);
+                }
             }
         }
         helper.succeed();

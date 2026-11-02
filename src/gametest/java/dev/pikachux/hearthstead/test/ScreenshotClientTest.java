@@ -473,7 +473,7 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.waitTicks(20);
             context.runOnClient(client -> {
                 client.player.setYRot(0);
-                client.player.setXRot(10);
+                client.player.setXRot(8);
             });
             context.waitTicks(20);
             context.takeScreenshot("citizen_outfits");
@@ -544,17 +544,21 @@ public class ScreenshotClientTest implements FabricClientGameTest {
         player.getAbilities().flying = false;
         player.onUpdateAbilities();
         BlockPos base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spot);
-        player.teleportTo(level, base.getX() + 0.5, base.getY(), base.getZ() + 0.5, java.util.Set.of(), 0, 8, false);
-        String[] outfits = {"alchemist", "archer", "baker", "beekeeper", "blacksmith", "builder", "carpenter", "cavalry", "chef"};
-        for (int i = 0; i < outfits.length * 2; i++) {
+        player.teleportTo(level, base.getX() + 0.5, base.getY() + 1, base.getZ() + 0.5, java.util.Set.of(), 0, 8, false);
+        java.util.List<String> outfits = CitizenEntity.OUTFITS;
+        // One row, each job's man and woman side by side.
+        int count = outfits.size() * 2;
+        for (int i = 0; i < count; i++) {
             CitizenEntity citizen = dev.pikachux.hearthstead.registry.ModEntities.CITIZEN.create(level, EntitySpawnReason.COMMAND);
-            double x = base.getX() + 0.5 + (i - outfits.length + 0.5) * 0.72;
-            BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(x, base.getY(), base.getZ() + 7));
-            citizen.snapTo(x, pos.getY(), base.getZ() + 7.5, 180, 0);
+            boolean female = i % 2 == 1;
+            double x = base.getX() + 0.5 + (i - (count - 1) / 2.0) * 0.62;
+            double z = base.getZ() + 12.5;
+            BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(x, base.getY(), z));
+            citizen.snapTo(x, pos.getY(), z, 180, 0);
             citizen.setYHeadRot(180);
             citizen.setYBodyRot(180);
             citizen.setNoAi(true);
-            citizen.showOutfit(outfits[i / 2], i % 2 == 1);
+            citizen.showOutfit(outfits.get(i / 2), female);
             level.addFreshEntity(citizen);
         }
     }

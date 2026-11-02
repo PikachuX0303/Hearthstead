@@ -453,7 +453,7 @@ version. Citizens in other jobs, children and visitors wear an everyday skin.
 
 | Job | Outfit |
 | --- | --- |
-| Alchemist, Baker, Beekeeper, Blacksmith, Builder | their own |
+| Alchemist, Baker, Beekeeper, Blacksmith, Builder, Cowhand, Deliveryman, Farmer, Fisherman, Miner, Researcher, Shepherd | their own |
 | Sawmill worker | carpenter |
 | Cook | chef |
 | Knight (guard) | cavalry |

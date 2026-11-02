@@ -281,6 +281,13 @@ public class CitizenEntity extends PathfinderMob {
             case BUILDER -> "builder";
             case SAWMILL -> "carpenter";
             case COOK -> "chef";
+            case COWHAND -> "cowhand";
+            case DELIVERYMAN -> "deliveryman";
+            case FARMER -> "farmer";
+            case FISHERMAN -> "fisherman";
+            case MINER -> "miner";
+            case RESEARCHER -> "researcher";
+            case SHEPHERD -> "shepherd";
             case GUARD -> switch (dev.pikachux.hearthstead.colony.Guards.kind(colony, data)) {
                 case RANGER -> "archer";
                 case KNIGHT -> "cavalry";
@@ -289,6 +296,15 @@ public class CitizenEntity extends PathfinderMob {
             default -> "";
         };
     }
+
+    /** Every job outfit; each has {@code <outfit>_male.png} and {@code <outfit>_female.png}. */
+    public static final java.util.List<String> OUTFITS = java.util.List.of("alchemist", "archer", "baker", "beekeeper",
+            "blacksmith", "builder", "carpenter", "cavalry", "chef", "cowhand", "deliveryman", "farmer", "fisherman", "miner",
+            "researcher", "shepherd");
+
+    /** Outfit textures drawn with slim (3 pixel) arms, which need the slim player model. */
+    public static final java.util.Set<String> SLIM_OUTFITS = java.util.Set.of("cowhand_female", "deliveryman_female",
+            "deliveryman_male", "miner_female");
 
     /** Shows an outfit without a colony behind it, for pictures; the citizen must have no AI or it leaves. */
     public void showOutfit(String outfit, boolean female) {

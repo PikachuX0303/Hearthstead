@@ -5,6 +5,15 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.41.0-alpha] - 2026-11-02
+
+### Added
+- More job outfits by FallenStar114: cowhands, deliverymen, farmers, fishermen, miners, researchers
+  and shepherds now wear their own, in a male and a female version.
+
+### Changed
+- Outfits drawn with slim arms are shown on the slim player model, so their arms have no gaps.
+
 ## [0.40.0-alpha] - 2026-11-01
 
 ### Added
