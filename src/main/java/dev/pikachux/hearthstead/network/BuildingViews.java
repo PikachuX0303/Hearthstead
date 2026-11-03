@@ -52,7 +52,7 @@ public final class BuildingViews {
         long residents = colony.citizens().stream().filter(c -> building.pos().equals(c.homePos())).count();
         List<BuildingViewPayload.Worker> workers = colony.citizens().stream()
                 .filter(c -> building.pos().equals(c.workPos()))
-                .map(c -> new BuildingViewPayload.Worker(c.name(), c.job().displayName(), c.status()))
+                .map(c -> new BuildingViewPayload.Worker(c.name(), CitizenEntity.roleKey(colony, c), c.status()))
                 .toList();
 
         WorkOrder order = colony.workOrder(building.pos());
@@ -84,13 +84,13 @@ public final class BuildingViews {
         }
         boolean needsBuilder = colony.buildings().stream().noneMatch(b -> b.type() == BuildingType.BUILDER);
 
-        String builderJob = "";
+        net.minecraft.network.chat.Component builderJob = net.minecraft.network.chat.Component.empty();
         if (type == BuildingType.BUILDER) {
             builderJob = colony.workOrders().stream()
                     .filter(o -> building.pos().equals(o.builder()))
                     .findFirst()
-                    .map(o -> BuildingInfo.describe(colony, o))
-                    .orElse("");
+                    .map(o -> BuildingInfo.describeComponent(colony, o))
+                    .orElse(net.minecraft.network.chat.Component.empty());
         }
 
         // The town hall shows every open request in the colony, other huts their own.
@@ -100,11 +100,11 @@ public final class BuildingViews {
         BuildingViewPayload.ColonyInfo info = BuildingViewPayload.ColonyInfo.NONE;
         if (type == BuildingType.TOWN_HALL) {
             List<BuildingViewPayload.Citizen> citizens = colony.citizens().stream()
-                    .map(c -> new BuildingViewPayload.Citizen(c.id(), c.name(), CitizenEntity.role(colony, c),
+                    .map(c -> new BuildingViewPayload.Citizen(c.id(), c.name(), CitizenEntity.roleKey(colony, c),
                             (float) c.happiness(), (float) c.saturation(), c.status()))
                     .toList();
             List<BuildingViewPayload.WorkOrderEntry> orders = colony.workOrders().stream()
-                    .map(o -> new BuildingViewPayload.WorkOrderEntry(BuildingInfo.describe(colony, o), o.builder() != null,
+                    .map(o -> new BuildingViewPayload.WorkOrderEntry(BuildingInfo.describeComponent(colony, o), o.builder() != null,
                             o.isDecoration() ? java.util.Optional.of(o.buildingPos()) : java.util.Optional.empty()))
                     .toList();
             info = new BuildingViewPayload.ColonyInfo(true, colony.ownerName(), colony.citizens().size(),
@@ -234,7 +234,7 @@ public final class BuildingViews {
         for (int i = 0; i < entity.inventory().getContainerSize(); i++) {
             inventory.add(entity.inventory().getItem(i).copy());
         }
-        ServerPlayNetworking.send(player, new CitizenViewPayload(entity.getId(), data.name(), CitizenEntity.role(entity.colony(), data),
+        ServerPlayNetworking.send(player, new CitizenViewPayload(entity.getId(), data.name(), CitizenEntity.roleKey(entity.colony(), data),
                 entity.getHealth(), entity.getMaxHealth(), (float) data.saturation(), (float) CitizenData.MAX_SATURATION,
                 (float) data.happiness(), data.status(), describe(entity.colony(), data.homePos()),
                 describe(entity.colony(), data.workPos()), entity.getMainHandItem().copy(), inventory,
@@ -243,11 +243,13 @@ public final class BuildingViews {
                         : dev.pikachux.hearthstead.colony.Skill.primary(data.job()).ordinal()));
     }
 
-    private static String describe(Colony colony, BlockPos pos) {
+    /** A hut's name and position, or empty when there is none. */
+    private static net.minecraft.network.chat.Component describe(Colony colony, BlockPos pos) {
         if (colony == null || pos == null) {
-            return "";
+            return net.minecraft.network.chat.Component.empty();
         }
         BuildingData building = colony.building(pos);
-        return (building == null ? "?" : building.type().displayName()) + " (" + pos.toShortString() + ")";
+        return (building == null ? net.minecraft.network.chat.Component.literal("?") : building.type().nameComponent().copy())
+                .append(" (" + pos.toShortString() + ")");
     }
 }

@@ -5,6 +5,25 @@ are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
 part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
 
+## [0.44.0-alpha] - 2026-11-03
+
+### Added
+- **Translations:** German, French, Spanish, Italian, Brazilian Portuguese, Russian, Polish,
+  Dutch, Turkish, Simplified Chinese, Japanese and Korean.
+- A game test that checks every language has all keys, with the same arguments as English.
+
+### Changed
+- Job and hut names in citizens' name tags, hut and citizen windows and chat messages are
+  translated instead of always being English. So are the citizen window's home and workplace and
+  the town hall's list of work orders.
+- Lines that are too long for their space (common in translations) are drawn smaller instead of
+  running out of the window: the build tool's hints, hut names in the build tool and the permission
+  columns.
+
+### Fixed
+- The Colony tab of the town hall cut off the decorations, style and raids lines behind its
+  buttons. They now sit in the left column.
+
 ## [0.43.0-alpha] - 2026-11-02
 
 ### Added

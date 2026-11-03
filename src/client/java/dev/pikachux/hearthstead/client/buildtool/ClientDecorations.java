@@ -24,6 +24,6 @@ public final class ClientDecorations {
     }
 
     public static Component displayName(String name) {
-        return Component.translatableWithFallback("decoration.hearthstead." + name, Decoration.displayName(name));
+        return Decoration.nameComponent(name);
     }
 }

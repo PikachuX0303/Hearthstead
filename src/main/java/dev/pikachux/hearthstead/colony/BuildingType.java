@@ -83,6 +83,11 @@ public enum BuildingType {
         return displayName;
     }
 
+    /** The hut's name in the reader's language (its block's name). */
+    public net.minecraft.network.chat.Component nameComponent() {
+        return net.minecraft.network.chat.Component.translatable("block.hearthstead." + blockName());
+    }
+
     @Nullable
     public JobType job() {
         return job;

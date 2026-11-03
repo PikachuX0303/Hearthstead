@@ -276,7 +276,7 @@ public class BuilderGoal extends WorkGoal {
         } else if (order.kind() == WorkOrder.Kind.REPAIR) {
             if (target != null) {
                 colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.repair_done",
-                        target.type().displayName()).withStyle(ChatFormatting.GREEN));
+                        target.type().nameComponent()).withStyle(ChatFormatting.GREEN));
             }
         } else if (order.isDecoration()) {
             colony.addDecoration(new Decoration(order.decoration(), order.buildingPos(), order.facing(), order.style()));
@@ -286,7 +286,7 @@ public class BuilderGoal extends WorkGoal {
         } else if (target != null) {
             target.setLevel(order.targetLevel());
             colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.construction_done",
-                    target.type().displayName(), order.targetLevel()).withStyle(ChatFormatting.GREEN));
+                    target.type().nameComponent(), order.targetLevel()).withStyle(ChatFormatting.GREEN));
         }
         colony.removeWorkOrder(order);
         order = null;
@@ -296,7 +296,7 @@ public class BuilderGoal extends WorkGoal {
 
     /** The last step of a removal: a demolished hut's block and contents go to the builder's hut. */
     private void finishRemoval(Colony colony, @Nullable BuildingData target) {
-        String name = order.hutType() == null ? "?" : order.hutType().displayName();
+        Component name = order.hutType() == null ? Component.literal("?") : order.hutType().nameComponent();
         if (!order.demolish()) {
             colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.site_cleared", name)
                     .withStyle(ChatFormatting.GREEN));

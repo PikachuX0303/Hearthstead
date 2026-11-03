@@ -122,8 +122,8 @@ public class HutSelectScreen extends ColonyScreen {
     @Override
     protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         text(g, getTitle(), left + 8, top + 8, HEADER);
-        text(g, Component.translatable(decorationsTab ? "gui.hearthstead.build_tool.choose_decoration"
-                : "gui.hearthstead.build_tool.choose"), left + 8, top + 19, TEXT_LIGHT);
+        fitted(g, Component.translatable(decorationsTab ? "gui.hearthstead.build_tool.choose_decoration"
+                : "gui.hearthstead.build_tool.choose"), left + 8, top + 19, panelWidth - 16, TEXT_LIGHT);
         if (entries() == 0) {
             wrapped(g, Component.translatable(decorationsTab ? "gui.hearthstead.build_tool.no_decorations"
                     : "gui.hearthstead.build_tool.no_huts"), left + 12, top + 36, panelWidth - 24, BAD);
@@ -148,7 +148,14 @@ public class HutSelectScreen extends ColonyScreen {
                 g.blit(RenderPipelines.GUI_TEXTURED, sign(type), x + (TILE_WIDTH - 4 - 32) / 2, y + 4, 0, 0, 32, 32, 32, 32);
                 name = Component.translatable(ModBlocks.HUTS.get(type).getDescriptionId());
             }
-            List<FormattedCharSequence> lines = font.split(name, TILE_WIDTH - 8);
+            int nameWidth = TILE_WIDTH - 8;
+            boolean longWord = java.util.Arrays.stream(name.getString().split(" ")).anyMatch(word -> font.width(word) > nameWidth);
+            if (longWord) {
+                // One long word (common in German): shrink it rather than break it in the middle.
+                fittedCentered(g, name, x + (TILE_WIDTH - 4) / 2, y + 42, nameWidth, 0xFFF6E7C4, true);
+                continue;
+            }
+            List<FormattedCharSequence> lines = font.split(name, nameWidth);
             for (int line = 0; line < Math.min(2, lines.size()); line++) {
                 FormattedCharSequence text = lines.get(line);
                 g.drawString(font, text, x + (TILE_WIDTH - 4 - font.width(text)) / 2, y + 38 + line * 9, 0xFFF6E7C4, true);

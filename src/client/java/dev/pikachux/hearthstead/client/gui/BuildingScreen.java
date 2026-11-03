@@ -367,7 +367,7 @@ public class BuildingScreen extends ColonyScreen {
         if (!waiting.isEmpty()) {
             y = wrapped(g, Component.translatable("gui.hearthstead.waiting_for", String.join(", ", waiting)), x, y, w, BAD);
         }
-        if (!view.builderJob().isEmpty()) {
+        if (!view.builderJob().getString().isEmpty()) {
             y = wrapped(g, Component.translatable("gui.hearthstead.current_job", view.builderJob()), x, y, w, TEXT);
         }
         if (!view.workers().isEmpty()) {
@@ -376,7 +376,8 @@ public class BuildingScreen extends ColonyScreen {
             int top = y;
             renderList(g, x, top, w, bottom - top, 22, view.workers().size(), (gr, i, rx, ry, rw) -> {
                 BuildingViewPayload.Worker worker = view.workers().get(i);
-                gr.drawString(font, worker.name() + " (" + worker.job() + ")", rx, ry, 0xFFFFFFFF, true);
+                gr.drawString(font, Component.literal(worker.name() + " (").append(Component.translatable(worker.job())).append(")"),
+                        rx, ry, 0xFFFFFFFF, true);
                 gr.drawString(font, font.plainSubstrByWidth(worker.status(), rw), rx, ry + 10, 0xFFE0E0E0, false);
             });
         }
@@ -546,7 +547,7 @@ public class BuildingScreen extends ColonyScreen {
         renderList(g, x, listTop, w, bottom - listTop, 22, colony.citizens().size(), (gr, i, rx, ry, rw) -> {
             BuildingViewPayload.Citizen citizen = colony.citizens().get(i);
             gr.drawString(font, citizen.name(), rx, ry, 0xFFFFFFFF, true);
-            String job = citizen.job();
+            Component job = Component.translatable(citizen.job());
             gr.drawString(font, job, rx + rw - 54 - font.width(job), ry, 0xFFE0E0E0, false);
             bar(gr, rx + rw - 50, ry + 1, 50, 6, citizen.happiness(), 10, CitizenScreen.happinessColor(citizen.happiness()));
             gr.drawString(font, font.plainSubstrByWidth(citizen.status(), rw), rx, ry + 10, 0xFFD0D0D0, false);
@@ -556,19 +557,26 @@ public class BuildingScreen extends ColonyScreen {
     private void renderColony(GuiGraphics g, int x, int y, int w, int bottom) {
         cancelButtons.clear();
         BuildingViewPayload.ColonyInfo colony = view.colony();
-        text(g, Component.translatable("gui.hearthstead.colony", view.colonyName()), x, y, TEXT);
-        text(g, Component.translatable("gui.hearthstead.owner", colony.owner()), x, y + 11, TEXT);
-        text(g, Component.translatable("gui.hearthstead.citizen_count", colony.citizenCount(), colony.housing()), x, y + 22, TEXT);
-        text(g, Component.translatable("gui.hearthstead.building_count", colony.buildingCount()), x, y + 33, TEXT);
-        text(g, Component.translatable("gui.hearthstead.default_style", Styles.displayName(colony.style())), x + w / 2, y + 22, TEXT);
+        // Everything left of the buttons on the right; two short values share a line.
+        int columnWidth = left + panelWidth - 98 - 6 - x;
+        int half = columnWidth / 2;
+        fitted(g, Component.translatable("gui.hearthstead.colony", view.colonyName()), x, y, columnWidth, TEXT);
+        fitted(g, Component.translatable("gui.hearthstead.owner", colony.owner()), x, y + 10, columnWidth, TEXT);
+        fitted(g, Component.translatable("gui.hearthstead.citizen_count", colony.citizenCount(), colony.housing()), x, y + 20,
+                half - 4, TEXT);
+        fitted(g, Component.translatable("gui.hearthstead.building_count", colony.buildingCount()), x + half, y + 20, half, TEXT);
+        // The raids line is short and sits on the right; the style takes the rest of the line.
         Component raids = Component.translatable("gui.hearthstead.raids",
                 Component.translatable(colony.raidsEnabled() ? "gui.hearthstead.raids_on" : "gui.hearthstead.raids_off"));
-        text(g, raids, x + w / 2, y + 33, colony.raidsEnabled() ? BAD : GOOD);
+        int raidsWidth = Math.min(half, font.width(raids));
+        fitted(g, raids, x + columnWidth - raidsWidth, y + 30, raidsWidth, colony.raidsEnabled() ? BAD : GOOD);
+        fitted(g, Component.translatable("gui.hearthstead.default_style", Styles.displayName(colony.style())), x, y + 30,
+                columnWidth - raidsWidth - 6, TEXT);
         Component decorations = colony.decorations() == 0
                 ? Component.translatable("gui.hearthstead.decorations_none")
                 : Component.translatable("gui.hearthstead.decorations", colony.intactDecorations(),
                         String.format("%.2f", colony.decorationHappiness()));
-        text(g, decorations, x + w / 2, y + 11, colony.decorations() == 0 ? TEXT_LIGHT : GOOD);
+        fitted(g, decorations, x, y + 40, columnWidth, colony.decorations() == 0 ? TEXT_LIGHT : GOOD);
         if (colony.isOwner()) {
             text(g, Component.translatable("gui.hearthstead.colony_name"), x, y + 51, TEXT_LIGHT);
         }
@@ -583,7 +591,7 @@ public class BuildingScreen extends ColonyScreen {
         renderList(g, x, listTop, w, bottom - listTop, 11, colony.workOrders().size(), (gr, i, rx, ry, rw) -> {
             BuildingViewPayload.WorkOrderEntry order = colony.workOrders().get(i);
             int textWidth = order.decoration().isPresent() ? rw - 10 : rw;
-            gr.drawString(font, font.plainSubstrByWidth(order.description(), textWidth), rx, ry,
+            gr.drawString(font, net.minecraft.locale.Language.getInstance().getVisualOrder(font.substrByWidth(order.description(), textWidth)), rx, ry,
                     order.assigned() ? 0xFF8BE38B : 0xFFFFFFFF, true);
             if (order.decoration().isPresent() && ry + ROW_CANCEL <= bottom) {
                 gr.drawString(font, "✕", rx + rw - 7, ry, 0xFFFF8A80, true);

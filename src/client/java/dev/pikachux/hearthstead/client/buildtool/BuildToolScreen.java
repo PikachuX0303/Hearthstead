@@ -175,23 +175,25 @@ public class BuildToolScreen extends ColonyScreen {
         if (preview == null) {
             return;
         }
+        int lineWidth = panelWidth - 16;
         if (preview.isDecoration()) {
-            text(g, Component.translatable("gui.hearthstead.build_tool.previewing_decoration",
-                    ClientDecorations.displayName(preview.decoration())), left + 8, top + 8, HEADER);
+            fitted(g, Component.translatable("gui.hearthstead.build_tool.previewing_decoration",
+                    ClientDecorations.displayName(preview.decoration())), left + 8, top + 8, lineWidth, HEADER);
         } else if (preview.isMove()) {
-            text(g, Component.translatable("gui.hearthstead.build_tool.moving",
-                    Component.translatable(ModBlocks.HUTS.get(preview.type()).getDescriptionId())), left + 8, top + 8, HEADER);
+            fitted(g, Component.translatable("gui.hearthstead.build_tool.moving",
+                    Component.translatable(ModBlocks.HUTS.get(preview.type()).getDescriptionId())), left + 8, top + 8, lineWidth, HEADER);
         } else {
             Component name = Component.translatable(ModBlocks.HUTS.get(preview.type()).getDescriptionId());
-            text(g, Component.translatable("gui.hearthstead.build_tool.previewing", name, preview.level()), left + 8, top + 8, HEADER);
+            fitted(g, Component.translatable("gui.hearthstead.build_tool.previewing", name, preview.level()), left + 8, top + 8,
+                    lineWidth, HEADER);
         }
         if (preview.isUpgrade()) {
-            text(g, Component.translatable("gui.hearthstead.build_tool.hint_upgrade"), left + 8, top + 19, TEXT_LIGHT);
+            fitted(g, Component.translatable("gui.hearthstead.build_tool.hint_upgrade"), left + 8, top + 19, lineWidth, TEXT_LIGHT);
         } else {
-            text(g, Component.translatable("gui.hearthstead.build_tool.hint"), left + 8, top + 19, TEXT_LIGHT);
-            text(g, Component.translatable(preview.isDecoration() ? "gui.hearthstead.build_tool.hint2_decoration"
+            fitted(g, Component.translatable("gui.hearthstead.build_tool.hint"), left + 8, top + 19, lineWidth, TEXT_LIGHT);
+            fitted(g, Component.translatable(preview.isDecoration() ? "gui.hearthstead.build_tool.hint2_decoration"
                     : preview.isMove() ? "gui.hearthstead.build_tool.hint2_move" : "gui.hearthstead.build_tool.hint2"),
-                    left + 8, top + 29, TEXT_LIGHT);
+                    left + 8, top + 29, lineWidth, TEXT_LIGHT);
         }
         int styleY = top + 40 + 2 * (BUTTON + 2) + 2;
         centered(g, Component.translatable("gui.hearthstead.style", Styles.displayName(preview.style())), left + 8 + 94, styleY + 6, TEXT);

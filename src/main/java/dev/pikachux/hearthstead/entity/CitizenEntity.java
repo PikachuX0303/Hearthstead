@@ -339,7 +339,8 @@ public class CitizenEntity extends PathfinderMob {
         entityData.set(DATA_OUTFIT, outfit(colony, data));
         entityData.set(DATA_FEMALE, data.female());
         Component name = Component.literal(data.name())
-                .append(Component.literal(" (" + role(colony(), data) + ")").withStyle(ChatFormatting.GRAY));
+                .append(Component.literal(" (").append(Component.translatable(roleKey(colony(), data))).append(")")
+                        .withStyle(ChatFormatting.GRAY));
         if (!name.equals(getCustomName())) {
             setCustomName(name);
         }
@@ -515,6 +516,20 @@ public class CitizenEntity extends PathfinderMob {
             return dev.pikachux.hearthstead.colony.Guards.kind(colony, data).displayName();
         }
         return data.job().displayName();
+    }
+
+    /** Translation key of what a citizen is called: their job, guard class, or child or visitor. */
+    public static String roleKey(@Nullable Colony colony, CitizenData data) {
+        if (data.child()) {
+            return "job.hearthstead.child";
+        }
+        if (data.visitor()) {
+            return "job.hearthstead.visitor";
+        }
+        if (dev.pikachux.hearthstead.colony.Guards.post(colony, data) != null) {
+            return "job.hearthstead." + dev.pikachux.hearthstead.colony.Guards.kind(colony, data).id();
+        }
+        return data.job().translationKey();
     }
 
     /** Knights take part of every hit from the front on their shield. */

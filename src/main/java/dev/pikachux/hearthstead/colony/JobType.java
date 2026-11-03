@@ -58,6 +58,11 @@ public enum JobType {
         return displayName;
     }
 
+    /** Translation key of the job's name. */
+    public String translationKey() {
+        return "job.hearthstead." + id;
+    }
+
     public static JobType byId(String id) {
         for (JobType type : values()) {
             if (type.id.equals(id)) {

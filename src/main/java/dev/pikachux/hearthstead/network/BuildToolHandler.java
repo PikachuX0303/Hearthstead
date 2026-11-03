@@ -93,7 +93,7 @@ public final class BuildToolHandler {
         ServerLevel level = player.level();
         Colony colony = ColonyManager.get(level.getServer()).colonyAt(level.dimension(), request.from());
         BuildingData moved = colony.moveBuilding(level, colony.building(request.from()), request.to(), request.facing());
-        player.displayClientMessage(Component.translatable("message.hearthstead.hut_moved", moved.type().displayName())
+        player.displayClientMessage(Component.translatable("message.hearthstead.hut_moved", moved.type().nameComponent())
                 .withStyle(ChatFormatting.GREEN), true);
     }
 

@@ -144,6 +144,11 @@ public class Decoration {
     }
 
     /** English name for chat and status lines, e.g. "market_stall" → "Market stall". */
+    /** The decoration's translated name, falling back to {@link #displayName(String)}. */
+    public static net.minecraft.network.chat.Component nameComponent(String name) {
+        return net.minecraft.network.chat.Component.translatableWithFallback("decoration.hearthstead." + name, displayName(name));
+    }
+
     public static String displayName(String name) {
         if (name.isEmpty()) {
             return name;

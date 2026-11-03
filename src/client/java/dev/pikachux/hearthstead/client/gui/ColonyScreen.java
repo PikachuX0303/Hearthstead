@@ -90,6 +90,36 @@ public abstract class ColonyScreen extends Screen {
         g.drawString(font, string, x, y, color, false);
     }
 
+    /**
+     * Draws one line no wider than {@code maxWidth}: a longer line (translations are often longer than
+     * English) is drawn smaller, down to half size, and cut off if it still does not fit.
+     */
+    protected void fitted(GuiGraphics g, Component component, int x, int y, int maxWidth, int color, boolean shadow) {
+        int width = font.width(component);
+        if (width <= maxWidth) {
+            g.drawString(font, component, x, y, color, shadow);
+            return;
+        }
+        float scale = Math.max(0.5F, maxWidth / (float) width);
+        FormattedCharSequence line = net.minecraft.locale.Language.getInstance()
+                .getVisualOrder(font.substrByWidth(component, (int) (maxWidth / scale)));
+        g.pose().pushMatrix();
+        g.pose().translate(x, y + (1 - scale) * font.lineHeight / 2F);
+        g.pose().scale(scale, scale);
+        g.drawString(font, line, 0, 0, color, shadow);
+        g.pose().popMatrix();
+    }
+
+    protected void fitted(GuiGraphics g, Component component, int x, int y, int maxWidth, int color) {
+        fitted(g, component, x, y, maxWidth, color, false);
+    }
+
+    /** {@link #fitted} centred on {@code centerX}. */
+    protected void fittedCentered(GuiGraphics g, Component component, int centerX, int y, int maxWidth, int color, boolean shadow) {
+        int width = Math.min(maxWidth, font.width(component));
+        fitted(g, component, centerX - width / 2, y, maxWidth, color, shadow);
+    }
+
     /** Draws wrapped text and returns the y coordinate below it. */
     protected int wrapped(GuiGraphics g, Component component, int x, int y, int maxWidth, int color) {
         List<FormattedCharSequence> lines = font.split(component, maxWidth);

@@ -59,6 +59,56 @@ public class ConfigGameTests {
         helper.succeed();
     }
 
+    /** Languages shipped next to English. */
+    private static final List<String> LANGUAGES = List.of(
+            "de_de", "fr_fr", "es_es", "it_it", "pt_br", "ru_ru", "pl_pl", "nl_nl", "tr_tr", "zh_cn", "ja_jp", "ko_kr");
+    private static final java.util.regex.Pattern ARGUMENT = java.util.regex.Pattern.compile("%(?:\\d+\\$)?s|%%");
+
+    private static com.google.gson.JsonObject readLanguage(GameTestHelper helper, String code) {
+        try (var in = ConfigGameTests.class.getResourceAsStream("/assets/hearthstead/lang/" + code + ".json")) {
+            return com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+        } catch (java.io.IOException | NullPointerException | IllegalStateException e) {
+            throw helper.assertionException("Could not read the language file " + code + ": " + e);
+        }
+    }
+
+    private static List<String> arguments(String text) {
+        List<String> found = new ArrayList<>();
+        java.util.regex.Matcher matcher = ARGUMENT.matcher(text);
+        while (matcher.find()) {
+            found.add(matcher.group().equals("%%") ? "%%" : "%s");
+        }
+        java.util.Collections.sort(found);
+        return found;
+    }
+
+    /** Every translation has exactly the English keys, with the same number of arguments in each text. */
+    @GameTest
+    public void everyLanguageIsComplete(GameTestHelper helper) {
+        com.google.gson.JsonObject english = readLanguage(helper, "en_us");
+        for (dev.pikachux.hearthstead.colony.JobType job : dev.pikachux.hearthstead.colony.JobType.values()) {
+            check(helper, english.has(job.translationKey()), "an English name for the job " + job);
+        }
+        for (dev.pikachux.hearthstead.colony.BuildingType type : dev.pikachux.hearthstead.colony.BuildingType.values()) {
+            check(helper, english.has("block.hearthstead." + type.blockName()), "an English name for the hut " + type);
+        }
+        List<String> problems = new ArrayList<>();
+        for (String code : LANGUAGES) {
+            com.google.gson.JsonObject language = readLanguage(helper, code);
+            for (String key : english.keySet()) {
+                if (!language.has(key)) {
+                    problems.add(code + " lacks " + key);
+                } else if (!arguments(english.get(key).getAsString()).equals(arguments(language.get(key).getAsString()))) {
+                    problems.add(code + " " + key + " has other arguments");
+                }
+            }
+            language.keySet().stream().filter(key -> !english.has(key)).forEach(key -> problems.add(code + " has extra " + key));
+        }
+        check(helper, problems.isEmpty(), "complete translations, got " + problems);
+        helper.succeed();
+    }
+
     /** Out-of-range values are clamped, invalid ones get defaults, and every problem is reported. */
     @GameTest
     public void invalidConfigIsRepaired(GameTestHelper helper) {

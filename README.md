@@ -40,7 +40,16 @@ yet** (some of which MineColonies has):
 - Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook, herders and guard
   buildings have them).
 - More raider cultures (barbarians and pirates so far), more colony events.
-- Translations other than English.
+- Translations of the citizens' status lines and some command messages (they are still English).
+
+## Languages
+
+Hearthstead is translated into English, German, French, Spanish, Italian, Brazilian Portuguese,
+Russian, Polish, Dutch, Turkish, Simplified Chinese, Japanese and Korean. Hut and job names in
+name tags, windows and chat messages follow the game language. The citizens' status lines and
+a few request names (such as "Food") are still English. Corrections from native speakers are
+welcome: the files are in
+`src/main/resources/assets/hearthstead/lang/`.
 
 ## Features
 

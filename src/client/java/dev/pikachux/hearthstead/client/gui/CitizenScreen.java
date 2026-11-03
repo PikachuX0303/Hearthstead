@@ -29,7 +29,7 @@ public class CitizenScreen extends ColonyScreen {
     @Override
     protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         text(g, Component.literal(view.name()), left + 8, top + 8, HEADER);
-        text(g, Component.literal(view.job()), left + 8, top + 19, TEXT_LIGHT);
+        text(g, Component.translatable(view.job()), left + 8, top + 19, TEXT_LIGHT);
 
         // Model preview
         drawInset(g, left + 8, top + 32, 52, 72);
@@ -64,10 +64,10 @@ public class CitizenScreen extends ColonyScreen {
         y = top + 136;
         y = wrapped(g, Component.translatable("gui.hearthstead.status", view.status()), left + 8, y, panelWidth - 16, TEXT);
         text(g, Component.translatable("gui.hearthstead.home",
-                view.home().isEmpty() ? Component.translatable("gui.hearthstead.homeless") : Component.literal(view.home())),
+                view.home().getString().isEmpty() ? Component.translatable("gui.hearthstead.homeless") : view.home()),
                 left + 8, y + 1, TEXT);
         text(g, Component.translatable("gui.hearthstead.workplace",
-                view.work().isEmpty() ? Component.translatable("gui.hearthstead.none") : Component.literal(view.work())),
+                view.work().getString().isEmpty() ? Component.translatable("gui.hearthstead.none") : view.work()),
                 left + 8, y + 12, TEXT);
 
         int slotY = top + panelHeight - 48;

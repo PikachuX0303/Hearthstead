@@ -21,8 +21,8 @@ public record CitizenViewPayload(
         float maxSaturation,
         float happiness,
         String status,
-        String home,
-        String work,
+        net.minecraft.network.chat.Component home,
+        net.minecraft.network.chat.Component work,
         ItemStack heldItem,
         List<ItemStack> inventory,
         List<Integer> skills,
@@ -47,8 +47,8 @@ public record CitizenViewPayload(
         buf.writeFloat(maxSaturation);
         buf.writeFloat(happiness);
         buf.writeUtf(status);
-        buf.writeUtf(home);
-        buf.writeUtf(work);
+        net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(buf, home);
+        net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(buf, work);
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, heldItem);
         ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, inventory);
         BuildingViewPayload.writeList(buf, skills, (b, level) -> b.writeVarInt(level));
@@ -57,7 +57,9 @@ public record CitizenViewPayload(
 
     private static CitizenViewPayload read(RegistryFriendlyByteBuf buf) {
         return new CitizenViewPayload(buf.readVarInt(), buf.readUtf(), buf.readUtf(), buf.readFloat(), buf.readFloat(),
-                buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readUtf(), buf.readUtf(), buf.readUtf(),
+                buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readUtf(),
+                net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(buf),
+                net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(buf),
                 ItemStack.OPTIONAL_STREAM_CODEC.decode(buf), ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(buf),
                 BuildingViewPayload.readList(buf, b -> b.readVarInt()), buf.readVarInt() - 1);
     }

@@ -68,6 +68,29 @@ public final class BuildingInfo {
         return null;
     }
 
+    /** The work order as it is listed in the town hall window, in the player's language. */
+    public static net.minecraft.network.chat.Component describeComponent(Colony colony, WorkOrder order) {
+        String pos = order.buildingPos().toShortString();
+        if (order.isDecoration()) {
+            return net.minecraft.network.chat.Component.translatable("gui.hearthstead.work_order.decoration",
+                    Decoration.nameComponent(order.decoration()), pos);
+        }
+        if (order.kind() == WorkOrder.Kind.REMOVE) {
+            return net.minecraft.network.chat.Component.translatable(order.demolish()
+                    ? "gui.hearthstead.work_order.take_down" : "gui.hearthstead.work_order.clear_site", hutName(order.hutType()), pos);
+        }
+        BuildingData target = colony.building(order.buildingPos());
+        net.minecraft.network.chat.Component name = hutName(target == null ? null : target.type());
+        if (order.kind() == WorkOrder.Kind.REPAIR) {
+            return net.minecraft.network.chat.Component.translatable("gui.hearthstead.work_order.repair", name, pos);
+        }
+        return net.minecraft.network.chat.Component.translatable("gui.hearthstead.work_order.build", name, order.targetLevel(), pos);
+    }
+
+    private static net.minecraft.network.chat.Component hutName(BuildingType type) {
+        return type == null ? net.minecraft.network.chat.Component.literal("?") : type.nameComponent();
+    }
+
     public static String describe(Colony colony, WorkOrder order) {
         if (order.isDecoration()) {
             return Decoration.displayName(order.decoration()) + " (decoration) at " + order.buildingPos().toShortString();

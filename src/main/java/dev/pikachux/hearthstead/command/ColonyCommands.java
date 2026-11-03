@@ -225,7 +225,7 @@ public final class ColonyCommands {
             return 0;
         }
         ctx.getSource().sendSuccess(() -> Component.translatable("message.hearthstead.order_created",
-                building.type().displayName(), building.level() + 1).withStyle(ChatFormatting.GREEN), false);
+                building.type().nameComponent(), building.level() + 1).withStyle(ChatFormatting.GREEN), false);
         return 1;
     }
 
@@ -242,7 +242,7 @@ public final class ColonyCommands {
         }
         colony.removeWorkOrder(order);
         ctx.getSource().sendSuccess(() -> Component.translatable("message.hearthstead.order_cancelled",
-                building.type().displayName()), false);
+                building.type().nameComponent()), false);
         return 1;
     }
 
@@ -282,7 +282,7 @@ public final class ColonyCommands {
         }
         colony.markDirty();
         ctx.getSource().sendSuccess(() -> Component.translatable("message.hearthstead.construction_done",
-                building.type().displayName(), target).withStyle(ChatFormatting.GREEN), true);
+                building.type().nameComponent(), target).withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
 

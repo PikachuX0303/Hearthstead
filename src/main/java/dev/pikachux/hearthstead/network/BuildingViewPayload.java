@@ -39,7 +39,7 @@ public record BuildingViewPayload(
         List<Material> materials,
         String upgradeBlocker,
         boolean needsBuilder,
-        String builderJob,
+        net.minecraft.network.chat.Component builderJob,
         String style,
         ColonyInfo colony,
         List<RequestEntry> requests,
@@ -67,7 +67,7 @@ public record BuildingViewPayload(
     }
 
     /** A work order in the town hall's list; {@code decoration} holds a decoration's anchor so it can be cancelled. */
-    public record WorkOrderEntry(String description, boolean assigned, Optional<BlockPos> decoration) {
+    public record WorkOrderEntry(net.minecraft.network.chat.Component description, boolean assigned, Optional<BlockPos> decoration) {
     }
 
     public record Cost(Item item, int count, int have) {
@@ -131,7 +131,7 @@ public record BuildingViewPayload(
         });
         buf.writeUtf(upgradeBlocker);
         buf.writeBoolean(needsBuilder);
-        buf.writeUtf(builderJob);
+        net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(buf, builderJob);
         buf.writeUtf(style);
         writeList(buf, requests, BuildingViewPayload::writeRequest);
         writeList(buf, research, (b, r) -> {
@@ -179,7 +179,7 @@ public record BuildingViewPayload(
                 b.writeUtf(c.status());
             });
             writeList(buf, colony.workOrders(), (b, o) -> {
-                b.writeUtf(o.description());
+                net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(b, o.description());
                 b.writeBoolean(o.assigned());
                 b.writeOptional(o.decoration(), (b2, p) -> b2.writeBlockPos(p));
             });
@@ -213,7 +213,7 @@ public record BuildingViewPayload(
         List<Material> materials = readList(buf, b -> new Material(ITEM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
         String blocker = buf.readUtf();
         boolean needsBuilder = buf.readBoolean();
-        String builderJob = buf.readUtf();
+        net.minecraft.network.chat.Component builderJob = net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(buf);
         String style = buf.readUtf();
         List<RequestEntry> requests = readList(buf, BuildingViewPayload::readRequest);
         List<ResearchEntry> research = readList(buf, b -> new ResearchEntry(b.readUtf(), b.readVarInt(), b.readVarInt(),
@@ -233,7 +233,7 @@ public record BuildingViewPayload(
             boolean isOwner = buf.readBoolean();
             List<Citizen> citizens = readList(buf, b -> new Citizen(b.readVarInt(), b.readUtf(), b.readUtf(),
                     b.readFloat(), b.readFloat(), b.readUtf()));
-            List<WorkOrderEntry> orders = readList(buf, b -> new WorkOrderEntry(b.readUtf(), b.readBoolean(),
+            List<WorkOrderEntry> orders = readList(buf, b -> new WorkOrderEntry(net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(b), b.readBoolean(),
                     b.readOptional(b2 -> b2.readBlockPos())));
             boolean raidsEnabled = buf.readBoolean();
             int raidersLeft = buf.readVarInt();

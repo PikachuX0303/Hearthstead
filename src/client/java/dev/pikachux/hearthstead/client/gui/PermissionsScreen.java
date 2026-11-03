@@ -136,8 +136,8 @@ public class PermissionsScreen extends ColonyScreen {
         Component friend = Component.translatable("gui.hearthstead.permissions.rank.friend");
         Component visitor = Component.translatable("gui.hearthstead.permissions.rank.visitor");
         int toggleX = friendColumn();
-        g.drawString(font, friend, friendColumn() + TOGGLE_WIDTH / 2 - font.width(friend) / 2, top + 30, TEXT_LIGHT, false);
-        g.drawString(font, visitor, visitorColumn() + TOGGLE_WIDTH / 2 - font.width(visitor) / 2, top + 30, TEXT_LIGHT, false);
+        fittedCentered(g, friend, friendColumn() + TOGGLE_WIDTH / 2, top + 30, TOGGLE_WIDTH + 4, TEXT_LIGHT, false);
+        fittedCentered(g, visitor, visitorColumn() + TOGGLE_WIDTH / 2, top + 30, TOGGLE_WIDTH + 4, TEXT_LIGHT, false);
         for (int i = 0; i < ACTIONS.size(); i++) {
             int y = top + 40 + i * RULE_ROW;
             List<net.minecraft.util.FormattedCharSequence> lines = font.split(
