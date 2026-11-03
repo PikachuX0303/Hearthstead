@@ -12,7 +12,8 @@ and the chat welcome message (`event/WelcomeMessage.java`).
 
 ## Releasing (do this with every change that is pushed)
 
-1. Bump `mod_version` in `gradle.properties` (`MAJOR.MINOR.PATCH-alpha+1.21.11`):
+1. Bump `mod_version` in `gradle.properties` (`MAJOR.MINOR.PATCH-beta+1.21.11`; the mod left
+   alpha with 0.45.0):
    new features bump MINOR, fixes only bump PATCH.
 2. Add a section `## [<version without +1.21.11>] - <date>` at the top of `CHANGELOG.md`
    with Added / Changed / Fixed lists.
@@ -37,7 +38,8 @@ download section and in `fabric.mod.json` `depends` (optional ones in `suggests`
 
 - `tools/generate_schematics.py`: hut and decoration blueprints for every style, and the
   decoration icons (`decoration_icons.json`).
-- `tools/generate_textures.py`: barbarian skins and the Build Tool and Clipboard icons.
+- `tools/generate_textures.py`: barbarian and pirate skins, the Build Tool and Clipboard icons and
+  the mod icon (`assets/hearthstead/icon.png`).
 - `tools/generate_ui.py`: hut block textures, hut block models and the GUI theme sprites.
 - `tools/generate_worldgen.py`: structure templates for world generation (abandoned settlement).
 

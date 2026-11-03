@@ -10,9 +10,12 @@
     "FallenStar114"
   ],
   "contact": {
-    "sources": "https://github.com/PikachuX0303/Hearthstead"
+    "homepage": "https://github.com/PikachuX0303/Hearthstead",
+    "sources": "https://github.com/PikachuX0303/Hearthstead",
+    "issues": "https://github.com/PikachuX0303/Hearthstead/issues"
   },
   "license": "GPL-3.0-or-later",
+  "icon": "assets/hearthstead/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [

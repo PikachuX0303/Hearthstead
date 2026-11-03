@@ -53,8 +53,12 @@ public final class WelcomeMessage {
                         .withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(" ❤ ").withStyle(style -> style.withColor(HEART)))
                 .append(Component.translatableWithFallback("chat.hearthstead.welcome.by", "by")
-                        .withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(" PerniciousPx").withStyle(style -> style.withColor(AUTHOR).withBold(true)))
+                        .withStyle(ChatFormatting.GRAY)));
+        // The three names get a line of their own so the default chat width does not wrap them.
+        player.sendSystemMessage(Component.literal("  ")
+                .append(Component.literal("PikachuX0303").withStyle(style -> style.withColor(AUTHOR).withBold(true)))
+                .append(Component.literal(", ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal("PerniciousPx").withStyle(style -> style.withColor(AUTHOR).withBold(true)))
                 .append(Component.literal(" & ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal("FallenStar114").withStyle(style -> style.withColor(AUTHOR).withBold(true))));
 

@@ -1,8 +1,10 @@
 # Hearthstead (Minecraft 1.21.11, Fabric)
 
+<img src="src/main/resources/assets/hearthstead/icon.png" alt="Hearthstead icon" width="96" align="right">
+
 **Hearthstead** is a colony-building mod for Minecraft **1.21.11** on Fabric. Found a town,
-place huts, and watch citizens move in, take jobs, gather resources, research, and defend
-the town against barbarian raids.
+place huts, and watch citizens move in, take jobs, raise families, gather and craft resources,
+research, and defend the town against barbarian and pirate raids.
 
 > Hearthstead is inspired by [MineColonies](https://github.com/ldtteam/minecolonies) and started
 > out as an unofficial Fabric port of it. It is **not affiliated with or endorsed by** the
@@ -14,7 +16,8 @@ the town against barbarian raids.
 
 Get the latest jar from the [Releases page](https://github.com/PikachuX0303/Hearthstead/releases).
 Put it into your `mods` folder together with [Fabric API](https://modrinth.com/mod/fabric-api).
-See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
+It needs Minecraft 1.21.11, Fabric Loader 0.16.0 or newer and Java 21. Install it on the server
+and on every player's game. See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 
 Optional: with [Mod Menu](https://modrinth.com/mod/modmenu) and
 [Cloth Config](https://modrinth.com/mod/cloth-config) installed, Hearthstead's settings can be
@@ -30,26 +33,33 @@ checksum) and shows a message. The new version replaces the old jar when you clo
 and is used from the next start. Change your answer later with `automaticUpdates` in the
 [config file](#configuration).
 
-## Status: early alpha
+## Status: beta
 
-Hearthstead has the core colony loop, 49 huts, citizen skills and job outfits, families, illness,
-guard classes, decorations, five building styles, research and raids. Things that are **not there
-yet** (some of which MineColonies has):
+Hearthstead is in **beta**: its main systems are in place and covered by automated game tests,
+and worlds are kept compatible from one version to the next. It may still have bugs and balance
+problems, so keep backups of worlds you care about, and please report problems on the
+[issue tracker](https://github.com/PikachuX0303/Hearthstead/issues).
+
+What is in: the colony loop, 49 huts with 39 jobs, citizen skills and job outfits, families,
+visitors and expeditions, illness, guard classes and orders, requests, postbox orders and
+teachable recipes, decorations, five building styles, research, raids, colony events,
+abandoned settlements, permissions, an in-game settings screen and 13 languages.
+
+Not there yet (some of which MineColonies has):
 
 - Hand-built style packs. The five styles are generated.
-- Settings for most huts (so far the farmer, lumberjack, miner, smeltery, cook, herders and guard
-  buildings have them).
+- Settings for the remaining huts (the farmer, lumberjack, miner, smeltery, cook, crusher,
+  sifter, herders and guard buildings have them).
 - More raider cultures (barbarians and pirates so far), more colony events.
-- Translations of the citizens' status lines and some command messages (they are still English).
+- Translated citizen status lines and command messages (they are still English).
 
 ## Languages
 
 Hearthstead is translated into English, German, French, Spanish, Italian, Brazilian Portuguese,
 Russian, Polish, Dutch, Turkish, Simplified Chinese, Japanese and Korean. Hut and job names in
-name tags, windows and chat messages follow the game language. The citizens' status lines and
-a few request names (such as "Food") are still English. Corrections from native speakers are
-welcome: the files are in
-`src/main/resources/assets/hearthstead/lang/`.
+name tags, windows and chat messages follow the game language. The citizens' status lines, most
+command output and a few request names (such as "Food") are still English. Corrections from
+native speakers are welcome: the files are in `src/main/resources/assets/hearthstead/lang/`.
 
 ## Features
 
@@ -62,8 +72,9 @@ Every hut is a wooden workbench with its job sign on the front and a fitting pro
 
 | Action | Opens |
 |---|---|
-| Right-click a hut | The **hut window**. **Overview** shows level, residents, workers and their status. **Construction** shows the work order, a progress bar and the materials list, with how many of each the Builder's Huts already hold. Buttons: **Inventory**, **Build** / **Upgrade** / **Cancel Order**. |
-| Right-click the Town Hall | The hut window plus a **Citizens** tab (every citizen with job, happiness and status) and a **Colony** tab (owner, statistics, renaming the colony, open work orders). |
+| Right-click a hut | The **hut window**. **Overview** shows level, residents, workers and their status. **Construction** shows the work order, a progress bar and the materials list, with how many of each the Builder's Huts already hold, and the **Repair** and **Deconstruct** buttons. **Requests** lists what the hut is waiting for. Depending on the hut there are also **Settings** ([hut settings](#hut-settings)), **Orders** (postbox), **Recipes** ([teaching recipes](#teaching-recipes)) and **Research** (University). Buttons: **Inventory**, **Build** / **Upgrade** / **Cancel Order**. |
+| Right-click the Town Hall | The hut window plus a **Citizens** tab (every citizen with job, happiness and status) and a **Colony** tab (owner, statistics, decorations, default style, raids on or off, renaming the colony, permissions and open work orders). |
+| Use the Clipboard | Every open request of your colony, from anywhere ([requests](#requests)). |
 | Sneak + right-click a hut | The hut's inventory directly. |
 | Right-click a citizen | The **citizen window**: a model preview, health, food and happiness bars, status, home, workplace and carried items. |
 
@@ -81,7 +92,7 @@ links to the releases and the changelog.
 
 | Feature | Details |
 |---|---|
-| **Colonies** | Place a **Town Hall** to found a colony (one per player). It claims a 129×129 area. Colonies must be at least 144 blocks apart. |
+| **Colonies** | Place a **Town Hall** to found a colony (one per player). It claims a 129×129 area (`colonyRadius` in the [config](#configuration)). Town halls must be at least 144 blocks apart (twice the radius plus 16). |
 | **Protection** | Inside a colony, players can only do what its [permissions](#permissions) allow them. Creative-mode operators can bypass this. |
 | **Citizens** | New citizens arrive every minute while there is free housing. Each one has a name, a skin, saturation and happiness. Many jobs come with their own outfit, in a male and a female version ([outfits](#job-outfits)). If a citizen goes missing (for example, unloaded), the colony respawns them at the town hall. If one dies, the owner is notified. |
 | **Housing** | Town Hall: 4 settlers per level (also 4 before it is built). Residence: 2 beds per level. |
@@ -671,7 +682,11 @@ Blueprints are vanilla structure files. The built-in ones are at
 `data/hearthstead/structure/huts/<hut>/level<1-5>.nbt`, where `<hut>` is one of
 `townhall`, `residence`, `lumberjack`, `farmer`, `miner`, `guardtower`, `warehouse`, `builder`,
 `deliveryman`, `cook`, `fisherman`, `baker`, `smelter`, `shepherd`, `university`, `composter`,
-`sawmill`, `cowhand`, `chickenherder`, `swineherd`, `stonemason`, `florist`, `dyer`, `beekeeper`, `rabbitherder`, `glassblower` and `concretemixer`.
+`sawmill`, `cowhand`, `chickenherder`, `swineherd`, `stonemason`, `florist`, `dyer`, `beekeeper`,
+`rabbitherder`, `glassblower`, `concretemixer`, `planter`, `alchemist`, `enchanter`, `crusher`,
+`sifter`, `mechanic`, `netherworker`, `blacksmith`, `fletcher`, `stonesmeltery`, `barracks`,
+`hospital`, `quarry`, `stash`, `library`, `combatacademy`, `archery`, `school`, `tavern`,
+`graveyard`, `postbox` and `mysticalsite`.
 
 To use your own design:
 1. Build it in a creative world and put the matching hut block where the hut should sit.
@@ -711,8 +726,9 @@ Requires Java 21.
 xvfb-run ./gradlew runClientGameTest   # opens every window in a real client and saves screenshots
 ```
 
-Dependencies: Fabric Loader ≥ 0.20.1 and Fabric API (0.141.6+1.21.11). The project uses
-official Mojang mappings.
+The project builds against Fabric Loader 0.20.1 and Fabric API 0.141.6+1.21.11 with official
+Mojang mappings; the jar runs on Fabric Loader 0.16.0 or newer. `tools/` holds the Python
+scripts that generate the blueprints, textures and GUI sprites.
 
 ## Credits
 

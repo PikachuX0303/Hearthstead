@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Draws the mod's textures: the barbarian and pirate skins (64x64, standard humanoid layout) and
-the build tool and clipboard icons (16x16).
+the build tool and clipboard icons (16x16), and the mod icon shown by Mod Menu (128x128).
 
-Output: src/main/resources/assets/hearthstead/textures/entity/barbarian/<kind>.png
+Output: src/main/resources/assets/hearthstead/icon.png
+        src/main/resources/assets/hearthstead/textures/entity/barbarian/<kind>.png
         src/main/resources/assets/hearthstead/textures/item/build_tool.png
         src/main/resources/assets/hearthstead/textures/item/clipboard.png
 """
@@ -280,7 +281,66 @@ def clipboard():
     return img
 
 
+def mod_icon():
+    """128x128 mod icon (drawn at 32x32 and scaled up): a cottage with a lit window and a smoking
+    chimney on a grassy hill at dusk."""
+    size = 32
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    rng = random.Random(11)
+    top, bottom = (40, 44, 92), (226, 128, 74)
+    for y in range(size):                   # dusk sky, rounded corners
+        t = y / (size - 1)
+        sky = tuple(round(a + (b - a) * t) for a, b in zip(top, bottom))
+        for x in range(size):
+            corner = min(x, size - 1 - x) + min(y, size - 1 - y)
+            if corner >= 2:
+                img.putpixel((x, y), sky + (255,))
+    for x, y in ((4, 4), (9, 2), (26, 3), (21, 6), (29, 9)):  # first stars
+        img.putpixel((x, y), (250, 240, 200, 255))
+    grass, grass_dark, dirt = (92, 150, 62), (66, 116, 46), (120, 84, 52)
+    for x in range(size):                   # the hill
+        crest = 23 + round(2.2 * ((x - 15.5) / 16) ** 2 * 2)
+        for y in range(crest, size):
+            corner = min(x, size - 1 - x) + min(y, size - 1 - y)
+            if corner < 2:
+                continue
+            color = grass if y - crest < 2 else (grass_dark if y - crest < 3 else dirt)
+            img.putpixel((x, y), shade(color, rng, 10))
+    wall, wall_dark, beam = (214, 196, 160), (176, 156, 120), (98, 64, 38)
+    for x in range(9, 23):                  # walls with a timber frame
+        for y in range(15, 24):
+            frame = x in (9, 22) or y in (15, 23) or x == 15
+            img.putpixel((x, y), shade(beam if frame else (wall_dark if x > 18 else wall), rng, 6))
+    roof, roof_dark = (168, 62, 44), (120, 40, 30)
+    for row in range(8):                    # gable roof
+        y = 7 + row
+        for x in range(15 - row - 1, 17 + row + 1):
+            if 7 <= x <= 24:
+                edge = x in (15 - row - 1, 16 + row)
+                img.putpixel((x, y), shade(roof_dark if edge or row == 7 else roof, rng, 8))
+    stone = (128, 124, 120)
+    for x in range(19, 22):                 # chimney
+        for y in range(6, 11):
+            img.putpixel((x, y), shade(stone, rng, 12))
+    for x, y, a in ((20, 4, 200), (21, 3, 170), (22, 1, 130), (23, 2, 110), (21, 0, 90)):  # smoke
+        img.putpixel((x, y), (214, 214, 220, a))
+    door = (110, 70, 40)
+    for x in range(11, 14):                 # door
+        for y in range(18, 23):
+            img.putpixel((x, y), shade(door, rng, 6))
+    img.putpixel((13, 20), (230, 190, 80, 255))
+    glow, glow_bright = (250, 186, 72), (255, 232, 140)
+    for x in range(17, 21):                 # warm window
+        for y in range(17, 21):
+            bright = x in (18, 19) and y in (18, 19)
+            img.putpixel((x, y), (glow_bright if bright else glow) + (255,))
+    for x in range(17, 21):
+        img.putpixel((x, 21), (beam[0], beam[1], beam[2], 255))
+    return img.resize((128, 128), Image.NEAREST)
+
+
 def main():
+    mod_icon().save(os.path.join(ITEM_OUT, "..", "..", "icon.png"))
     os.makedirs(ITEM_OUT, exist_ok=True)
     build_tool().save(os.path.join(ITEM_OUT, "build_tool.png"))
     clipboard().save(os.path.join(ITEM_OUT, "clipboard.png"))

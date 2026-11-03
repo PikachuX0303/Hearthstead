@@ -3,7 +3,23 @@
 All notable changes to Hearthstead (called "MineColonies (Unofficial Fabric Port)" up to 0.16)
 are listed here.
 Versions follow [Semantic Versioning](https://semver.org/). The Minecraft version is
-part of the build metadata (for example, `0.3.0-alpha+1.21.11`).
+part of the build metadata (for example, `0.45.0-beta+1.21.11`). Versions up to 0.44.0 were
+alpha releases.
+
+## [0.45.0-beta] - 2026-11-03
+
+### Changed
+- **Hearthstead is now in beta.** Its main systems are in place and covered by game tests, and
+  worlds stay compatible between versions. Keep backups and report problems on the issue tracker.
+- The README is up to date: the beta status and what is still missing, requirements (Minecraft
+  1.21.11, Fabric Loader 0.16.0 or newer, Java 21, on server and clients), every tab of the hut
+  and town hall windows, the Clipboard, the blueprint folders of all 49 huts and how the colony
+  distance depends on the radius.
+- The chat welcome message credits PikachuX0303 as well as PerniciousPx and FallenStar114.
+
+### Added
+- A mod icon (a cottage with a lit window at dusk), shown in Mod Menu and the README.
+- Homepage and issue tracker links in the mod list.
 
 ## [0.44.0-alpha] - 2026-11-03
 
