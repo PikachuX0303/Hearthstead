@@ -72,7 +72,14 @@ public final class Crafters {
     @Nullable
     public static Predicate<Item> products(ServerLevel level, BuildingData building) {
         Predicate<Item> base = products(level, building.type());
-        return base == null ? null : base.or(taught(building));
+        if (base == null) {
+            return null;
+        }
+        // A crafter set to taught recipes only does not make its trade's goods on its own.
+        if (HutSettings.of(building.type()).contains(HutSettings.OWN_TRADE) && !HutSettings.isOn(building, HutSettings.OWN_TRADE)) {
+            return taught(building);
+        }
+        return base.or(taught(building));
     }
 
     private static RecipeManager cachedRecipes;

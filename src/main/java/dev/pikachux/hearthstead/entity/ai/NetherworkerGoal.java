@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -99,32 +100,36 @@ public class NetherworkerGoal extends WorkGoal {
         if (away) {
             citizen.getNavigation().stop();
             long left = Math.max(0, returnTime - level().getGameTime());
-            citizen.setStatus("On an expedition to the Nether (" + (left / 1200 + 1) + " min left)");
+            citizen.setStatus(Status.of("nether_expedition", left / 1200 + 1));
             if (left == 0) {
                 comeBack();
             }
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the portal");
+            citizen.setStatus(Status.of("going_portal"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the Nether mine to be built");
+            citizen.setStatus(Status.of("waiting_nether_mine_be_built"));
+            return;
+        }
+        if (!dev.pikachux.hearthstead.colony.HutSettings.isOn(building, dev.pikachux.hearthstead.colony.HutSettings.EXPEDITIONS)) {
+            citizen.setStatus(Status.of("expeditions_off"));
             return;
         }
         if (!equipTool(ItemTags.SWORDS)) {
-            citizen.setStatus("Needs a sword in the hut");
+            citizen.setStatus(Status.of("needs_sword_hut"));
             return;
         }
         var storage = Storage.containers(level(), building);
         if (Storage.count(storage, Logistics::isMeal) < FOOD) {
-            citizen.setStatus("Needs " + FOOD + " food for the expedition");
+            citizen.setStatus(Status.of("needs_expedition_food", FOOD));
             return;
         }
         if (level().getDayTime() % DAY > LAST_DEPARTURE) {
-            citizen.setStatus("Too late to set out today");
+            citizen.setStatus(Status.of("too_late_set_out_today"));
             return;
         }
         Storage.extract(storage, Logistics::isMeal, FOOD);
@@ -159,6 +164,6 @@ public class NetherworkerGoal extends WorkGoal {
             citizen.setHealth(Math.max(2F, citizen.getHealth() / 2));
         }
         level().sendParticles(ParticleTypes.PORTAL, citizen.getX(), citizen.getY() + 1, citizen.getZ(), 40, 0.4, 0.8, 0.4, 0.4);
-        citizen.setStatus("Back from the Nether");
+        citizen.setStatus(Status.of("back_from_nether"));
     }
 }

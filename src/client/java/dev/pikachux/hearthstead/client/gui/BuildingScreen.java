@@ -179,7 +179,7 @@ public class BuildingScreen extends ColonyScreen {
                 BuildingViewPayload.SettingEntry setting = view.settings().get(i);
                 addRenderableWidget(ColonyButton.themed(settingValue(setting),
                                 b -> send(HutActionPayload.Action.CHANGE_SETTING, setting.id()))
-                        .bounds(left + panelWidth - 98, top + 46 + i * SETTING_ROW, 88, 20).build());
+                        .bounds(left + panelWidth - 98, top + 46 + settingRowOffset(i), 88, 20).build());
             }
         }
 
@@ -378,7 +378,7 @@ public class BuildingScreen extends ColonyScreen {
                 BuildingViewPayload.Worker worker = view.workers().get(i);
                 gr.drawString(font, Component.literal(worker.name() + " (").append(Component.translatable(worker.job())).append(")"),
                         rx, ry, 0xFFFFFFFF, true);
-                gr.drawString(font, font.plainSubstrByWidth(worker.status(), rw), rx, ry + 10, 0xFFE0E0E0, false);
+                gr.drawString(font, net.minecraft.locale.Language.getInstance().getVisualOrder(font.substrByWidth(worker.status(), rw)), rx, ry + 10, 0xFFE0E0E0, false);
             });
         }
     }
@@ -550,7 +550,7 @@ public class BuildingScreen extends ColonyScreen {
             Component job = Component.translatable(citizen.job());
             gr.drawString(font, job, rx + rw - 54 - font.width(job), ry, 0xFFE0E0E0, false);
             bar(gr, rx + rw - 50, ry + 1, 50, 6, citizen.happiness(), 10, CitizenScreen.happinessColor(citizen.happiness()));
-            gr.drawString(font, font.plainSubstrByWidth(citizen.status(), rw), rx, ry + 10, 0xFFD0D0D0, false);
+            gr.drawString(font, net.minecraft.locale.Language.getInstance().getVisualOrder(font.substrByWidth(citizen.status(), rw)), rx, ry + 10, 0xFFD0D0D0, false);
         });
     }
 
@@ -622,7 +622,16 @@ public class BuildingScreen extends ColonyScreen {
 
     // ---------------------------------------------------------------- settings tab
 
-    private static final int SETTING_ROW = 40;
+    /** How far below the first setting row this one starts: each row is as tall as its description needs. */
+    private int settingRowOffset(int index) {
+        int offset = 0;
+        for (int i = 0; i < index && i < view.settings().size(); i++) {
+            int lines = font.split(Component.translatable("setting.hearthstead." + view.settings().get(i).id() + ".desc"),
+                    panelWidth - 20 - 96).size();
+            offset += Math.max(24, 12 + lines * 10) + 6;
+        }
+        return offset;
+    }
 
     private static Component settingValue(BuildingViewPayload.SettingEntry setting) {
         return Component.translatableWithFallback("setting.hearthstead." + setting.id() + "." + setting.value(), setting.value());
@@ -631,7 +640,7 @@ public class BuildingScreen extends ColonyScreen {
     private void renderSettings(GuiGraphics g, int x, int y, int w) {
         for (int i = 0; i < view.settings().size(); i++) {
             BuildingViewPayload.SettingEntry setting = view.settings().get(i);
-            int rowY = y + i * SETTING_ROW;
+            int rowY = y + settingRowOffset(i);
             text(g, Component.translatable("setting.hearthstead." + setting.id()), x, rowY + 1, HEADER);
             wrapped(g, Component.translatable("setting.hearthstead." + setting.id() + ".desc"), x, rowY + 12, w - 96, TEXT_LIGHT);
         }

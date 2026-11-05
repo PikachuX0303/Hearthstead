@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -62,12 +63,12 @@ public class FishermanGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
                 if (!equipTool(Logistics::isFishingRod)) {
-                    citizen.setStatus("Needs a fishing rod in the hut");
+                    citizen.setStatus(Status.of("needs_fishing_rod_hut"));
                     idle(200);
                     return;
                 }
@@ -78,7 +79,7 @@ public class FishermanGoal extends WorkGoal {
                 water = findWater(hut, building.workRadius());
                 spot = water == null ? null : standingSpot(water);
                 if (water == null || spot == null) {
-                    citizen.setStatus("No open water nearby");
+                    citizen.setStatus(Status.of("no_open_water_nearby"));
                     idle(400);
                     return;
                 }
@@ -88,7 +89,7 @@ public class FishermanGoal extends WorkGoal {
             case FISH -> fish();
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing the catch home");
+                    citizen.setStatus(Status.of("bringing_catch_home"));
                     return;
                 }
                 depositAll();
@@ -108,7 +109,7 @@ public class FishermanGoal extends WorkGoal {
             return;
         }
         if (!walkTo(spot, 1.5)) {
-            citizen.setStatus("Walking to the water");
+            citizen.setStatus(Status.of("walking_water"));
             return;
         }
         if (!Logistics.isFishingRod(citizen.getMainHandItem())) {
@@ -116,7 +117,7 @@ public class FishermanGoal extends WorkGoal {
             return;
         }
         citizen.getLookControl().setLookAt(water.getCenter());
-        citizen.setStatus("Fishing");
+        citizen.setStatus(Status.of("fishing"));
         Vec3 bobber = Vec3.atCenterOf(water).add(0, 0.4, 0);
         if (++timer % 20 == 0) {
             level().sendParticles(ParticleTypes.FISHING, bobber.x, bobber.y, bobber.z, 2, 0.1, 0, 0.1, 0);
@@ -135,7 +136,11 @@ public class FishermanGoal extends WorkGoal {
                 .withLuck(0)
                 .create(LootContextParamSets.FISHING);
         LootTable table = level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
+        boolean fishOnly = "fish".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building(), dev.pikachux.hearthstead.colony.HutSettings.CATCH));
         for (ItemStack loot : table.getRandomItems(params)) {
+            if (fishOnly && !loot.is(net.minecraft.tags.ItemTags.FISHES)) {
+                continue; // thrown back
+            }
             ItemStack rest = citizen.inventory().addItem(loot);
             if (!rest.isEmpty()) {
                 citizen.spawnAtLocation(level(), rest);

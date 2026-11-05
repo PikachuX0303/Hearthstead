@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -11,8 +12,8 @@ import dev.pikachux.hearthstead.entity.CitizenEntity;
  */
 public class SmelterGoal extends FurnaceWorkerGoal {
     public SmelterGoal(CitizenEntity citizen) {
-        super(citizen, JobType.SMELTER, Logistics::isSmeltable, Logistics::isCookFuel, "Smelting",
-                "Needs ore, raw metal or sand");
+        super(citizen, JobType.SMELTER, Logistics::isSmeltable, Logistics::isCookFuel, Status.of("smelting"),
+                Status.of("needs_ore_or_sand"));
     }
 
     @Override

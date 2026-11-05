@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.block.HutBlock;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -46,7 +47,7 @@ public class QuarrierGoal extends WorkGoal {
         if (!hutState.hasProperty(HutBlock.FACING)) {
             return null;
         }
-        return pit(building.pos(), hutState.getValue(HutBlock.FACING), building.level());
+        return pit(building.pos(), hutState.getValue(HutBlock.FACING), dev.pikachux.hearthstead.colony.HutSettings.pitLevel(building));
     }
 
     /** Whether the quarrier digs this block: anything solid that is not unbreakable, a hut or a container. */
@@ -85,17 +86,17 @@ public class QuarrierGoal extends WorkGoal {
             return;
         }
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the quarry to be built");
+            citizen.setStatus(Status.of("waiting_quarry_be_built"));
             return;
         }
         if (inventoryFull() || !citizen.getMainHandItem().is(ItemTags.PICKAXES)) {
             if (!walkTo(hut, 3)) {
-                citizen.setStatus(inventoryFull() ? "Bringing stone to the quarry" : "Fetching a pickaxe");
+                citizen.setStatus(inventoryFull() ? Status.of("bringing_stone_quarry") : Status.of("fetching_pickaxe"));
                 return;
             }
             depositAll();
             if (!equipTool(ItemTags.PICKAXES)) {
-                citizen.setStatus("Needs a pickaxe in the hut");
+                citizen.setStatus(Status.of("needs_pickaxe_hut"));
                 return;
             }
         }
@@ -108,14 +109,14 @@ public class QuarrierGoal extends WorkGoal {
             timer = 0;
         }
         if (target == null) {
-            citizen.setStatus("The pit is dug out (upgrade the quarry to go wider and deeper)");
+            citizen.setStatus(Status.of("pit_is_dug_out_upgrade_quarry"));
             return;
         }
         if (!walkTo(target, 4)) {
-            citizen.setStatus("Walking into the pit");
+            citizen.setStatus(Status.of("walking_into_pit"));
             return;
         }
-        citizen.setStatus("Quarrying");
+        citizen.setStatus(Status.of("quarrying"));
         citizen.getLookControl().setLookAt(target.getCenter());
         if (++timer < breakDelay(DIG_TICKS)) {
             return;

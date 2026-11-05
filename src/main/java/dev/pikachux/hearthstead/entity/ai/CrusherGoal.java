@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -50,17 +51,17 @@ public class CrusherGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the crusher");
+            citizen.setStatus(Status.of("going_crusher"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the hut to be built");
+            citizen.setStatus(Status.of("waiting_hut_be_built"));
             return;
         }
         List<Container> storage = Storage.containers(level(), building);
         if (Storage.count(storage, s -> s.is(Items.COBBLESTONE)) == 0) {
-            citizen.setStatus("Needs cobblestone");
+            citizen.setStatus(Status.of("needs_cobblestone"));
             timer = 0;
             return;
         }
@@ -83,7 +84,7 @@ public class CrusherGoal extends WorkGoal {
             }
         }
         if (made == null) {
-            citizen.setStatus("Nothing to crush right now");
+            citizen.setStatus(Status.of("nothing_crush_right_now"));
             return;
         }
         Storage.extract(storage, s -> s.is(Items.COBBLESTONE), 1);
@@ -92,7 +93,7 @@ public class CrusherGoal extends WorkGoal {
             storeInHut(rest);
         }
         level().playSound(null, hut, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.6F, 0.8F);
-        citizen.setStatus("Crushing cobblestone into " + made.getDefaultInstance().getHoverName().getString().toLowerCase());
+        citizen.setStatus(Status.of("crushing_into", made.getDefaultInstance().getHoverName()));
     }
 
     private int warehouseCount(Colony colony, Item item) {

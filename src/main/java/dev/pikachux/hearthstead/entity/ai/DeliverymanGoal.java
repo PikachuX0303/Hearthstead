@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -60,7 +61,7 @@ public class DeliverymanGoal extends WorkGoal {
             case PREPARE, PLAN -> plan(colony);
             case FETCH -> {
                 if (!walkTo(warehouse, 3)) {
-                    citizen.setStatus("Fetching " + task + " from the warehouse");
+                    citizen.setStatus(Status.of("fetching_from_warehouse", task));
                     return;
                 }
                 BuildingData building = colony.building(warehouse);
@@ -76,7 +77,7 @@ public class DeliverymanGoal extends WorkGoal {
             }
             case DELIVER -> {
                 if (!walkTo(target, 3)) {
-                    citizen.setStatus("Delivering " + task);
+                    citizen.setStatus(Status.of("delivering", task));
                     return;
                 }
                 BuildingData building = colony.building(target);
@@ -87,7 +88,7 @@ public class DeliverymanGoal extends WorkGoal {
             }
             case COLLECT -> {
                 if (!walkTo(target, 3)) {
-                    citizen.setStatus("Collecting from a hut");
+                    citizen.setStatus(Status.of("collecting_from_hut"));
                     return;
                 }
                 BuildingData building = colony.building(target);
@@ -106,12 +107,12 @@ public class DeliverymanGoal extends WorkGoal {
             case STORE -> {
                 BlockPos store = warehouse != null ? warehouse : findWarehouse(colony);
                 if (store == null) {
-                    citizen.setStatus("Needs a warehouse");
+                    citizen.setStatus(Status.of("needs_warehouse"));
                     idle(200);
                     return;
                 }
                 if (!walkTo(store, 3)) {
-                    citizen.setStatus("Bringing items to the warehouse");
+                    citizen.setStatus(Status.of("bringing_items_warehouse"));
                     return;
                 }
                 BuildingData building = colony.building(store);
@@ -119,7 +120,7 @@ public class DeliverymanGoal extends WorkGoal {
                     unloadInto(Storage.containers(level(), building));
                 }
                 if (!inventoryEmpty()) {
-                    citizen.setStatus("The warehouse is full");
+                    citizen.setStatus(Status.of("warehouse_is_full"));
                     idle(200);
                     return;
                 }
@@ -140,7 +141,7 @@ public class DeliverymanGoal extends WorkGoal {
         }
         warehouse = findWarehouse(colony);
         if (warehouse == null) {
-            citizen.setStatus("Needs a warehouse");
+            citizen.setStatus(Status.of("needs_warehouse"));
             idle(200);
             return;
         }
@@ -174,14 +175,16 @@ public class DeliverymanGoal extends WorkGoal {
                     && Storage.count(storage, s -> !keep.test(s) && requests.stream().anyMatch(r -> r.matcher().test(s))) > 0;
             // A stash is emptied as soon as anything is dropped off in it.
             boolean stash = building.type() == BuildingType.STASH && Storage.count(storage, s -> true) > 0;
-            if (wanted || stash || Storage.count(storage, s -> !keep.test(s)) >= Logistics.PICKUP_THRESHOLD || !Storage.hasSpace(storage)) {
+            boolean early = !"full".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building(), dev.pikachux.hearthstead.colony.HutSettings.COLLECT));
+            if (wanted || stash || (early && Storage.count(storage, s -> !keep.test(s)) >= Logistics.PICKUP_THRESHOLD)
+                    || !Storage.hasSpace(storage)) {
                 target = building.pos();
                 state = State.COLLECT;
                 return;
             }
         }
 
-        citizen.setStatus("Waiting for deliveries");
+        citizen.setStatus(Status.of("waiting_deliveries"));
         idle(100);
     }
 

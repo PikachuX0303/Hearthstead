@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -49,12 +50,12 @@ public class AlchemistGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the laboratory");
+            citizen.setStatus(Status.of("going_laboratory"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the laboratory to be built");
+            citizen.setStatus(Status.of("waiting_laboratory_be_built"));
             return;
         }
         if (++timer < breakDelay(WORK_TICKS)) {
@@ -70,7 +71,7 @@ public class AlchemistGoal extends WorkGoal {
         }
         if (fuel <= 0) {
             if (Storage.extract(storage, s -> s.is(Items.BLAZE_POWDER), 1).isEmpty()) {
-                citizen.setStatus("Needs blaze powder to brew");
+                citizen.setStatus(Status.of("needs_blaze_powder_brew"));
                 return;
             }
             fuel = BATCHES_PER_BLAZE_POWDER;
@@ -79,7 +80,11 @@ public class AlchemistGoal extends WorkGoal {
             fuel--;
             return;
         }
-        citizen.setStatus("Needs bottles, nether wart and ingredients");
+        if (dev.pikachux.hearthstead.colony.HutSettings.isOn(building, dev.pikachux.hearthstead.colony.HutSettings.SPLASH) && makeSplash(storage, hut)) {
+            fuel--;
+            return;
+        }
+        citizen.setStatus(Status.of("needs_bottles_nether_wart_ingredients"));
     }
 
     /** Fills up to three glass bottles with water. */
@@ -92,7 +97,7 @@ public class AlchemistGoal extends WorkGoal {
             Storage.insert(storage, PotionContents.createItemStack(Items.POTION, Potions.WATER));
         }
         level().playSound(null, hut, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 0.6F, 1.0F);
-        citizen.setStatus("Filling bottles");
+        citizen.setStatus(Status.of("filling_bottles"));
         return true;
     }
 
@@ -125,10 +130,40 @@ public class AlchemistGoal extends WorkGoal {
                         }
                         level().sendParticles(ParticleTypes.WITCH, hut.getX() + 0.5, hut.getY() + 1.2, hut.getZ() + 0.5, 10, 0.3, 0.3, 0.3, 0.1);
                         level().playSound(null, hut, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.8F, 1.0F);
-                        citizen.setStatus("Brewing potions");
+                        citizen.setStatus(Status.of("brewing_potions"));
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    /** Turns up to three finished potions into splash potions with one gunpowder. */
+    private boolean makeSplash(List<Container> storage, BlockPos hut) {
+        if (Storage.count(storage, s -> s.is(Items.GUNPOWDER)) == 0) {
+            return false;
+        }
+        PotionBrewing brewing = level().potionBrewing();
+        ItemStack gunpowder = new ItemStack(Items.GUNPOWDER);
+        for (Container container : storage) {
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                ItemStack potion = container.getItem(i);
+                if (!potion.is(Items.POTION) || isBasePotion(potion) || !brewing.hasMix(potion, gunpowder)) {
+                    continue;
+                }
+                ItemStack sample = potion.copyWithCount(1);
+                int bottles = Math.min(3, Storage.count(storage, s -> ItemStack.isSameItemSameComponents(s, sample)));
+                ItemStack result = brewing.mix(gunpowder, sample);
+                Storage.extract(storage, s -> ItemStack.isSameItemSameComponents(s, sample), bottles);
+                Storage.extract(storage, s -> s.is(Items.GUNPOWDER), 1);
+                for (int b = 0; b < bottles; b++) {
+                    Storage.insert(storage, result.copyWithCount(1));
+                }
+                level().sendParticles(ParticleTypes.WITCH, hut.getX() + 0.5, hut.getY() + 1.2, hut.getZ() + 0.5, 10, 0.3, 0.3, 0.3, 0.1);
+                level().playSound(null, hut, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.8F, 1.0F);
+                citizen.setStatus(Status.of("brewing_potions"));
+                return true;
             }
         }
         return false;
@@ -149,7 +184,7 @@ public class AlchemistGoal extends WorkGoal {
 
     /** Items the alchemist works with and keeps in the hut. */
     public static boolean isMaterial(ItemStack stack) {
-        return stack.is(Items.GLASS_BOTTLE) || stack.is(Items.NETHER_WART) || stack.is(Items.BLAZE_POWDER)
+        return stack.is(Items.GLASS_BOTTLE) || stack.is(Items.NETHER_WART) || stack.is(Items.BLAZE_POWDER) || stack.is(Items.GUNPOWDER)
                 || Logistics.isBrewingIngredient(stack) || isBasePotion(stack);
     }
 }

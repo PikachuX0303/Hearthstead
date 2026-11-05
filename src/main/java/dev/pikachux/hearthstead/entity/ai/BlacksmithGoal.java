@@ -37,10 +37,19 @@ public class BlacksmithGoal extends RecipeCrafterGoal {
 
     @Override
     protected List<Item> order(List<Item> wanted, BuildingData building) {
+        String material = dev.pikachux.hearthstead.colony.HutSettings.get(building, dev.pikachux.hearthstead.colony.HutSettings.SMITH_MATERIAL);
+        boolean diamond = building.level() >= DIAMOND_LEVEL && "best".equals(material);
+        Comparator<Item> order = Comparator.comparingInt(BlacksmithGoal::preference);
         return wanted.stream()
-                .filter(item -> building.level() >= DIAMOND_LEVEL || !path(item).startsWith("diamond_"))
-                .sorted(Comparator.comparingInt(BlacksmithGoal::preference))
+                .filter(item -> diamond || !path(item).startsWith("diamond_"))
+                .sorted("stone".equals(material) ? Comparator.comparingInt(BlacksmithGoal::stonePreference) : order)
                 .toList();
+    }
+
+    /** Stone first, to save iron. */
+    private static int stonePreference(Item item) {
+        String path = path(item);
+        return path.startsWith("stone_") ? 0 : path.startsWith("iron_") ? 1 : 2;
     }
 
     private static int preference(Item item) {

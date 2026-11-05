@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -82,18 +83,18 @@ public class SifterGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the sieve");
+            citizen.setStatus(Status.of("going_sieve"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the hut to be built");
+            citizen.setStatus(Status.of("waiting_hut_be_built"));
             return;
         }
         Item input = HutSettings.sifterInput(building);
         List<Container> storage = Storage.containers(level(), building);
         if (Storage.count(storage, s -> s.is(input)) == 0) {
-            citizen.setStatus("Needs " + input.getDefaultInstance().getHoverName().getString().toLowerCase() + " to sift");
+            citizen.setStatus(Status.of("needs_to_sift", input.getDefaultInstance().getHoverName()));
             timer = 0;
             return;
         }
@@ -112,6 +113,6 @@ public class SifterGoal extends WorkGoal {
             }
         }
         level().playSound(null, hut, SoundEvents.SAND_BREAK, SoundSource.BLOCKS, 0.5F, 1.2F);
-        citizen.setStatus("Sifting " + input.getDefaultInstance().getHoverName().getString().toLowerCase());
+        citizen.setStatus(Status.of("sifting", input.getDefaultInstance().getHoverName()));
     }
 }

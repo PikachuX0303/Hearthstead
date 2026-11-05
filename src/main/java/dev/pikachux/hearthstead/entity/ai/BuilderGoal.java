@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.block.HutBlock;
 import dev.pikachux.hearthstead.blueprint.Blueprint;
 import dev.pikachux.hearthstead.blueprint.Construction;
@@ -76,7 +77,7 @@ public class BuilderGoal extends WorkGoal {
             case BUILD -> build(colony);
             case RETURN -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Returning to the builder's hut");
+                    citizen.setStatus(Status.of("returning_builder_s_hut"));
                     return;
                 }
                 depositAll();
@@ -92,19 +93,19 @@ public class BuilderGoal extends WorkGoal {
 
     private void prepare(BlockPos hut, BuildingData builderHut, Colony colony) {
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the builder's hut");
+            citizen.setStatus(Status.of("going_builder_s_hut"));
             return;
         }
         depositAll();
         order = colony.claimWorkOrder(builderHut);
         if (order == null) {
-            citizen.setStatus("Waiting for work orders");
+            citizen.setStatus(Status.of("waiting_work_orders"));
             idle(200);
             return;
         }
         plan = Construction.plan(level(), colony, order);
         if (plan == null) {
-            citizen.setStatus("Missing blueprint for " + BuildingInfo.describe(colony, order));
+            citizen.setStatus(Status.of("missing_blueprint", BuildingInfo.describeComponent(colony, order)));
             colony.removeWorkOrder(order);
             order = null;
             idle(200);
@@ -117,7 +118,7 @@ public class BuilderGoal extends WorkGoal {
     /** At the builder's hut: picks up materials for the next steps. */
     private void fetch(BlockPos hut, Colony colony) {
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to get materials");
+            citizen.setStatus(Status.of("going_get_materials"));
             return;
         }
         if (plan == null || order == null) {
@@ -154,7 +155,7 @@ public class BuilderGoal extends WorkGoal {
             int total = (int) plan.stream().skip(index)
                     .filter(p -> Construction.requiredItem(p.state()) == missing && !Construction.isDone(level(), p))
                     .count();
-            citizen.setStatus("Waiting for materials: " + total + "x " + missing.getDefaultInstance().getHoverName().getString());
+            citizen.setStatus(Status.of("waiting_for_materials", total, missing.getDefaultInstance().getHoverName()));
             idle(100);
             return;
         }
@@ -185,7 +186,7 @@ public class BuilderGoal extends WorkGoal {
             state = State.RETURN;
             return;
         }
-        citizen.setStatus("Building " + BuildingInfo.describe(colony, order));
+        citizen.setStatus(Status.of("building", BuildingInfo.describeComponent(colony, order)));
         if (!walkTo(step.pos(), 4.5)) {
             return;
         }
@@ -223,7 +224,7 @@ public class BuilderGoal extends WorkGoal {
 
     /** Takes one block of a removal down, keeping it (and whatever was stored in it) as items. */
     private void takeDown(Colony colony, Blueprint.Placement step) {
-        citizen.setStatus(BuildingInfo.describe(colony, order));
+        citizen.setStatus(BuildingInfo.describeComponent(colony, order));
         if (!walkTo(step.pos(), 4.5)) {
             return;
         }

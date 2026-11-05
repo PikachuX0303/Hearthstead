@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -46,12 +47,12 @@ public class DyerGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the workshop");
+            citizen.setStatus(Status.of("going_workshop"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the workshop to be built");
+            citizen.setStatus(Status.of("waiting_workshop_be_built"));
             return;
         }
         if (++timer < breakDelay(WORK_TICKS)) {
@@ -69,7 +70,7 @@ public class DyerGoal extends WorkGoal {
                 break;
             }
         }
-        if (made.isEmpty()) {
+        if (made.isEmpty() && dev.pikachux.hearthstead.colony.HutSettings.isOn(building, dev.pikachux.hearthstead.colony.HutSettings.IDLE_DYES)) {
             for (Container container : storage) {
                 for (int i = 0; i < container.getContainerSize() && made.isEmpty(); i++) {
                     ItemStack stack = container.getItem(i);
@@ -80,10 +81,10 @@ public class DyerGoal extends WorkGoal {
             }
         }
         if (made.isEmpty()) {
-            citizen.setStatus("Nothing to dye right now");
+            citizen.setStatus(Status.of("nothing_dye_right_now"));
             return;
         }
-        citizen.setStatus("Making " + made.getHoverName().getString());
+        citizen.setStatus(Status.of("making", made.getHoverName()));
         level().playSound(null, hut, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 0.6F, 1.0F);
     }
 }

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Storage;
@@ -37,25 +38,25 @@ public class LibrarianGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the library");
+            citizen.setStatus(Status.of("going_library"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the library to be built");
+            citizen.setStatus(Status.of("waiting_library_be_built"));
             return;
         }
         var storage = Storage.containers(level(), building);
         if (Storage.count(storage, s -> s.is(Items.BOOK)) == 0) {
-            citizen.setStatus("Needs books to study");
+            citizen.setStatus(Status.of("needs_books_study"));
             return;
         }
-        citizen.setStatus("Studying (citizens learn " + Math.round(25 * building.level()) + "% faster)");
+        citizen.setStatus(Status.of("studying", Math.round(25 * building.level())));
         if (++studied % 100 == 0) {
             citizen.swing(InteractionHand.MAIN_HAND);
             level().sendParticles(ParticleTypes.ENCHANT, citizen.getX(), citizen.getY() + 1.8, citizen.getZ(), 6, 0.3, 0.3, 0.3, 0.4);
         }
-        if (studied >= TICKS_PER_BOOK) {
+        if (studied >= TICKS_PER_BOOK * ("thrifty".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building, dev.pikachux.hearthstead.colony.HutSettings.BOOK_USE)) ? 2 : 1)) {
             studied = 0;
             Storage.extract(storage, s -> s.is(Items.BOOK), 1);
         }

@@ -162,7 +162,7 @@ public final class Logistics {
             case FISHERMAN -> Logistics::isFishingRod;
             case COOK -> s -> isRawFood(s) || isCookFuel(s);
             case SMELTER -> s -> isSmeltable(s) || isCookFuel(s);
-            case BAKER -> s -> s.is(Items.WHEAT);
+            case BAKER -> dev.pikachux.hearthstead.entity.ai.BakerGoal::isIngredient;
             case SHEPHERD -> s -> s.is(Items.SHEARS) || s.is(Items.WHEAT);
             case COWHAND -> s -> s.is(Items.BUCKET) || s.is(Items.WHEAT);
             case CHICKEN_HERDER -> s -> s.is(ItemTags.CHICKEN_FOOD);
@@ -297,7 +297,7 @@ public final class Logistics {
             }
             case HOSPITAL -> {
                 // One cure for every sick citizen, by illness.
-                if (building.level() > 0) {
+                if (building.level() > 0 && !"wounds".equals(HutSettings.get(building, HutSettings.TREAT))) {
                     for (Illness illness : Illness.values()) {
                         long sick = colony.citizens().stream().filter(c -> c.illness() == illness).count();
                         if (sick > 0) {
@@ -328,7 +328,13 @@ public final class Logistics {
             }
             case BAKER -> {
                 if (building.level() > 0) {
-                    restock(building, storage, s -> s.is(Items.WHEAT), 15, 33, "Wheat", requests);
+                    // Enough for a full batch at the hut's level, and a bit more.
+                    var recipe = dev.pikachux.hearthstead.entity.ai.BakerGoal.recipe(building);
+                    for (var ingredient : recipe.ingredients().entrySet()) {
+                        int batch = ingredient.getValue() * building.level();
+                        restock(building, storage, s -> s.is(ingredient.getKey()), batch, batch * 2 + ingredient.getValue(),
+                                ingredient.getKey().getDefaultInstance().getHoverName().getString(), requests);
+                    }
                 }
             }
             case SHEPHERD -> {
@@ -345,7 +351,7 @@ public final class Logistics {
             }
             case COMPOSTER -> {
                 if (building.level() > 0) {
-                    restock(building, storage, Logistics::isCompostable, 16, 64, "Plant waste (leaves, saplings, ...)", requests);
+                    restock(building, storage, HutSettings.compostInput(building), 16, 64, HutSettings.compostInputName(building), requests);
                 }
             }
             case SAWMILL -> {
@@ -406,11 +412,14 @@ public final class Logistics {
                     }
                     restock(building, storage, s -> s.is(Items.NETHER_WART), 3, 9, "Nether Wart", requests);
                     restock(building, storage, s -> s.is(Items.BLAZE_POWDER), 1, 2, "Blaze Powder", requests);
+                    if (HutSettings.isOn(building, HutSettings.SPLASH)) {
+                        restock(building, storage, s -> s.is(Items.GUNPOWDER), 1, 4, "Gunpowder", requests);
+                    }
                 }
             }
             case ENCHANTER -> {
                 if (building.level() > 0) {
-                    int lapis = dev.pikachux.hearthstead.entity.ai.EnchanterGoal.lapisCost(building.level());
+                    int lapis = dev.pikachux.hearthstead.entity.ai.EnchanterGoal.lapisCost(dev.pikachux.hearthstead.entity.ai.EnchanterGoal.workLevel(building));
                     restock(building, storage, s -> s.is(Items.BOOK), 1, 4, "Books", requests);
                     restock(building, storage, s -> s.is(Items.LAPIS_LAZULI), lapis, lapis * 4, "Lapis Lazuli", requests);
                 }
@@ -427,7 +436,7 @@ public final class Logistics {
                 }
             }
             case MECHANIC -> {
-                if (building.level() > 0) {
+                if (building.level() > 0 && HutSettings.isOn(building, HutSettings.OWN_TRADE)) {
                     restock(building, storage, s -> s.is(Items.IRON_INGOT), 4, 16, "Iron Ingots", requests);
                     restock(building, storage, s -> s.is(Items.REDSTONE), 4, 16, "Redstone", requests);
                     restock(building, storage, s -> s.is(Items.COAL) || s.is(Items.CHARCOAL), 4, 16, "Coal or charcoal", requests);
@@ -436,13 +445,13 @@ public final class Logistics {
                 }
             }
             case BLACKSMITH -> {
-                if (building.level() > 0) {
+                if (building.level() > 0 && HutSettings.isOn(building, HutSettings.OWN_TRADE)) {
                     restock(building, storage, s -> s.is(Items.IRON_INGOT), 6, 24, "Iron Ingots", requests);
                     restock(building, storage, s -> s.is(Items.STICK), 4, 16, "Sticks", requests);
                 }
             }
             case FLETCHER -> {
-                if (building.level() > 0) {
+                if (building.level() > 0 && HutSettings.isOn(building, HutSettings.OWN_TRADE)) {
                     restock(building, storage, s -> s.is(Items.STICK), 4, 16, "Sticks", requests);
                     restock(building, storage, s -> s.is(Items.STRING), 4, 16, "String", requests);
                     restock(building, storage, s -> s.is(Items.FLINT), 2, 8, "Flint", requests);
@@ -451,7 +460,8 @@ public final class Logistics {
             }
             case STONE_SMELTERY -> {
                 if (building.level() > 0) {
-                    restock(building, storage, s -> s.is(Items.COBBLESTONE), 16, 64, "Cobblestone", requests);
+                    Item input = HutSettings.stoneSmelterRequest(building);
+                    restock(building, storage, s -> s.is(input), 16, 64, input.getDefaultInstance().getHoverName().getString(), requests);
                     restock(building, storage, Logistics::isCookFuel, 8, 16, "Coal or charcoal", requests);
                 }
             }

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -94,11 +95,11 @@ public class SeekHealingGoal extends Goal {
         CitizenData data = citizen.data();
         Illness illness = data == null ? null : data.illness();
         if (illness == null) {
-            citizen.setStatus("Recovering at the hospital");
+            citizen.setStatus(Status.of("recovering_at_hospital"));
         } else {
-            citizen.setStatus("Ill with " + illness.displayName().toLowerCase(java.util.Locale.ROOT)
-                    + (hospital ? ", at the hospital (cure: " + illness.cure().getDefaultInstance().getHoverName().getString() + ")"
-                    : ", resting at home"));
+            net.minecraft.network.chat.Component name = net.minecraft.network.chat.Component.translatable("illness.hearthstead." + illness.id());
+            citizen.setStatus(hospital ? Status.of("ill_at_hospital", name, illness.cure().getDefaultInstance().getHoverName())
+                    : Status.of("ill_at_home", name));
         }
         if (!citizen.blockPosition().closerToCenterThan(destination.getCenter(), hospital ? 4 : 2) && --pathTimer <= 0) {
             pathTimer = 20;

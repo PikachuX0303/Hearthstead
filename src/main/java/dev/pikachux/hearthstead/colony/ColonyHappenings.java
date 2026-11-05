@@ -109,7 +109,7 @@ public class ColonyHappenings {
             }
         }
         BuildingData tavern = colony.trainingGround(BuildingType.TAVERN);
-        if (tavern != null && visitorCount(colony) < tavern.level()
+        if (tavern != null && HutSettings.isOn(tavern, HutSettings.VISITORS) && visitorCount(colony) < tavern.level()
                 && level.getRandom().nextDouble() < HearthsteadConfig.VISITOR_CHANCE.get()) {
             colony.addVisitor(level, tavern);
         }

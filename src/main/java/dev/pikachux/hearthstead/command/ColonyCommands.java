@@ -120,14 +120,14 @@ public final class ColonyCommands {
             return 0;
         }
         CommandSourceStack source = ctx.getSource();
-        source.sendSuccess(() -> Component.literal("== " + colony.name() + " (#" + colony.id() + ") ==").withStyle(ChatFormatting.GOLD), false);
-        source.sendSuccess(() -> Component.literal("Owner: " + colony.ownerName() + " | Town hall at " + colony.center().toShortString()
-                + " in " + colony.dimension().identifier()), false);
-        source.sendSuccess(() -> Component.literal("Citizens: " + colony.citizens().size() + "/" + colony.housingCapacity()
-                + " | Buildings: " + colony.buildings().size()), false);
+        source.sendSuccess(() -> Component.translatable("command.hearthstead.info.header", colony.name(), colony.id()).withStyle(ChatFormatting.GOLD), false);
+        source.sendSuccess(() -> Component.translatable("command.hearthstead.info.owner", colony.ownerName(),
+                colony.center().toShortString(), colony.dimension().identifier().toString()), false);
+        source.sendSuccess(() -> Component.translatable("command.hearthstead.info.counts", colony.citizens().size(),
+                colony.housingCapacity(), colony.buildings().size()), false);
         for (BuildingData building : colony.buildings()) {
-            source.sendSuccess(() -> Component.literal(" - " + building.type().displayName() + " lvl " + building.level()
-                    + " at " + building.pos().toShortString()).withStyle(ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.translatable("command.hearthstead.info.building", building.type().nameComponent(),
+                    building.level(), building.pos().toShortString()).withStyle(ChatFormatting.GRAY), false);
         }
         return 1;
     }
@@ -135,11 +135,11 @@ public final class ColonyCommands {
     private static int list(CommandContext<CommandSourceStack> ctx) {
         ColonyManager manager = ColonyManager.get(ctx.getSource().getServer());
         if (manager.colonies().isEmpty()) {
-            ctx.getSource().sendSuccess(() -> Component.literal("There are no colonies."), false);
+            ctx.getSource().sendSuccess(() -> Component.translatable("command.hearthstead.list.none"), false);
         }
         for (Colony colony : manager.colonies()) {
-            ctx.getSource().sendSuccess(() -> Component.literal("#" + colony.id() + " " + colony.name() + " - " + colony.ownerName()
-                    + " - " + colony.center().toShortString() + " - " + colony.citizens().size() + " citizens"), false);
+            ctx.getSource().sendSuccess(() -> Component.translatable("command.hearthstead.list.entry", colony.id(), colony.name(),
+                    colony.ownerName(), colony.center().toShortString(), colony.citizens().size()), false);
         }
         return manager.colonies().size();
     }
@@ -150,9 +150,10 @@ public final class ColonyCommands {
             return 0;
         }
         for (CitizenData citizen : colony.citizens()) {
-            ctx.getSource().sendSuccess(() -> Component.literal(citizen.name() + " - " + citizen.job().displayName()
-                    + String.format(" - food %.1f, happiness %.1f - ", citizen.saturation(), citizen.happiness())
-                    + citizen.status()), false);
+            ctx.getSource().sendSuccess(() -> Component.translatable("command.hearthstead.citizens.entry", citizen.name(),
+                    Component.translatable(dev.pikachux.hearthstead.entity.CitizenEntity.roleKey(colony, citizen)),
+                    String.format("%.1f", citizen.saturation()), String.format("%.1f", citizen.happiness()),
+                    citizen.statusComponent()), false);
         }
         return colony.citizens().size();
     }
@@ -168,7 +169,7 @@ public final class ColonyCommands {
         }
         String name = StringArgumentType.getString(ctx, "name");
         colony.setName(name);
-        ctx.getSource().sendSuccess(() -> Component.literal("Colony renamed to " + name), false);
+        ctx.getSource().sendSuccess(() -> Component.translatable("command.hearthstead.renamed", name), false);
         return 1;
     }
 
@@ -185,8 +186,8 @@ public final class ColonyCommands {
         colony.permissions().setRank(target.getUUID(), target.getName().getString(),
                 add ? dev.pikachux.hearthstead.colony.ColonyPermissions.Rank.OFFICER
                         : dev.pikachux.hearthstead.colony.ColonyPermissions.Rank.VISITOR);
-        ctx.getSource().sendSuccess(() -> Component.literal(target.getName().getString()
-                + (add ? " is now an officer of " : " is no longer an officer of ") + colony.name()), false);
+        ctx.getSource().sendSuccess(() -> Component.translatable(add ? "command.hearthstead.officer_added" : "command.hearthstead.officer_removed",
+                target.getName(), colony.name()), false);
         return 1;
     }
 
@@ -252,11 +253,11 @@ public final class ColonyCommands {
             return 0;
         }
         if (colony.workOrders().isEmpty()) {
-            ctx.getSource().sendSuccess(() -> Component.literal("There are no work orders."), false);
+            ctx.getSource().sendSuccess(() -> Component.translatable("command.hearthstead.workorders.none"), false);
         }
         for (WorkOrder order : colony.workOrders()) {
-            ctx.getSource().sendSuccess(() -> Component.literal(" - " + BuildingInfo.describe(colony, order)
-                    + (order.builder() == null ? " (waiting for a builder)" : " (in progress)")), false);
+            ctx.getSource().sendSuccess(() -> Component.translatable(order.builder() == null ? "command.hearthstead.workorders.waiting"
+                    : "command.hearthstead.workorders.in_progress", BuildingInfo.describeComponent(colony, order)), false);
         }
         return colony.workOrders().size();
     }
@@ -361,7 +362,7 @@ public final class ColonyCommands {
         Colony colony = ownColony(ctx);
         Research research = Research.byId(StringArgumentType.getString(ctx, "research"));
         if (colony == null || research == null) {
-            ctx.getSource().sendFailure(Component.literal("Unknown colony or research"));
+            ctx.getSource().sendFailure(Component.translatable("command.hearthstead.unknown_research"));
             return 0;
         }
         colony.research().complete(research, colony);
@@ -374,11 +375,11 @@ public final class ColonyCommands {
         int id = IntegerArgumentType.getInteger(ctx, "id");
         ColonyManager manager = ColonyManager.get(ctx.getSource().getServer());
         if (manager.colony(id) == null) {
-            ctx.getSource().sendFailure(Component.literal("No colony with id " + id));
+            ctx.getSource().sendFailure(Component.translatable("command.hearthstead.no_colony_id", id));
             return 0;
         }
         manager.deleteColony(id);
-        ctx.getSource().sendSuccess(() -> Component.literal("Deleted colony #" + id), true);
+        ctx.getSource().sendSuccess(() -> Component.translatable("command.hearthstead.deleted", id), true);
         return 1;
     }
 }

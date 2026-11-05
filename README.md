@@ -43,22 +43,21 @@ problems, so keep backups of worlds you care about, and please report problems o
 What is in: the colony loop, 49 huts with 39 jobs, citizen skills and job outfits, families,
 visitors and expeditions, illness, guard classes and orders, requests, postbox orders and
 teachable recipes, decorations, five building styles, research, raids, colony events,
-abandoned settlements, permissions, an in-game settings screen and 13 languages.
+abandoned settlements, permissions, settings for every hut with a worker, an in-game settings
+screen and 13 languages.
 
 Not there yet (some of which MineColonies has):
 
 - Hand-built style packs. The five styles are generated.
-- Settings for the remaining huts (the farmer, lumberjack, miner, smeltery, cook, crusher,
-  sifter, herders and guard buildings have them).
 - More raider cultures (barbarians and pirates so far), more colony events.
-- Translated citizen status lines and command messages (they are still English).
+- Translated request names (such as "Food" or "Raw meat"); they are still English.
 
 ## Languages
 
 Hearthstead is translated into English, German, French, Spanish, Italian, Brazilian Portuguese,
 Russian, Polish, Dutch, Turkish, Simplified Chinese, Japanese and Korean. Hut and job names in
-name tags, windows and chat messages follow the game language. The citizens' status lines, most
-command output and a few request names (such as "Food") are still English. Corrections from
+name tags, windows, citizens' status lines, chat messages and command output follow the game
+language. Request names (such as "Food") and the config file's comments are still English. Corrections from
 native speakers are welcome: the files are in `src/main/resources/assets/hearthstead/lang/`.
 
 ## Features
@@ -108,11 +107,11 @@ links to the releases and the changelog.
 | **Warehouse** | The colony's central storage. Its building is lined with barrels, and the hut plus every chest and barrel inside the building count as storage. Citizens can eat from it. |
 | **Deliveryman** | Carries items between the Warehouse and the huts. Brings builders their missing materials, workers their tools (axe, hoe, pickaxe, sword, fishing rod), seeds and torches, homes their food and the cook raw food and coal. Also empties worker huts into the Warehouse. Needs a Warehouse. The **Requests** tab shows what each hut is waiting for. |
 | **Cook** | Loads the smokers inside the kitchen (one per hut level) with raw food (beef, pork, chicken, mutton, rabbit, cod, salmon, potatoes, kelp) and coal or charcoal from the hut, and stores the meals in the hut. Citizens eat there too, and prefer cooked meals. |
-| **Baker** | Turns wheat stored in the Bakery into bread: 3 wheat per loaf, one loaf per hut level each batch. Citizens eat there too. |
+| **Baker** | Bakes what the Bakery is set to make, one batch per hut level: bread (3 wheat a loaf), cookies (2 wheat and a cocoa bean make 8) or pumpkin pie (a pumpkin, sugar and an egg). Citizens eat there too. |
 | **Smelter** | Runs the furnaces inside the Smeltery (one per hut level), smelting ores, raw metals and sand into ingots and glass with coal or charcoal from the hut. |
 | **Shepherd** | Needs **shears** in the hut. Shears the sheep around the hut and breeds them with wheat while the flock is smaller than 2 + 2 × hut level. Build a pen near the hut so the sheep stay in range. |
 | **Composter** | Fills the composters in its building (two per hut level) with plant waste such as leaves and saplings, and collects the bone meal. Farmers use bone meal on growing crops. |
-| **Sawmill** | Saws logs into what builders and other huts are waiting for and the warehouse can't supply: planks, sticks, slabs, stairs, doors, trapdoors, fences and fence gates of every wood type. Otherwise it keeps 64 planks in the warehouse. |
+| **Sawmill** | Saws logs into what builders and other huts are waiting for and the warehouse can't supply: planks, sticks, slabs, stairs, doors, trapdoors, fences and fence gates of every wood type. Otherwise it keeps 64 planks in the warehouse (a hut setting). |
 | **Cowhand** | Needs **buckets** in the hut. Milks the cows around the hut (each cow every few minutes) and breeds them with wheat while the herd is smaller than 2 + 2 × hut level. Keep the cows in a pen near the hut. |
 | **Chicken Herder** | Breeds the chickens around the hut with seeds and gathers the eggs and feathers they leave lying around. |
 | **Swineherd** | Needs a **sword or axe** in the hut. Breeds the pigs around the hut with carrots, potatoes or beetroot; once the herd reaches 2 + 2 × hut level, it butchers an adult pig for pork. |
@@ -534,8 +533,9 @@ shelf). Without a hospital they rest at home by day and get better on their own.
 
 ## Hut settings
 
-Some huts have a **Settings** tab in their window. Click a setting's button to switch to its next
-value; the worker and the hut's requests follow it right away.
+Every hut with a worker has a **Settings** tab in its window, and so do the Tavern, the Combat
+Academy and the Archery. Click a setting's button to switch to its next value; the worker and the
+hut's requests follow it right away. The first value is the default.
 
 | Hut | Setting | Values |
 | --- | --- | --- |
@@ -545,13 +545,45 @@ value; the worker and the hut's requests follow it right away.
 | Crusher | Crush into | gravel, sand |
 | Sifter | Sift | gravel, sand, dirt |
 | Smeltery | Smelt | everything, ores & metals, sand only |
+| Stone Smeltery | Smelt | everything, stone, bricks & terracotta, nether bricks |
 | Cook's Hut | Cook | all raw food, meat, fish, vegetables |
+| Bakery | Bake | bread, cookies, pumpkin pie |
 | Shepherd, Cowhand, Chicken Herder, Swineherd, Rabbit Hutch | Herd size | auto (grows with the hut level), 2 to 24 |
 | (same) | Breed animals | yes / no (no feed is requested when off) |
 | Guard Tower, Barracks | Guard class | knight, ranger, druid ([guards](#guards)) |
 | (same) | Orders | patrol here, patrol the colony, hold, follow me |
+| Builder's Hut | Work orders | all, building only, repairs & removals only |
+| Deliveryman's Hut | Empty huts | early, only when full |
+| Fisherman's Hut | Keep | everything, fish only (the rest is thrown back) |
+| University | Next research | manual, automatic (the next one starts once its materials are in) |
+| Composter's Hut | Compost | plant waste, leaves & saplings only |
+| Sawmill | Spare planks | 64, 0, 32, 128 kept in the warehouse |
+| Stonemason's Hut | Spare stone bricks | 0, 32, 64, 128 kept in the warehouse |
+| Florist's Hut | Pick flowers | yes / no (only grows them) |
+| Dyer's Hut | Dyes when idle | yes / no |
+| Apiary | Harvest | honey bottles, honeycomb |
+| Glassblower's Hut | Panes & stained glass | yes / no (only smelts glass) |
+| Concrete Mixer's Hut | Set concrete | yes / no (leaves the powder dry) |
+| Planter's Hut | Spread | all plants, sugar cane, cactus, bamboo |
+| Alchemist's Hut | Splash potions | no / yes (with gunpowder from the hut) |
+| Enchanter's Hut | Enchantments | strongest, save lapis (level 1 power, one lapis per book) |
+| Mechanic's Workshop, Fletcher's Hut | Make for huts | yes / no (taught recipes only) |
+| Blacksmith's Hut | Make for huts | yes / no (taught recipes only) |
+| (same) | Material | best, no diamond, stone first |
+| Nether Mine | Expeditions | yes / no |
+| Hospital | Treat | both, illness only, wounds only |
+| Quarry | Pit size | by level, small (5×5), medium (9×9) |
+| Library | Books | normal, save books (each lasts twice as long, half the bonus) |
+| School | Faster growing | yes / no (children still learn) |
+| Graveyard | Revival | yes / no |
+| Tavern | Visitors | yes / no |
+| Combat Academy, Archery | Training | yes / no |
 
-The swineherd and rabbit herder butcher animals above the herd size.
+The swineherd and rabbit herder butcher animals above the herd size. The Town Hall, Residences,
+the Warehouse, the Stash, the Postbox and the Mystical Site have no worker, so they have no
+settings.
+
+![Blacksmith settings](docs/screenshots/blacksmith_settings.png)
 
 ## Requests
 

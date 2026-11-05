@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -71,7 +72,7 @@ public class PlanterGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositExceptCuttings();
@@ -89,12 +90,12 @@ public class PlanterGoal extends WorkGoal {
                     return;
                 }
                 citizen.setStatus(countPlants(hut, building.workRadius()) == 0
-                        ? "Plant sugar cane, cactus or bamboo near the hut" : "Waiting for the plants to grow");
+                        ? Status.of("plant_near_hut") : Status.of("waiting_for_plants"));
                 timer = 200;
                 state = State.IDLE;
             }
             case HARVEST -> {
-                citizen.setStatus("Harvesting");
+                citizen.setStatus(Status.of("harvesting"));
                 if (target == null || !isTall(target)) {
                     state = State.PREPARE;
                     return;
@@ -118,7 +119,7 @@ public class PlanterGoal extends WorkGoal {
                 state = State.PREPARE;
             }
             case PLANT -> {
-                citizen.setStatus("Planting");
+                citizen.setStatus(Status.of("planting"));
                 if (target == null) {
                     state = State.PREPARE;
                     return;
@@ -201,9 +202,20 @@ public class PlanterGoal extends WorkGoal {
                 && block.defaultBlockState().canSurvive(level(), spot);
     }
 
+    /** Whether the hut's setting lets the planter spread this kind of plant. */
+    private static boolean spreads(String setting, Block block) {
+        return switch (setting) {
+            case "sugar_cane" -> block == Blocks.SUGAR_CANE;
+            case "cactus" -> block == Blocks.CACTUS;
+            case "bamboo" -> block == Blocks.BAMBOO;
+            default -> true;
+        };
+    }
+
     private void plant(BlockPos spot) {
+        String spread = dev.pikachux.hearthstead.colony.HutSettings.get(building(), dev.pikachux.hearthstead.colony.HutSettings.SPREAD);
         for (Map.Entry<Block, Item> plant : PLANTS.entrySet()) {
-            if (count(plant.getValue()) == 0) {
+            if (count(plant.getValue()) == 0 || !spreads(spread, plant.getKey())) {
                 continue;
             }
             boolean nextToSameKind = false;

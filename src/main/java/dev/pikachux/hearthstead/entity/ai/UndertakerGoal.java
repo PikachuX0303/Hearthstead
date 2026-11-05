@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -39,20 +40,20 @@ public class UndertakerGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the graveyard");
+            citizen.setStatus(Status.of("going_graveyard"));
             return;
         }
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the graveyard to be built");
+            citizen.setStatus(Status.of("waiting_graveyard_be_built"));
             return;
         }
         if (colony.dead().isEmpty()) {
-            citizen.setStatus("Tending the graves");
+            citizen.setStatus(Status.of("tending_graves"));
             timer = 0;
             return;
         }
         CitizenData next = colony.dead().getFirst();
-        citizen.setStatus("Burying " + next.name());
+        citizen.setStatus(Status.of("burying", next.name()));
         if (++timer % 20 == 0) {
             citizen.swing(InteractionHand.MAIN_HAND);
         }

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import net.minecraft.sounds.SoundEvents;
@@ -51,12 +52,12 @@ public class CowhandGoal extends HerderGoal<Cow> {
     }
 
     @Override
-    protected String workStatus() {
-        return "Milking cows";
+    protected net.minecraft.network.chat.Component workStatus() {
+        return Status.of("milking_cows");
     }
 
     @Override
-    protected String missingToolStatus() {
-        return "Needs buckets in the hut";
+    protected net.minecraft.network.chat.Component missingToolStatus() {
+        return Status.of("needs_buckets");
     }
 }

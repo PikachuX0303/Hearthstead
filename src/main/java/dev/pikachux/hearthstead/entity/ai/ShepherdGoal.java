@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import net.minecraft.sounds.SoundSource;
@@ -41,12 +42,12 @@ public class ShepherdGoal extends HerderGoal<Sheep> {
     }
 
     @Override
-    protected String workStatus() {
-        return "Shearing sheep";
+    protected net.minecraft.network.chat.Component workStatus() {
+        return Status.of("shearing_sheep");
     }
 
     @Override
-    protected String missingToolStatus() {
-        return "Needs shears in the hut";
+    protected net.minecraft.network.chat.Component missingToolStatus() {
+        return Status.of("needs_shears");
     }
 }

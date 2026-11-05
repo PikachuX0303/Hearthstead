@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -34,8 +35,8 @@ public abstract class FurnaceWorkerGoal extends WorkGoal {
 
     private final Predicate<ItemStack> input;
     private final Predicate<ItemStack> fuel;
-    private final String workStatus;
-    private final String needsInputStatus;
+    private final net.minecraft.network.chat.Component workStatus;
+    private final net.minecraft.network.chat.Component needsInputStatus;
 
     /** What goes into the furnaces; subclasses may follow the hut's settings. */
     protected Predicate<ItemStack> input() {
@@ -43,7 +44,7 @@ public abstract class FurnaceWorkerGoal extends WorkGoal {
     }
 
     protected FurnaceWorkerGoal(CitizenEntity citizen, JobType job, Predicate<ItemStack> input, Predicate<ItemStack> fuel,
-                                String workStatus, String needsInputStatus) {
+                                net.minecraft.network.chat.Component workStatus, net.minecraft.network.chat.Component needsInputStatus) {
         super(citizen, job);
         this.input = input;
         this.fuel = fuel;
@@ -71,18 +72,18 @@ public abstract class FurnaceWorkerGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the workshop");
+                    citizen.setStatus(Status.of("going_workshop"));
                     return;
                 }
                 depositAll();
                 if (building.level() == 0) {
-                    citizen.setStatus("Waiting for the workshop to be built");
+                    citizen.setStatus(Status.of("waiting_workshop_be_built"));
                     idle(200);
                     return;
                 }
                 findFurnaces(building);
                 if (furnaces.isEmpty()) {
-                    citizen.setStatus("Needs a furnace in the building");
+                    citizen.setStatus(Status.of("needs_furnace_building"));
                     idle(200);
                     return;
                 }
@@ -154,7 +155,7 @@ public abstract class FurnaceWorkerGoal extends WorkGoal {
         if (!hasInput) {
             citizen.setStatus(needsInputStatus);
         } else if (furnace.getItem(FUEL_SLOT).isEmpty()) {
-            citizen.setStatus("Needs coal or charcoal");
+            citizen.setStatus(Status.of("needs_coal_or_charcoal"));
         } else {
             citizen.setStatus(workStatus);
         }

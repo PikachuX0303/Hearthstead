@@ -90,21 +90,4 @@ public final class BuildingInfo {
     private static net.minecraft.network.chat.Component hutName(BuildingType type) {
         return type == null ? net.minecraft.network.chat.Component.literal("?") : type.nameComponent();
     }
-
-    public static String describe(Colony colony, WorkOrder order) {
-        if (order.isDecoration()) {
-            return Decoration.displayName(order.decoration()) + " (decoration) at " + order.buildingPos().toShortString();
-        }
-        if (order.kind() == WorkOrder.Kind.REMOVE) {
-            String name = order.hutType() == null ? "?" : order.hutType().displayName();
-            return (order.demolish() ? "Take down " : "Clear old site of ") + name + " at " + order.buildingPos().toShortString();
-        }
-        if (order.kind() == WorkOrder.Kind.REPAIR) {
-            BuildingData target = colony.building(order.buildingPos());
-            return "Repair " + (target == null ? "?" : target.type().displayName()) + " at " + order.buildingPos().toShortString();
-        }
-        BuildingData target = colony.building(order.buildingPos());
-        String name = target == null ? "?" : target.type().displayName();
-        return name + " level " + order.targetLevel() + " at " + order.buildingPos().toShortString();
-    }
 }

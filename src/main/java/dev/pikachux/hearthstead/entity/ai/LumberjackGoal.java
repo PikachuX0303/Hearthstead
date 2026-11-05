@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
@@ -62,12 +63,12 @@ public class LumberjackGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
                 if (!equipTool(ItemTags.AXES)) {
-                    citizen.setStatus("Needs an axe in the hut");
+                    citizen.setStatus(Status.of("needs_axe_hut"));
                     state = State.IDLE;
                     timer = 200;
                     return;
@@ -80,7 +81,7 @@ public class LumberjackGoal extends WorkGoal {
             case SEARCH -> {
                 treeBase = findTree(hut, building.workRadius());
                 if (treeBase == null) {
-                    citizen.setStatus("No trees nearby");
+                    citizen.setStatus(Status.of("no_trees_nearby"));
                     state = State.IDLE;
                     timer = 400;
                     return;
@@ -95,14 +96,14 @@ public class LumberjackGoal extends WorkGoal {
                     return;
                 }
                 if (!walkTo(treeBase, 3)) {
-                    citizen.setStatus("Walking to a tree");
+                    citizen.setStatus(Status.of("walking_tree"));
                     return;
                 }
                 if (!citizen.getMainHandItem().is(ItemTags.AXES)) {
                     state = State.DEPOSIT;
                     return;
                 }
-                citizen.setStatus("Chopping a tree");
+                citizen.setStatus(Status.of("chopping_tree"));
                 BlockPos next = logs.get(logs.size() - 1);
                 citizen.getLookControl().setLookAt(next.getCenter());
                 if (++timer >= breakDelay(researched(Research.SKILLED_LUMBERJACKS) ? 13 : 20)) {
@@ -123,7 +124,7 @@ public class LumberjackGoal extends WorkGoal {
             }
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing wood home");
+                    citizen.setStatus(Status.of("bringing_wood_home"));
                     return;
                 }
                 depositAll();

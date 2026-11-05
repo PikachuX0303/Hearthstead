@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -51,22 +52,22 @@ public class ComposterGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
                 if (building.level() == 0) {
-                    citizen.setStatus("Waiting for the hut to be built");
+                    citizen.setStatus(Status.of("waiting_hut_be_built"));
                     idle(200);
                     return;
                 }
                 findComposters(building);
                 if (composters.isEmpty()) {
-                    citizen.setStatus("Needs composters in the building");
+                    citizen.setStatus(Status.of("needs_composters_building"));
                     idle(200);
                     return;
                 }
-                takeFromHut(Logistics::isCompostable, 64);
+                takeFromHut(dev.pikachux.hearthstead.colony.HutSettings.compostInput(building()), 64);
                 index = 0;
                 state = State.TEND;
             }
@@ -76,7 +77,7 @@ public class ComposterGoal extends WorkGoal {
                         return;
                     }
                     depositAll();
-                    citizen.setStatus("Waiting for the compost");
+                    citizen.setStatus(Status.of("waiting_compost"));
                     idle(100);
                     return;
                 }
@@ -87,7 +88,7 @@ public class ComposterGoal extends WorkGoal {
                     return;
                 }
                 if (!walkTo(pos, 3)) {
-                    citizen.setStatus("Composting");
+                    citizen.setStatus(Status.of("composting"));
                     return;
                 }
                 if (++timer < breakDelay(10)) {
@@ -122,13 +123,13 @@ public class ComposterGoal extends WorkGoal {
         }
         for (int i = 0; i < citizen.inventory().getContainerSize(); i++) {
             ItemStack stack = citizen.inventory().getItem(i);
-            if (!stack.isEmpty() && Logistics.isCompostable(stack)) {
+            if (!stack.isEmpty() && dev.pikachux.hearthstead.colony.HutSettings.compostInput(building()).test(stack)) {
                 ComposterBlock.insertItem(citizen, composter, level(), stack, pos);
-                citizen.setStatus("Composting");
+                citizen.setStatus(Status.of("composting"));
                 return true;
             }
         }
-        citizen.setStatus("Needs plant waste to compost");
+        citizen.setStatus(Status.of("needs_plant_waste_compost"));
         return false;
     }
 

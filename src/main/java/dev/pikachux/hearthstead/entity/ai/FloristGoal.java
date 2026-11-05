@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -53,7 +54,7 @@ public class FloristGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
@@ -61,7 +62,7 @@ public class FloristGoal extends WorkGoal {
                 findTask(hut, building);
                 if (target == null) {
                     citizen.setStatus(citizen.inventory().countItem(Items.BONE_MEAL) == 0
-                            ? "Needs bone meal" : "The garden is in bloom");
+                            ? Status.of("needs_bone_meal") : Status.of("garden_in_bloom"));
                     timer = 200;
                     state = State.IDLE;
                     return;
@@ -74,7 +75,7 @@ public class FloristGoal extends WorkGoal {
                     return;
                 }
                 if (!walkTo(target, 2.5)) {
-                    citizen.setStatus(picking ? "Picking flowers" : "Tending the garden");
+                    citizen.setStatus(picking ? Status.of("picking_flowers") : Status.of("tending_garden"));
                     return;
                 }
                 if (++timer < breakDelay(15)) {
@@ -92,7 +93,7 @@ public class FloristGoal extends WorkGoal {
             }
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing flowers home");
+                    citizen.setStatus(Status.of("bringing_flowers_home"));
                     return;
                 }
                 depositAll();
@@ -127,6 +128,7 @@ public class FloristGoal extends WorkGoal {
         }
         int width = 2 + building.level();
         boolean hasBoneMeal = citizen.inventory().countItem(Items.BONE_MEAL) > 0;
+        boolean pickFlowers = dev.pikachux.hearthstead.colony.HutSettings.isOn(building, dev.pikachux.hearthstead.colony.HutSettings.PICK_FLOWERS);
         BlockPos grass = null;
         target = null;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -136,7 +138,7 @@ public class FloristGoal extends WorkGoal {
                     continue;
                 }
                 pos.set(x, hut.getY(), z);
-                if (level().getBlockState(pos).is(BlockTags.SMALL_FLOWERS)) {
+                if (pickFlowers && level().getBlockState(pos).is(BlockTags.SMALL_FLOWERS)) {
                     target = pos.immutable();
                     picking = true;
                     return;

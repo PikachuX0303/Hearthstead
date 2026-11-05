@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
@@ -61,12 +62,12 @@ public class MinerGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
                 if (!equipTool(ItemTags.PICKAXES)) {
-                    citizen.setStatus("Needs a pickaxe in the hut");
+                    citizen.setStatus(Status.of("needs_pickaxe_hut"));
                     state = State.IDLE;
                     timer = 200;
                     return;
@@ -80,14 +81,14 @@ public class MinerGoal extends WorkGoal {
                 if (target == null) {
                     target = nextBlock(hut, facing, tunnelLength(building), Blueprints.footprint(level().getServer(), level(), building));
                     if (target == null) {
-                        citizen.setStatus("The mine is finished - upgrade the hut");
+                        citizen.setStatus(Status.of("mine_is_finished_upgrade_hut"));
                         state = inventoryEmpty() ? State.IDLE : State.DEPOSIT;
                         timer = 400;
                         return;
                     }
                 }
                 if (!walkTo(target, 3)) {
-                    citizen.setStatus("Walking into the mine");
+                    citizen.setStatus(Status.of("walking_into_mine"));
                     if (citizen.getNavigation().isDone() && !citizen.blockPosition().closerToCenterThan(target.getCenter(), 6)) {
                         // Cannot reach the target; skip it.
                         target = null;
@@ -98,7 +99,7 @@ public class MinerGoal extends WorkGoal {
                     state = State.DEPOSIT;
                     return;
                 }
-                citizen.setStatus("Mining");
+                citizen.setStatus(Status.of("mining"));
                 if (++timer < breakDelay(30)) {
                     return;
                 }
@@ -117,7 +118,7 @@ public class MinerGoal extends WorkGoal {
             }
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing ore home");
+                    citizen.setStatus(Status.of("bringing_ore_home"));
                     return;
                 }
                 depositAll();

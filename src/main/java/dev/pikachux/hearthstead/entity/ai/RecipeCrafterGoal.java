@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.Crafting;
@@ -47,7 +48,7 @@ public abstract class RecipeCrafterGoal extends WorkGoal {
             return false;
         }
         level().playSound(null, hut, workSound(), SoundSource.BLOCKS, 0.6F, 1.0F);
-        citizen.setStatus("Making " + made.getHoverName().getString());
+        citizen.setStatus(Status.of("making", made.getHoverName()));
         return true;
     }
 
@@ -65,12 +66,12 @@ public abstract class RecipeCrafterGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the workshop");
+            citizen.setStatus(Status.of("going_workshop"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the workshop to be built");
+            citizen.setStatus(Status.of("waiting_workshop_be_built"));
             return;
         }
         if (++timer < breakDelay(WORK_TICKS)) {
@@ -81,7 +82,8 @@ public abstract class RecipeCrafterGoal extends WorkGoal {
         }
         timer = 0;
         List<Container> storage = Storage.containers(level(), building);
-        Predicate<Item> makes = products().or(dev.pikachux.hearthstead.colony.Crafters.taught(building));
+        Predicate<Item> own = dev.pikachux.hearthstead.colony.HutSettings.isOn(building, dev.pikachux.hearthstead.colony.HutSettings.OWN_TRADE) ? products() : item -> false;
+        Predicate<Item> makes = own.or(dev.pikachux.hearthstead.colony.Crafters.taught(building));
         for (Item wanted : order(Logistics.shortages(level(), colony, makes, storage), building)) {
             if (make(hut, storage, wanted)) {
                 return;
@@ -94,6 +96,6 @@ public abstract class RecipeCrafterGoal extends WorkGoal {
                 return;
             }
         }
-        citizen.setStatus("Nothing to make right now");
+        citizen.setStatus(Status.of("nothing_make_right_now"));
     }
 }

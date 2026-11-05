@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import net.minecraft.core.BlockPos;
@@ -33,8 +34,7 @@ public class VisitorGoal extends Goal {
             return;
         }
         ItemStack cost = data.recruitCost();
-        data.setStatus("Visiting: would join for " + cost.getCount() + " " + cost.getHoverName().getString()
-                + " (right-click holding them)");
+        data.setStatus(Status.of("visiting", cost.getCount(), cost.getHoverName()));
         BlockPos tavern = data.homePos();
         if (--timer <= 0) {
             timer = 100 + citizen.getRandom().nextInt(100);

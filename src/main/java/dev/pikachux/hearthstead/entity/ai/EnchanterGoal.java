@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Storage;
@@ -36,6 +37,11 @@ public class EnchanterGoal extends WorkGoal {
         return Math.min(30, 4 + hutLevel * 5);
     }
 
+    /** The level the enchanter works at: the hut's, or level 1 when it is set to save lapis. */
+    public static int workLevel(BuildingData building) {
+        return "cheap".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building, dev.pikachux.hearthstead.colony.HutSettings.ENCHANT_POWER)) ? 1 : building.level();
+    }
+
     /** Lapis lazuli used per book: 1 at levels 1-2, 2 at levels 3-4, 3 at level 5. */
     public static int lapisCost(int hutLevel) {
         return Math.min(3, 1 + (hutLevel - 1) / 2);
@@ -54,22 +60,22 @@ public class EnchanterGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the enchanting room");
+            citizen.setStatus(Status.of("going_enchanting_room"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the hut to be built");
+            citizen.setStatus(Status.of("waiting_hut_be_built"));
             return;
         }
         List<Container> storage = Storage.containers(level(), building);
-        int lapis = lapisCost(building.level());
+        int lapis = lapisCost(workLevel(building));
         if (Storage.count(storage, s -> s.is(Items.BOOK)) == 0 || Storage.count(storage, s -> s.is(Items.LAPIS_LAZULI)) < lapis) {
-            citizen.setStatus("Needs books and lapis lazuli");
+            citizen.setStatus(Status.of("needs_books_lapis_lazuli"));
             timer = 0;
             return;
         }
-        citizen.setStatus("Enchanting books");
+        citizen.setStatus(Status.of("enchanting_books"));
         if (++timer < breakDelay(WORK_TICKS)) {
             if (timer % 20 == 0) {
                 citizen.swing(InteractionHand.MAIN_HAND);
@@ -79,7 +85,7 @@ public class EnchanterGoal extends WorkGoal {
         }
         timer = 0;
         var enchantments = level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE);
-        ItemStack book = EnchantmentHelper.enchantItem(citizen.getRandom(), new ItemStack(Items.BOOK), power(building.level()),
+        ItemStack book = EnchantmentHelper.enchantItem(citizen.getRandom(), new ItemStack(Items.BOOK), power(workLevel(building)),
                 level().registryAccess(), enchantments);
         if (!book.is(Items.ENCHANTED_BOOK)) {
             return;

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -31,15 +32,15 @@ public class TeacherGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the school");
+            citizen.setStatus(Status.of("going_school_2"));
             return;
         }
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the school to be built");
+            citizen.setStatus(Status.of("waiting_school_be_built"));
             return;
         }
         long pupils = level().getEntitiesOfClass(CitizenEntity.class, new AABB(hut).inflate(6), CitizenEntity::isBaby).size();
-        citizen.setStatus(pupils == 0 ? "Waiting for pupils" : "Teaching " + pupils + (pupils == 1 ? " pupil" : " pupils"));
+        citizen.setStatus(pupils == 0 ? Status.of("waiting_for_pupils") : pupils == 1 ? Status.of("teaching_one") : Status.of("teaching", pupils));
         if (pupils > 0 && ++timer % 60 == 0) {
             citizen.swing(InteractionHand.MAIN_HAND);
         }

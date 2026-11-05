@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Crafting;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -47,12 +48,12 @@ public class ConcreteMixerGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the workshop");
+            citizen.setStatus(Status.of("going_workshop"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the workshop to be built");
+            citizen.setStatus(Status.of("waiting_workshop_be_built"));
             return;
         }
         if (++timer < breakDelay(WORK_TICKS)) {
@@ -63,10 +64,10 @@ public class ConcreteMixerGoal extends WorkGoal {
         }
         timer = 0;
         List<Container> storage = Storage.containers(level(), building);
-        if (setConcrete(storage, hut) || mixPowder(storage)) {
+        if ((dev.pikachux.hearthstead.colony.HutSettings.isOn(building, dev.pikachux.hearthstead.colony.HutSettings.SET_CONCRETE) && setConcrete(storage, hut)) || mixPowder(storage)) {
             return;
         }
-        citizen.setStatus("Needs sand, gravel and dye");
+        citizen.setStatus(Status.of("needs_sand_gravel_dye"));
     }
 
     /** Wets up to eight concrete powder into concrete. */
@@ -86,7 +87,7 @@ public class ConcreteMixerGoal extends WorkGoal {
                 Storage.insert(storage, new ItemStack(concrete, amount));
                 level().sendParticles(ParticleTypes.SPLASH, hut.getX() + 0.5, hut.getY() + 1, hut.getZ() + 0.5, 10, 0.3, 0.1, 0.3, 0);
                 level().playSound(null, hut, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6F, 1.0F);
-                citizen.setStatus("Setting concrete");
+                citizen.setStatus(Status.of("setting_concrete"));
                 return true;
             }
         }
@@ -117,7 +118,7 @@ public class ConcreteMixerGoal extends WorkGoal {
         Storage.extract(storage, s -> s.is(Items.GRAVEL), 4);
         Storage.extract(storage, s -> s.is(dye), 1);
         Storage.insert(storage, powder);
-        citizen.setStatus("Mixing concrete powder");
+        citizen.setStatus(Status.of("mixing_concrete_powder"));
         return true;
     }
 

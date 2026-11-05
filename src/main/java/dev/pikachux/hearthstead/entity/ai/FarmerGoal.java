@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.Research;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.blueprint.Blueprints;
@@ -68,12 +69,12 @@ public class FarmerGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
                 if (!equipTool(ItemTags.HOES)) {
-                    citizen.setStatus("Needs a hoe in the hut");
+                    citizen.setStatus(Status.of("needs_hoe_hut"));
                     state = State.IDLE;
                     timer = 200;
                     return;
@@ -87,16 +88,16 @@ public class FarmerGoal extends WorkGoal {
                     findTask(hut, building);
                     if (target == null) {
                         state = inventoryEmpty() ? State.IDLE : State.DEPOSIT;
-                        citizen.setStatus("Field is tended");
+                        citizen.setStatus(Status.of("field_is_tended"));
                         timer = 200;
                         return;
                     }
                 }
                 if (!walkTo(target, 2.5)) {
-                    citizen.setStatus("Walking to the field");
+                    citizen.setStatus(Status.of("walking_field"));
                     return;
                 }
-                citizen.setStatus("Farming");
+                citizen.setStatus(Status.of("farming"));
                 if (++timer < breakDelay(10)) {
                     return;
                 }
@@ -109,7 +110,7 @@ public class FarmerGoal extends WorkGoal {
             }
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing the harvest home");
+                    citizen.setStatus(Status.of("bringing_harvest_home"));
                     return;
                 }
                 depositAll();

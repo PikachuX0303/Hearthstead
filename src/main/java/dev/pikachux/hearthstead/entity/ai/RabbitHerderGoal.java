@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -42,12 +43,12 @@ public class RabbitHerderGoal extends HerderGoal<Rabbit> {
     }
 
     @Override
-    protected String workStatus() {
-        return "Culling the warren";
+    protected net.minecraft.network.chat.Component workStatus() {
+        return Status.of("culling_warren");
     }
 
     @Override
-    protected String missingToolStatus() {
-        return "Needs a sword or axe in the hut";
+    protected net.minecraft.network.chat.Component missingToolStatus() {
+        return Status.of("needs_sword_or_axe");
     }
 }

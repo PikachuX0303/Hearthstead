@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.CitizenData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -46,10 +47,10 @@ public class CitizenSleepGoal extends Goal {
         }
         if (citizen.blockPosition().closerToCenterThan(home.getCenter(), 3)) {
             citizen.getNavigation().stop();
-            citizen.setStatus("Sleeping");
+            citizen.setStatus(Status.of("sleeping"));
             return;
         }
-        citizen.setStatus("Going home to sleep");
+        citizen.setStatus(Status.of("going_home_sleep"));
         if (--pathCooldown <= 0) {
             pathCooldown = 40;
             citizen.getNavigation().moveTo(home.getX() + 0.5, home.getY(), home.getZ() + 0.5, 0.7);

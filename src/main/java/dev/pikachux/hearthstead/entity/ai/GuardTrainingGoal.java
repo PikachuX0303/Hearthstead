@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -74,10 +75,10 @@ public class GuardTrainingGoal extends WorkGoal {
         }
         boolean archery = ground.type() == BuildingType.ARCHERY;
         if (!walkTo(ground.pos(), 4)) {
-            citizen.setStatus(archery ? "Going to the archery" : "Going to the combat academy");
+            citizen.setStatus(archery ? Status.of("going_archery") : Status.of("going_combat_academy"));
             return;
         }
-        citizen.setStatus(archery ? "Training at the archery" : "Training at the combat academy");
+        citizen.setStatus(archery ? Status.of("training_at_archery") : Status.of("training_at_combat_academy"));
         if (++timer % 20 != 0) {
             return;
         }

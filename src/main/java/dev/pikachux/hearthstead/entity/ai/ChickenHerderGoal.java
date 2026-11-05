@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import net.minecraft.tags.ItemTags;
@@ -43,12 +44,12 @@ public class ChickenHerderGoal extends HerderGoal<Chicken> {
     }
 
     @Override
-    protected String workStatus() {
-        return "Gathering eggs";
+    protected net.minecraft.network.chat.Component workStatus() {
+        return Status.of("gathering_eggs");
     }
 
     @Override
-    protected String missingToolStatus() {
-        return "Tending the chickens";
+    protected net.minecraft.network.chat.Component missingToolStatus() {
+        return Status.of("tending_chickens");
     }
 }

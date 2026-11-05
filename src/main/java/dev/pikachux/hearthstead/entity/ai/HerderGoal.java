@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -49,9 +50,9 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
     /** Tends the animal. Returns true if items were dropped that should be picked up. */
     protected abstract boolean tend(T animal);
 
-    protected abstract String workStatus();
+    protected abstract net.minecraft.network.chat.Component workStatus();
 
-    protected abstract String missingToolStatus();
+    protected abstract net.minecraft.network.chat.Component missingToolStatus();
 
     /** Produce lying on the ground that the herder picks up (eggs, wool, ...). */
     protected boolean isLoot(ItemStack stack) {
@@ -103,7 +104,7 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the hut");
+                    citizen.setStatus(Status.of("going_hut"));
                     return;
                 }
                 depositAll();
@@ -132,7 +133,7 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
                     breeding = true;
                 }
                 if (target == null) {
-                    citizen.setStatus(herd.isEmpty() ? "No animals nearby" : canTend ? "Tending the herd" : missingToolStatus());
+                    citizen.setStatus(herd.isEmpty() ? Status.of("no_animals_nearby") : canTend ? Status.of("tending_herd") : missingToolStatus());
                     timer = 200;
                     state = inventoryEmpty() ? State.IDLE : State.DEPOSIT;
                     return;
@@ -145,7 +146,7 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
                     state = State.PREPARE;
                     return;
                 }
-                citizen.setStatus("Gathering produce");
+                citizen.setStatus(Status.of("gathering_produce"));
                 if (walkTo(loot.blockPosition(), 1.5) || ++timer > 600) {
                     collectNearbyItems(2);
                     state = State.PREPARE;
@@ -157,7 +158,7 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
                     return;
                 }
                 if (!walkTo(target.blockPosition(), 2.5)) {
-                    citizen.setStatus(breeding ? "Feeding the animals" : workStatus());
+                    citizen.setStatus(breeding ? Status.of("feeding_animals") : workStatus());
                     // Animals wander; pick a new target if this one takes too long to reach.
                     if (++timer > 600) {
                         state = State.PREPARE;
@@ -188,7 +189,7 @@ public abstract class HerderGoal<T extends Animal> extends WorkGoal {
             }
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing the produce home");
+                    citizen.setStatus(Status.of("bringing_produce_home"));
                     return;
                 }
                 depositAll();

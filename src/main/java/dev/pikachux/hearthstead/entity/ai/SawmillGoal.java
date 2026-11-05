@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
@@ -27,7 +28,6 @@ import java.util.List;
  * requested it keeps the warehouse stocked with planks.
  */
 public class SawmillGoal extends WorkGoal {
-    private static final int PLANKS_STOCK = 64;
     private static final int WORK_TICKS = 60;
 
     private int timer;
@@ -50,17 +50,17 @@ public class SawmillGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the sawmill");
+            citizen.setStatus(Status.of("going_sawmill"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the sawmill to be built");
+            citizen.setStatus(Status.of("waiting_sawmill_be_built"));
             return;
         }
         List<Container> storage = Storage.containers(level(), building);
         if (Storage.count(storage, s -> s.is(ItemTags.LOGS)) == 0 && building.recipes().isEmpty()) {
-            citizen.setStatus("Needs logs");
+            citizen.setStatus(Status.of("needs_logs"));
             timer = 0;
             return;
         }
@@ -88,7 +88,7 @@ public class SawmillGoal extends WorkGoal {
                         : dev.pikachux.hearthstead.colony.Crafting.craftFromStorage(level(), storage, item);
             }
         }
-        if (made.isEmpty() && warehousePlanks(colony) < PLANKS_STOCK) {
+        if (made.isEmpty() && warehousePlanks(colony) < dev.pikachux.hearthstead.colony.HutSettings.sparePlanks(building)) {
             for (Container container : storage) {
                 for (int i = 0; i < container.getContainerSize() && made.isEmpty(); i++) {
                     ItemStack stack = container.getItem(i);
@@ -99,10 +99,10 @@ public class SawmillGoal extends WorkGoal {
             }
         }
         if (made.isEmpty()) {
-            citizen.setStatus("Nothing to saw right now");
+            citizen.setStatus(Status.of("nothing_saw_right_now"));
             return;
         }
-        citizen.setStatus("Sawing " + made.getHoverName().getString());
+        citizen.setStatus(Status.of("sawing", made.getHoverName()));
         level().playSound(null, hut, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 0.6F, 1.0F);
     }
 

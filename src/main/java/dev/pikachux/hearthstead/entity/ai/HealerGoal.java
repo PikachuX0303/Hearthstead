@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.JobType;
@@ -56,14 +57,14 @@ public class HealerGoal extends WorkGoal {
             colony.broadcast(level().getServer(), Component.translatable("message.hearthstead.cured", citizen.data().name(),
                     patient.data().name(), Component.translatable("illness.hearthstead." + illness.id()))
                     .withStyle(ChatFormatting.GREEN));
-            citizen.setStatus("Cured " + patient.data().name());
+            citizen.setStatus(Status.of("cured", patient.data().name()));
         }
         return cured;
     }
 
-    private String waitingForCures(BuildingData building, Colony colony) {
+    private net.minecraft.network.chat.Component waitingForCures(BuildingData building, Colony colony) {
         long sick = colony.citizens().stream().filter(c -> c.sick()).count();
-        return sick == 0 ? "No one needs care" : "Waiting for cures for " + sick + (sick == 1 ? " sick citizen" : " sick citizens");
+        return sick == 0 ? Status.of("no_one_needs_care") : sick == 1 ? Status.of("waiting_for_cure") : Status.of("waiting_for_cures", sick);
     }
 
     /** Health restored per treatment: 2, plus 1 for every two hut levels. */
@@ -85,22 +86,24 @@ public class HealerGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the hospital");
+            citizen.setStatus(Status.of("going_hospital"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the hospital to be built");
+            citizen.setStatus(Status.of("waiting_hospital_be_built"));
             return;
         }
         if (++timer < breakDelay(TREAT_TICKS)) {
             return;
         }
         timer = 0;
-        int cured = cure(building, colony);
+        String treat = dev.pikachux.hearthstead.colony.HutSettings.get(building, dev.pikachux.hearthstead.colony.HutSettings.TREAT);
+        int cured = "wounds".equals(treat) ? 0 : cure(building, colony);
         List<CitizenEntity> patients = level().getEntitiesOfClass(CitizenEntity.class,
                 new AABB(hut).inflate(building.workRadius()),
-                other -> other != citizen && other.isAlive() && other.getHealth() < other.getMaxHealth() && other.colony() == colony);
+                other -> !"cures".equals(treat) && other != citizen && other.isAlive() && other.getHealth() < other.getMaxHealth()
+                        && other.colony() == colony);
         if (patients.isEmpty()) {
             if (cured == 0) {
                 citizen.setStatus(waitingForCures(building, colony));
@@ -112,6 +115,6 @@ public class HealerGoal extends WorkGoal {
             level().sendParticles(ParticleTypes.HEART, patient.getX(), patient.getY() + 2, patient.getZ(), 2, 0.3, 0.2, 0.3, 0);
         }
         citizen.swing(InteractionHand.MAIN_HAND);
-        citizen.setStatus("Tending to " + patients.size() + (patients.size() == 1 ? " patient" : " patients"));
+        citizen.setStatus(patients.size() == 1 ? Status.of("tending_patient") : Status.of("tending_patients", patients.size()));
     }
 }

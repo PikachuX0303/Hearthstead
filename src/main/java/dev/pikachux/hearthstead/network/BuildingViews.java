@@ -52,7 +52,7 @@ public final class BuildingViews {
         long residents = colony.citizens().stream().filter(c -> building.pos().equals(c.homePos())).count();
         List<BuildingViewPayload.Worker> workers = colony.citizens().stream()
                 .filter(c -> building.pos().equals(c.workPos()))
-                .map(c -> new BuildingViewPayload.Worker(c.name(), CitizenEntity.roleKey(colony, c), c.status()))
+                .map(c -> new BuildingViewPayload.Worker(c.name(), CitizenEntity.roleKey(colony, c), c.statusComponent()))
                 .toList();
 
         WorkOrder order = colony.workOrder(building.pos());
@@ -101,7 +101,7 @@ public final class BuildingViews {
         if (type == BuildingType.TOWN_HALL) {
             List<BuildingViewPayload.Citizen> citizens = colony.citizens().stream()
                     .map(c -> new BuildingViewPayload.Citizen(c.id(), c.name(), CitizenEntity.roleKey(colony, c),
-                            (float) c.happiness(), (float) c.saturation(), c.status()))
+                            (float) c.happiness(), (float) c.saturation(), c.statusComponent()))
                     .toList();
             List<BuildingViewPayload.WorkOrderEntry> orders = colony.workOrders().stream()
                     .map(o -> new BuildingViewPayload.WorkOrderEntry(BuildingInfo.describeComponent(colony, o), o.builder() != null,
@@ -236,7 +236,7 @@ public final class BuildingViews {
         }
         ServerPlayNetworking.send(player, new CitizenViewPayload(entity.getId(), data.name(), CitizenEntity.roleKey(entity.colony(), data),
                 entity.getHealth(), entity.getMaxHealth(), (float) data.saturation(), (float) CitizenData.MAX_SATURATION,
-                (float) data.happiness(), data.status(), describe(entity.colony(), data.homePos()),
+                (float) data.happiness(), data.statusComponent(), describe(entity.colony(), data.homePos()),
                 describe(entity.colony(), data.workPos()), entity.getMainHandItem().copy(), inventory,
                 java.util.Arrays.stream(dev.pikachux.hearthstead.colony.Skill.values()).map(data::skill).toList(),
                 dev.pikachux.hearthstead.colony.Skill.primary(data.job()) == null ? -1

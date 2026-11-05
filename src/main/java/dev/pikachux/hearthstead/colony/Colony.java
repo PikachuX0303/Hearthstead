@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.colony;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
 import dev.pikachux.hearthstead.registry.ModEntities;
@@ -210,7 +211,9 @@ public class Colony {
                     || Storage.count(Storage.containers(level, building), s -> s.is(net.minecraft.world.item.Items.BOOK)) == 0) {
                 continue;
             }
-            best = Math.max(best, 1 + 0.25 * building.level());
+            // A library set to save books lends half as much.
+            double perLevel = "thrifty".equals(HutSettings.get(building, HutSettings.BOOK_USE)) ? 0.125 : 0.25;
+            best = Math.max(best, 1 + perLevel * building.level());
         }
         return best;
     }
@@ -220,7 +223,8 @@ public class Colony {
     public BuildingData trainingGround(BuildingType type) {
         BuildingData best = null;
         for (BuildingData building : buildings.values()) {
-            if (building.type() == type && building.level() > 0 && (best == null || building.level() > best.level())) {
+            if (building.type() == type && building.level() > 0 && HutSettings.isOn(building, HutSettings.TRAINING)
+                    && (best == null || building.level() > best.level())) {
                 best = building;
             }
         }
@@ -298,7 +302,7 @@ public class Colony {
             // Removals and repairs need no skill beyond a level 1 builder's hut.
             int needed = order.kind() == WorkOrder.Kind.BUILD ? order.targetLevel() : 1;
             boolean orphan = target == null && !order.isDecoration() && order.kind() != WorkOrder.Kind.REMOVE;
-            if (order.builder() != null || orphan || needed > maxLevel) {
+            if (order.builder() != null || orphan || needed > maxLevel || !HutSettings.builderTakes(builderHut, order)) {
                 continue;
             }
             if (best == null || (target != null && target.type() == BuildingType.BUILDER && !isBuilderHutOrder(best))) {
@@ -639,7 +643,7 @@ public class Colony {
         boolean armed = !Storage.extract(storage, s -> s.is(net.minecraft.tags.ItemTags.SWORDS), 1).isEmpty();
         long day = level.getDayTime() / 24000;
         visitor.startExpedition(day + 1, armed);
-        visitor.setStatus("Away on an expedition (back tomorrow morning)");
+        visitor.setStatus(Status.of("away_on_expedition_back_tomorrow_morning"));
         if (visitor.entityUuid() != null && level.getEntity(visitor.entityUuid()) != null) {
             level.getEntity(visitor.entityUuid()).discard();
         }
@@ -735,7 +739,9 @@ public class Colony {
     }
 
     private void growChildren(ServerLevel level) {
-        int rate = hasStaffed(BuildingType.SCHOOL) ? 2 : 1;
+        boolean school = buildings.values().stream().anyMatch(b -> b.type() == BuildingType.SCHOOL && b.level() > 0
+                && HutSettings.isOn(b, HutSettings.GROW_FASTER) && citizens.values().stream().anyMatch(c -> b.pos().equals(c.workPos())));
+        int rate = school ? 2 : 1;
         for (CitizenData citizen : citizens.values()) {
             if (citizen.child() && citizen.grow(rate)) {
                 broadcast(level.getServer(), Component.translatable("message.hearthstead.grown_up", citizen.name(), name)
@@ -804,7 +810,8 @@ public class Colony {
         }
         CitizenData data = dead.removeFirst();
         CitizenData revived = null;
-        if (level.getRandom().nextFloat() < 0.04F * graveyard.level() && residents() < housingCapacity()) {
+        if (HutSettings.isOn(graveyard, HutSettings.REVIVE) && level.getRandom().nextFloat() < 0.04F * graveyard.level()
+                && residents() < housingCapacity()) {
             data.setEntityUuid(null);
             data.setHomePos(null);
             data.assignJob(JobType.UNEMPLOYED, null);

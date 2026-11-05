@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.HutSettings;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.colony.Logistics;
@@ -11,7 +12,7 @@ import dev.pikachux.hearthstead.entity.CitizenEntity;
  */
 public class CookGoal extends FurnaceWorkerGoal {
     public CookGoal(CitizenEntity citizen) {
-        super(citizen, JobType.COOK, Logistics::isRawFood, Logistics::isCookFuel, "Cooking", "Needs raw food to cook");
+        super(citizen, JobType.COOK, Logistics::isRawFood, Logistics::isCookFuel, Status.of("cooking"), Status.of("needs_raw_food"));
     }
 
     @Override

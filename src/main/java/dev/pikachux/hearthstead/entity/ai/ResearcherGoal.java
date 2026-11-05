@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.config.HearthsteadConfig;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.Colony;
@@ -35,20 +36,29 @@ public class ResearcherGoal extends WorkGoal {
             return;
         }
         if (!walkTo(hut, 3)) {
-            citizen.setStatus("Going to the university");
+            citizen.setStatus(Status.of("going_university"));
             return;
         }
         depositAll();
         if (building.level() == 0) {
-            citizen.setStatus("Waiting for the university to be built");
+            citizen.setStatus(Status.of("waiting_university_be_built"));
             return;
         }
         Research active = colony.research().active();
+        if (active == null && "auto".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building, dev.pikachux.hearthstead.colony.HutSettings.NEXT_RESEARCH))) {
+            // Start the first research the university has the materials for.
+            for (Research next : Research.values()) {
+                if (colony.research().start(level(), colony, building, next) == null) {
+                    active = next;
+                    break;
+                }
+            }
+        }
         if (active == null) {
-            citizen.setStatus("Waiting for a research to be started");
+            citizen.setStatus(Status.of("waiting_research_be_started"));
             return;
         }
-        citizen.setStatus("Researching " + Component.translatable(active.nameKey()).getString());
+        citizen.setStatus(Status.of("researching", Component.translatable(active.nameKey())));
         if (++timer % 20 != 0) {
             return;
         }

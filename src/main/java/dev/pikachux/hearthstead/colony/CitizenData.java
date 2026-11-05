@@ -37,7 +37,7 @@ public class CitizenData {
     private BlockPos homePos;
     private double saturation = MAX_SATURATION;
     private double happiness = 5.0;
-    private String status = "Idle";
+    private net.minecraft.network.chat.Component status = dev.pikachux.hearthstead.entity.Status.IDLE;
     /** Children grow up after {@link #GROW_UP_SECONDS}; they do not work. */
     private boolean child;
     private int ageSeconds;
@@ -143,11 +143,17 @@ public class CitizenData {
         this.happiness = Math.max(0, Math.min(10, happiness));
     }
 
+    /** The status line in the server's language (English on a dedicated server); for logs and tests. */
     public String status() {
+        return status.getString();
+    }
+
+    /** The status line, translated by each player's game. */
+    public net.minecraft.network.chat.Component statusComponent() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(net.minecraft.network.chat.Component status) {
         this.status = status;
     }
 

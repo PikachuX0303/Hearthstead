@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -49,7 +50,7 @@ public class CitizenEatGoal extends Goal {
         }
         foodSource = findFoodSource(data);
         if (foodSource == null) {
-            citizen.setStatus("Hungry - no food in the colony");
+            citizen.setStatus(Status.of("hungry_no_food_colony"));
             cooldown = 200;
             return false;
         }
@@ -98,7 +99,7 @@ public class CitizenEatGoal extends Goal {
             return;
         }
         if (!citizen.blockPosition().closerToCenterThan(foodSource.getCenter(), 3)) {
-            citizen.setStatus("Looking for food");
+            citizen.setStatus(Status.of("looking_food"));
             if (--pathCooldown <= 0) {
                 pathCooldown = 20;
                 citizen.getNavigation().moveTo(foodSource.getX() + 0.5, foodSource.getY(), foodSource.getZ() + 0.5, 0.8);
@@ -122,7 +123,7 @@ public class CitizenEatGoal extends Goal {
                     citizen.playSound(SoundEvents.GENERIC_EAT.value(), 1.0F, 1.0F);
                 }
             }
-            citizen.setStatus("Ate a meal");
+            citizen.setStatus(Status.of("ate_meal"));
         }
         foodSource = null;
     }

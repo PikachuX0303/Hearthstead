@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.Crafters;
 import dev.pikachux.hearthstead.colony.Colony;
 import dev.pikachux.hearthstead.colony.Glasswork;
@@ -19,19 +20,19 @@ import java.util.List;
  */
 public class GlassblowerGoal extends FurnaceWorkerGoal {
     public GlassblowerGoal(CitizenEntity citizen) {
-        super(citizen, JobType.GLASSBLOWER, Logistics::isSand, Logistics::isCookFuel, "Blowing glass", "Needs sand");
+        super(citizen, JobType.GLASSBLOWER, Logistics::isSand, Logistics::isCookFuel, Status.of("blowing_glass"), Status.of("needs_sand"));
     }
 
     @Override
     protected void workAtHut(List<Container> storage) {
         Colony colony = citizen.colony();
-        if (colony == null) {
+        if (colony == null || !dev.pikachux.hearthstead.colony.HutSettings.isOn(building(), dev.pikachux.hearthstead.colony.HutSettings.GLASSWORK)) {
             return;
         }
         for (Item wanted : Logistics.shortages(level(), colony, Crafters::isGlassProduct, storage)) {
             ItemStack made = Glasswork.craft(level(), storage, wanted);
             if (!made.isEmpty()) {
-                citizen.setStatus("Making " + made.getHoverName().getString());
+                citizen.setStatus(Status.of("making", made.getHoverName()));
                 return;
             }
         }

@@ -316,7 +316,7 @@ public class CitizenEntity extends PathfinderMob {
         return inventory;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Component status) {
         CitizenData data = data();
         if (data != null) {
             data.setStatus(status);

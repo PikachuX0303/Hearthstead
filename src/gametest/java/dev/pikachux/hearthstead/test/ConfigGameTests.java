@@ -105,7 +105,8 @@ public class ConfigGameTests {
             }
             language.keySet().stream().filter(key -> !english.has(key)).forEach(key -> problems.add(code + " has extra " + key));
         }
-        check(helper, problems.isEmpty(), "complete translations, got " + problems);
+        check(helper, problems.isEmpty(), "complete translations, got " + problems.size() + " problems: "
+                + problems.subList(0, Math.min(20, problems.size())));
         helper.succeed();
     }
 

@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.JobType;
 import dev.pikachux.hearthstead.entity.CitizenEntity;
@@ -51,20 +52,23 @@ public class BeekeeperGoal extends WorkGoal {
         switch (state) {
             case PREPARE -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Going to the apiary");
+                    citizen.setStatus(Status.of("going_apiary"));
                     return;
                 }
                 depositAll();
                 boolean shears = equipTool(s -> s.is(Items.SHEARS));
-                takeFromHut(s -> s.is(Items.GLASS_BOTTLE), 8);
-                if (!shears && citizen.inventory().countItem(Items.GLASS_BOTTLE) == 0) {
-                    citizen.setStatus("Needs shears or glass bottles in the hut");
+                boolean bottles = !"comb".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building, dev.pikachux.hearthstead.colony.HutSettings.HONEY));
+                if (bottles) {
+                    takeFromHut(s -> s.is(Items.GLASS_BOTTLE), 8);
+                }
+                if (!shears && (!bottles || citizen.inventory().countItem(Items.GLASS_BOTTLE) == 0)) {
+                    citizen.setStatus(Status.of("needs_shears_or_glass_bottles_hut"));
                     idle(200);
                     return;
                 }
                 hive = findFullHive(hut, building.workRadius());
                 if (hive == null) {
-                    citizen.setStatus("Waiting for the bees to make honey");
+                    citizen.setStatus(Status.of("waiting_bees_make_honey"));
                     idle(200);
                     return;
                 }
@@ -76,7 +80,7 @@ public class BeekeeperGoal extends WorkGoal {
                     return;
                 }
                 if (!walkTo(hive, 2.5)) {
-                    citizen.setStatus("Walking to a hive");
+                    citizen.setStatus(Status.of("walking_hive"));
                     return;
                 }
                 boolean dropped = harvest(level().getBlockState(hive));
@@ -86,7 +90,7 @@ public class BeekeeperGoal extends WorkGoal {
                 state = dropped ? State.COLLECT : State.DEPOSIT;
             }
             case COLLECT -> {
-                citizen.setStatus("Gathering honeycomb");
+                citizen.setStatus(Status.of("gathering_honeycomb"));
                 if (--timer > 0) {
                     return;
                 }
@@ -95,7 +99,7 @@ public class BeekeeperGoal extends WorkGoal {
             }
             case DEPOSIT -> {
                 if (!walkTo(hut, 3)) {
-                    citizen.setStatus("Bringing honey home");
+                    citizen.setStatus(Status.of("bringing_honey_home"));
                     return;
                 }
                 depositAll();
@@ -117,7 +121,8 @@ public class BeekeeperGoal extends WorkGoal {
         }
         boolean dropped = false;
         citizen.swing(InteractionHand.MAIN_HAND);
-        if (citizen.inventory().countItem(Items.GLASS_BOTTLE) > 0) {
+        boolean bottles = !"comb".equals(dev.pikachux.hearthstead.colony.HutSettings.get(building(), dev.pikachux.hearthstead.colony.HutSettings.HONEY));
+        if (bottles && citizen.inventory().countItem(Items.GLASS_BOTTLE) > 0) {
             for (int i = 0; i < citizen.inventory().getContainerSize(); i++) {
                 if (citizen.inventory().getItem(i).is(Items.GLASS_BOTTLE)) {
                     citizen.inventory().getItem(i).shrink(1);

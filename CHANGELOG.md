@@ -6,6 +6,37 @@ Versions follow [Semantic Versioning](https://semver.org/). The Minecraft versio
 part of the build metadata (for example, `0.45.0-beta+1.21.11`). Versions up to 0.44.0 were
 alpha releases.
 
+## [0.46.0-beta] - 2026-11-05
+
+### Added
+- **Settings for every hut with a worker**, plus the Tavern, Combat Academy and Archery:
+  - Builder's Hut: which work orders to take (all, building only, repairs & removals only).
+  - Deliveryman's Hut: empty worker huts early or only when they are full.
+  - Fisherman's Hut: keep everything or only fish.
+  - Bakery: bake bread, cookies (wheat and cocoa beans) or pumpkin pie (pumpkin, sugar, egg).
+  - University: start the next research automatically once its materials are in.
+  - Composter: plant waste or only leaves and saplings.
+  - Sawmill and Stonemason: how many spare planks or stone bricks to keep in the warehouse.
+  - Florist: pick flowers or only grow them. Dyer: make dyes when idle or not.
+  - Apiary: honey bottles or honeycomb. Glassblower: make panes and stained glass or only glass.
+  - Concrete Mixer: set concrete or leave the powder dry. Planter: which plants to spread.
+  - Alchemist: splash potions with gunpowder. Enchanter: strongest enchantments or save lapis.
+  - Mechanic, Blacksmith and Fletcher: make goods for huts or only taught recipes; the Blacksmith
+    also chooses its material (best, no diamond, stone first).
+  - Nether Mine: expeditions on or off. Stone Smeltery: what to smelt.
+  - Hospital: heal wounds, cure illness or both. Quarry: a smaller pit.
+  - Library: save books. School: faster growing on or off. Graveyard: revival on or off.
+  - Tavern: visitors on or off. Combat Academy and Archery: training on or off.
+- Game tests for the new settings, and a client screenshot of the Blacksmith's Settings tab.
+
+### Changed
+- **Citizen status lines are translated** into all 13 languages, in the hut, town hall and
+  citizen windows and in `/hs citizens`.
+- **Command output is translated**: `/hs info`, `list`, `citizens`, `rename`, `addofficer`,
+  `removeofficer`, `workorders`, `research complete` and `delete`.
+- Settings rows in a hut window are as tall as their description needs, so long translations no
+  longer overlap the next setting.
+
 ## [0.45.0-beta] - 2026-11-03
 
 ### Changed

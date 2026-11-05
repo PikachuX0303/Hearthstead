@@ -325,6 +325,22 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.takeScreenshot("postbox_orders");
             context.setScreen(() -> null);
 
+            // A blacksmith's Settings tab: two settings.
+            BlockPos smithyPos = singleplayer.getServer().computeOnServer(server -> {
+                ServerLevel level = player(server).level();
+                BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, previewPos.offset(-10, 0, 4));
+                level.setBlockAndUpdate(pos, ModBlocks.HUTS.get(BuildingType.BLACKSMITH).defaultBlockState());
+                Colony colony = ColonyManager.get(server).colonyAt(level.dimension(), pos);
+                colony.addBuilding(new BuildingData(pos, BuildingType.BLACKSMITH, 1));
+                return pos;
+            });
+            singleplayer.getServer().runOnServer(server -> open(server, smithyPos));
+            context.waitForScreen(BuildingScreen.class);
+            context.clickScreenButton("gui.hearthstead.tab.settings");
+            context.waitTicks(5);
+            context.takeScreenshot("blacksmith_settings");
+            context.setScreen(() -> null);
+
             // A sawmill taught two recipes: its Recipes tab.
             BlockPos sawmillPos = singleplayer.getServer().computeOnServer(server -> {
                 ServerLevel level = player(server).level();

@@ -57,13 +57,13 @@ public record BuildingViewPayload(
 
     private static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_CODEC = ByteBufCodecs.registry(Registries.ITEM);
 
-    public record Worker(String name, String job, String status) {
+    public record Worker(String name, String job, net.minecraft.network.chat.Component status) {
     }
 
     public record Material(Item item, int needed, int available) {
     }
 
-    public record Citizen(int id, String name, String job, float happiness, float saturation, String status) {
+    public record Citizen(int id, String name, String job, float happiness, float saturation, net.minecraft.network.chat.Component status) {
     }
 
     /** A work order in the town hall's list; {@code decoration} holds a decoration's anchor so it can be cancelled. */
@@ -116,7 +116,7 @@ public record BuildingViewPayload(
         writeList(buf, workers, (b, w) -> {
             b.writeUtf(w.name());
             b.writeUtf(w.job());
-            b.writeUtf(w.status());
+            net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(b, w.status());
         });
         buf.writeBoolean(hasOrder);
         buf.writeVarInt(orderLevel);
@@ -176,7 +176,7 @@ public record BuildingViewPayload(
                 b.writeUtf(c.job());
                 b.writeFloat(c.happiness());
                 b.writeFloat(c.saturation());
-                b.writeUtf(c.status());
+                net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(b, c.status());
             });
             writeList(buf, colony.workOrders(), (b, o) -> {
                 net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.encode(b, o.description());
@@ -203,7 +203,7 @@ public record BuildingViewPayload(
         String colonyName = buf.readUtf();
         int residents = buf.readVarInt();
         int housing = buf.readVarInt();
-        List<Worker> workers = readList(buf, b -> new Worker(b.readUtf(), b.readUtf(), b.readUtf()));
+        List<Worker> workers = readList(buf, b -> new Worker(b.readUtf(), b.readUtf(), net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(b)));
         boolean hasOrder = buf.readBoolean();
         int orderLevel = buf.readVarInt();
         boolean orderAssigned = buf.readBoolean();
@@ -232,7 +232,7 @@ public record BuildingViewPayload(
             int buildingCount = buf.readVarInt();
             boolean isOwner = buf.readBoolean();
             List<Citizen> citizens = readList(buf, b -> new Citizen(b.readVarInt(), b.readUtf(), b.readUtf(),
-                    b.readFloat(), b.readFloat(), b.readUtf()));
+                    b.readFloat(), b.readFloat(), net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(b)));
             List<WorkOrderEntry> orders = readList(buf, b -> new WorkOrderEntry(net.minecraft.network.chat.ComponentSerialization.STREAM_CODEC.decode(b), b.readBoolean(),
                     b.readOptional(b2 -> b2.readBlockPos())));
             boolean raidsEnabled = buf.readBoolean();

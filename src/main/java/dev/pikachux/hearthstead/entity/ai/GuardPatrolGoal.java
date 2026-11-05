@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.block.HutBlockEntity;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -67,7 +68,7 @@ public class GuardPatrolGoal extends WorkGoal {
             // Fetch the class's gear from the building first; without it they still do their duty.
             if (!nearTower) {
                 walkTo(tower, 3);
-                citizen.setStatus("Fetching gear from the " + (post == null ? "tower" : post.type().displayName()));
+                citizen.setStatus(Status.of("fetching_gear", hutName(post)));
                 return;
             }
             equip(kind);
@@ -82,8 +83,9 @@ public class GuardPatrolGoal extends WorkGoal {
             default -> patrol(tower);
         }
         CitizenData data = citizen.data();
-        if (!equipped(kind) && data != null && data.status().startsWith("Patrolling")) {
-            citizen.setStatus(data.status() + " (" + missingGear(kind) + ")");
+        String current = data == null ? null : Status.key(data.statusComponent());
+        if (!equipped(kind) && current != null && current.startsWith("patrolling")) {
+            citizen.setStatus(Status.of("with_note", data.statusComponent(), Status.of(missingGear(kind))));
         }
     }
 
@@ -118,11 +120,16 @@ public class GuardPatrolGoal extends WorkGoal {
         return false;
     }
 
+    /** The guard's post, for status lines ("Holding the Guard Tower"). */
+    private static net.minecraft.network.chat.Component hutName(@org.jetbrains.annotations.Nullable dev.pikachux.hearthstead.colony.BuildingData post) {
+        return (post == null ? dev.pikachux.hearthstead.colony.BuildingType.GUARD_TOWER : post.type()).nameComponent();
+    }
+
     private static String missingGear(Guards.Kind kind) {
         return switch (kind) {
-            case KNIGHT -> "a sword and shield in the building would help";
-            case RANGER -> "needs a bow and arrows";
-            case DRUID -> "needs nether wart for potions";
+            case KNIGHT -> "gear_knight";
+            case RANGER -> "gear_ranger";
+            case DRUID -> "gear_druid";
         };
     }
 
@@ -187,7 +194,7 @@ public class GuardPatrolGoal extends WorkGoal {
     // ---------------------------------------------------------------- orders
 
     private void patrol(BlockPos tower) {
-        citizen.setStatus("Patrolling");
+        citizen.setStatus(Status.of("patrolling"));
         if (patrolTarget == null || walkTo(patrolTarget, 2) || --timer <= 0) {
             int radius = 6 + (building() == null ? 0 : building().level() * 3);
             patrolTarget = tower.offset(citizen.getRandom().nextInt(radius * 2 + 1) - radius, 0,
@@ -199,7 +206,7 @@ public class GuardPatrolGoal extends WorkGoal {
     /** Walks from one hut of the colony to another. */
     private void patrolColony(BlockPos tower) {
         Colony colony = citizen.colony();
-        citizen.setStatus("Patrolling the colony");
+        citizen.setStatus(Status.of("patrolling_colony"));
         if (patrolTarget == null || walkTo(patrolTarget, 3) || --timer <= 0) {
             List<BlockPos> huts = new ArrayList<>();
             if (colony != null) {
@@ -212,7 +219,7 @@ public class GuardPatrolGoal extends WorkGoal {
     }
 
     private void hold(BlockPos tower) {
-        citizen.setStatus("Holding the " + (building() == null ? "tower" : building().type().displayName()));
+        citizen.setStatus(Status.of("holding", hutName(building())));
         walkTo(tower, 2.5);
     }
 
@@ -220,10 +227,10 @@ public class GuardPatrolGoal extends WorkGoal {
         ServerPlayer player = followed(citizen);
         if (player == null) {
             hold(tower);
-            citizen.setStatus("Holding (no colony member nearby to follow)");
+            citizen.setStatus(Status.of("holding_no_colony_member_nearby_follow"));
             return;
         }
-        citizen.setStatus("Following " + player.getName().getString());
+        citizen.setStatus(Status.of("following", player.getName()));
         if (citizen.distanceTo(player) > FOLLOW_DISTANCE) {
             citizen.getNavigation().moveTo(player, 1.1);
         } else {

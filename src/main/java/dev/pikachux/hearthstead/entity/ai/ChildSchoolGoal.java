@@ -1,5 +1,6 @@
 package dev.pikachux.hearthstead.entity.ai;
 
+import dev.pikachux.hearthstead.entity.Status;
 import dev.pikachux.hearthstead.colony.BuildingData;
 import dev.pikachux.hearthstead.colony.BuildingType;
 import dev.pikachux.hearthstead.colony.CitizenData;
@@ -60,10 +61,10 @@ public class ChildSchoolGoal extends WorkGoal {
             return;
         }
         if (!walkTo(school.pos(), 4)) {
-            data.setStatus("Going to school");
+            data.setStatus(Status.of("going_school"));
             return;
         }
-        data.setStatus("At school");
+        data.setStatus(Status.of("at_school"));
         if (++timer % 20 == 0) {
             Skill[] skills = Skill.values();
             Skill skill = skills[citizen.getRandom().nextInt(skills.length - 1)]; // anything but Marksmanship
