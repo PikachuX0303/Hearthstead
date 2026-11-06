@@ -96,8 +96,4 @@ jar {
     from("LICENSE") {
         rename { "${it}_${inputs.properties.archivesName}" }
     }
-    // Credits and license of the MineColonies building blueprints.
-    from("NOTICE.md") {
-        rename { "NOTICE_${inputs.properties.archivesName}.md" }
-    }
 }

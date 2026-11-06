@@ -69,26 +69,22 @@ public class BuilderJobGameTests {
         ServerLevel level = helper.getLevel();
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
         BuildingData builder = TestColonies.hut(helper, colony, new BlockPos(18, 1, 18), BuildingType.BUILDER, 1);
-        // The stash: a small building of Hearthstead's own, so the test is about taking a hut down.
-        BuildingData baker = TestColonies.hut(helper, colony, new BlockPos(6, 1, 7), BuildingType.STASH, 1);
+        BuildingData baker = TestColonies.hut(helper, colony, new BlockPos(6, 1, 7), BuildingType.BAKER, 1);
         BlockPos hut = baker.pos();
         ((HutBlockEntity) level.getBlockEntity(hut)).setItem(0, new ItemStack(Items.WHEAT, 7));
         check(helper, "message.hearthstead.cannot_demolish_townhall".equals(BuildingInfo.requestDemolish(level, colony,
                 colony.building(colony.center()))), "the town hall to stay");
         check(helper, BuildingInfo.requestDemolish(level, colony, baker) == null, "the deconstruction to be ordered");
-        // A block of the stash's walls, one layer above the hut block.
-        BlockPos corner = dev.pikachux.hearthstead.blueprint.Construction.plan(level, baker, 1).stream()
-                .filter(p -> p.pos().getY() == hut.getY() + 1 && !p.state().isAir() && !p.pos().equals(hut))
-                .map(dev.pikachux.hearthstead.blueprint.Blueprint.Placement::pos).findFirst().orElse(hut.above());
-        check(helper, !level.getBlockState(corner).isAir(), "a wall block before");
+        BlockPos corner = hut.offset(-3, 1, -3);
+        check(helper, !level.getBlockState(corner).isAir(), "a wall corner before");
         colony.addNewCitizen(level);
         helper.succeedWhen(() -> {
-            check(helper, colony.building(hut) == null && level.getBlockState(hut).isAir(), "the stash to be gone");
+            check(helper, colony.building(hut) == null && level.getBlockState(hut).isAir(), "the bakery to be gone");
             check(helper, level.getBlockState(corner).isAir(), "its walls to be gone");
             check(helper, !level.getBlockState(hut.below()).isAir(), "its floor to stay");
-            check(helper, TestColonies.count(helper, builder, ModBlocks.HUTS.get(BuildingType.STASH).asItem()) == 1,
+            check(helper, TestColonies.count(helper, builder, ModBlocks.HUTS.get(BuildingType.BAKER).asItem()) == 1,
                     "the hut block in the builder's hut");
-            check(helper, TestColonies.count(helper, builder, Items.WHEAT) == 7, "the stash's wheat in the builder's hut");
+            check(helper, TestColonies.count(helper, builder, Items.WHEAT) == 7, "the bakery's wheat in the builder's hut");
         });
     }
 

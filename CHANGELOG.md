@@ -6,36 +6,6 @@ Versions follow [Semantic Versioning](https://semver.org/). The Minecraft versio
 part of the build metadata (for example, `0.45.0-beta+1.21.11`). Versions up to 0.44.0 were
 alpha releases.
 
-## [0.47.0-beta] - 2026-11-06
-
-### Changed
-- **New buildings: the MineColonies style packs.** Every hut's blueprints now come from the 23
-  MineColonies style packs, by the LDT Team and the style pack builders (GPL-3.0), and every
-  pack is a building style: Original (the classic style), Urban Savanna, Ancient Athens, Urban
-  Birch, Caledonia, Cavern, Colonial, Dark Oak Treehouse, Fortress, Incan, Jungle Treehouse, Lost
-  Mesa City, Medieval Birch, Medieval Dark Oak, Medieval Oak, Medieval Spruce, Nordic Spruce,
-  Pagoda, Desert Oasis, Shire, Space Wars, Stalactite Caves and Warped Netherlands.
-- The blueprints were converted to vanilla blocks (`tools/import_blueprints.py`): MineColonies and
-  Domum Ornamentum blocks became the vanilla stairs, slabs, trapdoors, doors, panes and blocks of
-  their material, racks became barrels and compost barrels composters.
-- Buildings are much larger than before: a level 1 hut needs from a few hundred to a few thousand
-  blocks.
-- The Quarry, Stash and Postbox keep Hearthstead's own buildings (MineColonies has none), and the
-  Tavern keeps its level 3 building at levels 4 and 5.
-- Worlds from earlier versions keep their buildings. Their Medieval, Desert and Timber styles become
-  Medieval Oak, Desert Oasis and Medieval Dark Oak (Nordic stays Nordic Spruce); the next upgrade or
-  repair builds the new design.
-- Decorations come in the Original, Medieval Oak, Desert Oasis, Nordic Spruce and Medieval Dark Oak
-  looks; other styles use the Original one.
-- Style names are translated into all 13 languages and fit the Build Tool and hut window.
-- Hearthstead is now distributed under GPL-3.0-only, as MineColonies' blueprints require.
-
-### Added
-- A compact blueprint format (`data/hearthstead/blueprints/**.blueprint`) next to vanilla structure
-  files. A structure file with the same name still wins, so custom designs keep working.
-- `NOTICE.md` with the credits and license of the blueprints, also in the jar; credits in the
-  README, `fabric.mod.json` and the release notes.
-
 ## [0.46.0-beta] - 2026-11-05
 
 ### Added

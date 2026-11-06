@@ -68,23 +68,14 @@ public final class Blueprints {
         return Hearthstead.id("styles/" + style + "/" + hut + "/level" + level);
     }
 
-    /**
-     * The building's blueprint in its style, falling back to the classic style if missing. A level
-     * no style has a blueprint for (the tavern stops at level 3) keeps the building of the highest
-     * level below it.
-     */
+    /** The building's blueprint in its style, falling back to the classic style if missing. */
     @Nullable
     public static Blueprint get(MinecraftServer server, BuildingData building, int level) {
-        for (int lvl = level; lvl >= 1; lvl--) {
-            Blueprint blueprint = load(server, id(building.type(), building.style(), lvl));
-            if (blueprint == null && !Styles.CLASSIC.equals(building.style())) {
-                blueprint = load(server, id(building.type(), Styles.CLASSIC, lvl));
-            }
-            if (blueprint != null) {
-                return blueprint;
-            }
+        Blueprint blueprint = load(server, id(building, level));
+        if (blueprint == null && !Styles.CLASSIC.equals(building.style())) {
+            blueprint = load(server, id(building.type(), Styles.CLASSIC, level));
         }
-        return null;
+        return blueprint;
     }
 
     public static Identifier decorationId(String style, String name) {
@@ -184,82 +175,10 @@ public final class Blueprints {
         return best;
     }
 
-    /**
-     * A blueprint: a vanilla structure ({@code structure/<path>.nbt}, which is also what a structure
-     * block saves, so players can override any blueprint), or else a compact Hearthstead blueprint
-     * ({@code blueprints/<path>.blueprint}, the format the imported style packs ship in).
-     */
     @Nullable
     private static Blueprint load(MinecraftServer server, Identifier id) {
-        return CACHE.computeIfAbsent(id, key -> {
-            Optional<StructureTemplate> template = server.getStructureManager().get(key);
-            if (template.isPresent()) {
-                return Optional.of(parse(server, key, template.get()));
-            }
-            return readCompact(server, key);
-        }).orElse(null);
-    }
-
-    /** Whether a compact blueprint file exists for this id. */
-    static Identifier compactFile(Identifier id) {
-        return Identifier.fromNamespaceAndPath(id.getNamespace(), "blueprints/" + id.getPath() + ".blueprint");
-    }
-
-    /**
-     * Reads a compact blueprint: gzipped NBT with {@code size} [x, y, z], a {@code palette} of block
-     * states and {@code blocks}, an int array of palette indices, two 16-bit indices per int, in
-     * y, z, x order. Structure void is left out (the builder leaves those spots alone).
-     */
-    private static Optional<Blueprint> readCompact(MinecraftServer server, Identifier id) {
-        var resource = server.getResourceManager().getResource(compactFile(id));
-        if (resource.isEmpty()) {
-            return Optional.empty();
-        }
-        CompoundTag tag;
-        try (java.io.InputStream in = resource.get().open()) {
-            tag = net.minecraft.nbt.NbtIo.readCompressed(in, net.minecraft.nbt.NbtAccounter.unlimitedHeap());
-        } catch (java.io.IOException e) {
-            Hearthstead.LOGGER.warn("Could not read blueprint {}: {}", id, e.toString());
-            return Optional.empty();
-        }
-        ListTag size = tag.getListOrEmpty("size");
-        int sx = size.getIntOr(0, 0), sy = size.getIntOr(1, 0), sz = size.getIntOr(2, 0);
-        var blocks = server.registryAccess().lookupOrThrow(Registries.BLOCK);
-        List<BlockState> palette = new ArrayList<>();
-        tag.getListOrEmpty("palette").compoundStream().forEach(t -> palette.add(NbtUtils.readBlockState(blocks, t)));
-        int[] packed = tag.getIntArray("blocks").orElse(new int[0]);
-        int total = sx * sy * sz;
-        if (palette.isEmpty() || packed.length * 2 < total) {
-            Hearthstead.LOGGER.warn("Blueprint {} is incomplete", id);
-            return Optional.empty();
-        }
-        List<BlockPos> positions = new ArrayList<>();
-        List<BlockState> states = new ArrayList<>();
-        BlockPos anchor = null;
-        Direction anchorFacing = Direction.NORTH;
-        for (int i = 0; i < total; i++) {
-            int value = packed[i >> 1];
-            int index = (i & 1) == 0 ? (value >>> 16) & 0xFFFF : value & 0xFFFF;
-            BlockState state = index < palette.size() ? palette.get(index) : Block.stateById(0);
-            if (state.is(net.minecraft.world.level.block.Blocks.STRUCTURE_VOID)) {
-                continue;
-            }
-            BlockPos pos = new BlockPos(i % sx, i / (sx * sz), (i / sx) % sz);
-            if (state.getBlock() instanceof HutBlock && anchor == null) {
-                anchor = pos;
-                anchorFacing = state.getValue(HutBlock.FACING);
-            }
-            positions.add(pos);
-            states.add(state);
-        }
-        if (anchor == null) {
-            anchor = new BlockPos(sx / 2, 1, sz / 2);
-        }
-        List<Blueprint.Entry> entries = new ArrayList<>(positions.size());
-        for (int i = 0; i < positions.size(); i++) {
-            entries.add(new Blueprint.Entry(positions.get(i).subtract(anchor), states.get(i)));
-        }
-        return Optional.of(new Blueprint(entries, anchorFacing));
+        return CACHE.computeIfAbsent(id, key -> server.getStructureManager().get(key).map(t -> parse(server, key, t)))
+                .orElse(null);
     }
 
     private static Blueprint parse(MinecraftServer server, Identifier id, StructureTemplate template) {

@@ -244,20 +244,20 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             context.waitForScreen(BuildToolScreen.class);
             context.waitTicks(10);
             context.takeScreenshot("build_tool_preview");
-            // Switch the preview to the Desert Oasis (sandstone) style before placing it.
+            // Switch the preview to the desert style before placing it.
             context.runOnClient(client -> {
                 PendingPlacement.set(previewPos, Direction.NORTH);
-                ClientPlayNetworking.send(new BlueprintRequestPayload(BuildingType.LUMBERJACK.id(), java.util.Optional.empty(), "sandstone"));
+                ClientPlayNetworking.send(new BlueprintRequestPayload(BuildingType.LUMBERJACK.id(), java.util.Optional.empty(), "desert"));
             });
             context.waitTicks(10);
-            context.takeScreenshot("build_tool_preview_sandstone");
+            context.takeScreenshot("build_tool_preview_desert");
             context.clickScreenButton("gui.hearthstead.build_tool.place");
             context.waitTicks(20);
             boolean placed = singleplayer.getServer().computeOnServer(server -> {
                 Colony colony = ColonyManager.get(server).colonyAt(player(server).level().dimension(), previewPos);
                 return colony != null && colony.building(previewPos) != null
                         && colony.building(previewPos).type() == BuildingType.LUMBERJACK
-                        && colony.building(previewPos).style().equals("sandstone");
+                        && colony.building(previewPos).style().equals("desert");
             });
             if (!placed) {
                 throw new AssertionError("The build tool did not place the lumberjack hut");
@@ -375,13 +375,13 @@ public class ScreenshotClientTest implements FabricClientGameTest {
                 }
                 level.setBlockAndUpdate(base.offset(shown.length - 2, 0, 0), ModBlocks.SCARECROW.defaultBlockState()
                         .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
-                // A Shire-style residence behind the row of huts.
+                // A timber-style residence with its fenced front yard behind the row of huts.
                 Colony colony = ColonyManager.get(server).colonyAt(level.dimension(), townHall);
                 BlockPos house = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.offset(1, 0, 14));
                 level.setBlockAndUpdate(house, ModBlocks.HUTS.get(BuildingType.RESIDENCE).defaultBlockState()
                         .setValue(HutBlock.FACING, Direction.NORTH));
                 BuildingData residence = new BuildingData(house, BuildingType.RESIDENCE, 0);
-                residence.setStyle("shire");
+                residence.setStyle("timber");
                 colony.addBuilding(residence);
                 Construction.buildInstantly(level, Construction.plan(level, residence, 2));
                 residence.setLevel(2);
@@ -551,7 +551,7 @@ public class ScreenshotClientTest implements FabricClientGameTest {
         return best;
     }
 
-    /** Builds every decoration, in the classic and Medieval Oak styles, in rows facing north. */
+    /** Builds every decoration, in the classic and medieval styles, in rows facing north. */
     private static void buildDecorations(MinecraftServer server, BlockPos center) {
         ServerLevel level = player(server).level();
         java.util.List<String> names = dev.pikachux.hearthstead.blueprint.Blueprints.decorations(server);
@@ -562,7 +562,7 @@ public class ScreenshotClientTest implements FabricClientGameTest {
             BlockPos spot = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                     center.offset((column - perRow / 2) * 9, 0, row * 10));
             var decoration = new dev.pikachux.hearthstead.colony.Decoration(names.get(i), spot, Direction.NORTH,
-                    i % 2 == 0 ? dev.pikachux.hearthstead.blueprint.Styles.CLASSIC : "medievaloak");
+                    i % 2 == 0 ? dev.pikachux.hearthstead.blueprint.Styles.CLASSIC : "medieval");
             Construction.buildInstantly(level, decoration.plan(level));
         }
     }

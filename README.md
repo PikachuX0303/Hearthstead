@@ -8,10 +8,9 @@ research, and defend the town against barbarian and pirate raids.
 
 > Hearthstead is inspired by [MineColonies](https://github.com/ldtteam/minecolonies) and started
 > out as an unofficial Fabric port of it. It is **not affiliated with or endorsed by** the
-> MineColonies team (ldtteam). Its code is written from scratch against the 1.21.11 API and its
-> textures are vanilla Minecraft or original art. Its **buildings are MineColonies' style packs**,
-> by the LDT Team and the style pack builders (GPL-3.0), converted to vanilla blocks; see
-> [Building styles](#building-styles) and [Credits](#credits).
+> MineColonies team (ldtteam). It is written from scratch against the 1.21.11 API and contains
+> no code or assets from MineColonies; its textures are either vanilla Minecraft or original
+> art made for this mod.
 
 ## Download
 
@@ -43,12 +42,13 @@ problems, so keep backups of worlds you care about, and please report problems o
 
 What is in: the colony loop, 49 huts with 39 jobs, citizen skills and job outfits, families,
 visitors and expeditions, illness, guard classes and orders, requests, postbox orders and
-teachable recipes, decorations, 23 building styles, research, raids, colony events,
+teachable recipes, decorations, five building styles, research, raids, colony events,
 abandoned settlements, permissions, settings for every hut with a worker, an in-game settings
 screen and 13 languages.
 
 Not there yet (some of which MineColonies has):
 
+- Hand-built style packs. The five styles are generated.
 - More raider cultures (barbarians and pirates so far), more colony events.
 - Translated request names (such as "Food" or "Raw meat"); they are still English.
 
@@ -289,55 +289,20 @@ to worlds you host (singleplayer and LAN); on a server, the server's own file st
 
 ## Building styles
 
-Hearthstead's buildings are the hut blueprints of the **MineColonies style packs**, made by the
-LDT Team and the style pack builders listed below and published under GPL-3.0. Every hut can be
-built in each of 23 styles:
+Every hut can be built in one of five styles: **Classic**, **Medieval** (stone brick and
+spruce), **Desert** (sandstone with flat roofs), **Nordic** (spruce and cobblestone) and
+**Timber** (half-timbered: stone base, white plaster in a dark oak frame). Buildings keep the
+same size and interior in every style, and each has a rope-fenced front yard with lanterns
+by the entrance.
 
-| Style | Id | MineColonies pack | Builders |
-| --- | --- | --- | --- |
-| **Original** | `classic` | Minecolonies Original | many |
-| **Urban Savanna** | `acacia` | Urban Savanna | John Reiher |
-| **Ancient Athens** | `ancientathens` | Ancient Athens | John Reiher, Pixblockus, _Raycoms_, Thodor12 |
-| **Urban Birch** | `birch` | Urban Birch | Raycoms, Aravan, Cugo |
-| **Caledonia** | `caledonia` | Caledonia | Thaylar |
-| **Cavern** | `cavern` | Cavern | LadyShatana |
-| **Colonial** | `colonial` | Colonial | Raycoms, John Reiher, SomeAddons, Thodor12 |
-| **Dark Oak Treehouse** | `darkoak` | Dark Oak Treehouse | Annie, Cugo |
-| **Fortress** | `fortress` | Fortress | Aravan |
-| **Incan** | `incan` | Incan | Raycoms, John Reiher, SomeAddons |
-| **Jungle Treehouse** | `jungle` | Jungle Treehouse | John Reiher, assisted by Raycoms & Pixblockus |
-| **Lost Mesa City** | `lostcity` | Lost Mesa City | Raycoms, John Reiher, SomeAddons |
-| **Medieval Birch** | `medievalbirch` | Medieval Birch | Carlansor |
-| **Medieval Dark Oak** | `medievaldarkoak` | Medieval Dark Oak | Carlansor |
-| **Medieval Oak** | `medievaloak` | Medieval Oak | Carlansor |
-| **Medieval Spruce** | `medievalspruce` | Medieval Spruce | Carlansor |
-| **Nordic Spruce** | `nordic` | Nordic Spruce | Luna, John Reiher |
-| **Pagoda** | `pagoda` | Pagoda | Thaylar |
-| **Desert Oasis** | `sandstone` | Desert Oasis | Raycoms, John Reiher, SomeAddons, AravanFox, Moobien |
-| **Shire** | `shire` | Shire | Daddy_P1G, JohnReiher, and others |
-| **Space Wars** | `spacewars` | Space Wars | JohnReiher & Raycoms |
-| **Stalactite Caves** | `truedwarven` | Stalactite Caves | Luna |
-| **Warped Netherlands** | `warped` | Warped Netherlands | Cugo |
-
-The blueprints were converted for Hearthstead by `tools/import_blueprints.py`. MineColonies'
-own blocks become vanilla ones: Domum Ornamentum's shingles, panels, timber frames and doors
-become the stairs, slabs, trapdoors, blocks and doors of the material they were made of (Domum
-Ornamentum's own materials, such as thatch or roof tiles, become the closest vanilla block),
-racks become barrels and compost barrels composters. So the buildings look plainer than in
-MineColonies. MineColonies has no blueprint for the Quarry, Stash and Postbox, which keep
-Hearthstead's own buildings; the Tavern stops changing after level 3, as in MineColonies.
-
-The buildings are much larger than Hearthstead's earlier generated ones: a level 1 hut takes from
-a few hundred to a few thousand blocks. Worlds from earlier versions keep their buildings; their
-Medieval, Desert and Timber styles become Medieval Oak, Desert Oasis and Medieval Dark Oak, and
-the next upgrade or repair builds the new design.
-
-![Build Tool preview in the Desert Oasis style](docs/screenshots/build_tool_sandstone.png)
+![A timber-style residence with its front yard](docs/screenshots/timber_yard.png)
 
 - **Colony default:** new huts get the colony's default style. Change it with **Change Style** on
   the Town Hall's Colony tab.
 - **Per building:** the Build Tool's style switcher (◀ Style ▶) previews a hut in each style
   before placing it, and picks the style for an upgrade. Each building remembers its style.
+
+![Build Tool preview in the desert style](docs/screenshots/build_tool_desert.png)
 
 ## Build Tool
 
@@ -385,8 +350,7 @@ Any builder can take these jobs, whatever the level of their hut. Cancel one wit
 Decorations make a colony look lived in: a **Well**, a **Fountain**, a **Lamppost**, a
 **Bench**, a **Flower Bed**, a **Market Stall**, a **Pavilion**, a **Campfire Circle**, a
 **Banner Pole**, a **Hay Pile**, a **Path**, a **Path Crossing**, a **Wall** and a **Gate**.
-Each comes in five looks: Original, Medieval Oak, Desert Oasis, Nordic Spruce and Medieval
-Dark Oak; the other styles use the Original look.
+Each comes in every building style.
 
 1. Right-click a block with the Build Tool and switch to the **Decorations** tab.
 2. Pick a decoration, then move, rotate and restyle the preview like a hut.
@@ -734,11 +698,11 @@ start them with `/hs event merchant` or `/hs event festival`.
    Use the **Build Tool** to see how much room each building needs before placing it.
 2. Put some food (bread, cooked meat, and so on) into the Town Hall's inventory.
 3. Place a **Builder's Hut** and fill it with building materials. Open any hut
-   to see which materials its blueprint still needs. A level 1 hut needs from a few hundred to a
-   few thousand blocks, mostly planks, logs, stone, glass, stairs and slabs of its style.
+   to see which materials its blueprint still needs. A level 1 hut needs about 250-300 blocks:
+   planks, logs, cobblestone or stone bricks, glass, stairs, a slab, a door and torches.
 4. The builder builds its own hut first, then the Town Hall, then the other huts in order.
-5. Huts need room, and higher levels need more. Use the Build Tool's preview to see each
-   building's size. The builder clears anything in the way, so leave space between huts.
+5. Huts need room: a level 1 building is 7×7, and level 5 is 13×13. The builder clears
+   anything in the way, so leave space between huts.
 6. Add a **Residence** for more citizens, and work huts such as a Lumberjack with an axe inside.
 7. Add a **Warehouse** and a **Deliveryman's Hut**. From then on, stock the Warehouse instead
    of individual huts: the deliveryman brings materials, tools and food to wherever they
@@ -746,30 +710,28 @@ start them with `/hs event merchant` or `/hs event festival`.
 
 ## Schematics (blueprints)
 
-The built-in hut blueprints are in a compact format (`.blueprint`: a gzipped palette and block
-array) at `data/hearthstead/blueprints/huts/<hut>/level<1-5>.blueprint` (the Original style) and
-`data/hearthstead/blueprints/styles/<style>/<hut>/level<1-5>.blueprint`, where `<hut>` is one of
+Blueprints are vanilla structure files. The built-in ones are at
+`data/hearthstead/structure/huts/<hut>/level<1-5>.nbt`, where `<hut>` is one of
 `townhall`, `residence`, `lumberjack`, `farmer`, `miner`, `guardtower`, `warehouse`, `builder`,
 `deliveryman`, `cook`, `fisherman`, `baker`, `smelter`, `shepherd`, `university`, `composter`,
 `sawmill`, `cowhand`, `chickenherder`, `swineherd`, `stonemason`, `florist`, `dyer`, `beekeeper`,
 `rabbitherder`, `glassblower`, `concretemixer`, `planter`, `alchemist`, `enchanter`, `crusher`,
 `sifter`, `mechanic`, `netherworker`, `blacksmith`, `fletcher`, `stonesmeltery`, `barracks`,
 `hospital`, `quarry`, `stash`, `library`, `combatacademy`, `archery`, `school`, `tavern`,
-`graveyard`, `postbox` and `mysticalsite`. The Quarry, Stash and Postbox are vanilla structure
-files at `data/hearthstead/structure/huts/<hut>/level<1-5>.nbt`.
+`graveyard`, `postbox` and `mysticalsite`.
 
-A vanilla structure file always wins over a built-in blueprint, so to use your own design:
+To use your own design:
 1. Build it in a creative world and put the matching hut block where the hut should sit.
    The way the hut block faces is the building's front.
 2. Save it with a **structure block** named `hearthstead:huts/<hut>/level<N>`, for example
-   `hearthstead:huts/residence/level2` (or `hearthstead:styles/<style>/<hut>/level<N>`).
+   `hearthstead:huts/residence/level2`.
 3. Run `/reload`. From then on, builders in that world use your design. To share a design
-   between worlds, put the `.nbt` file into a data pack at `data/hearthstead/structure/` and the
-   same path.
+   between worlds, put the `.nbt` file into a data pack at the same path.
 
-A data pack can add a whole new style with a folder of hut blueprints under
-`structure/styles/<style>/`; it shows up in the style list automatically, and any hut or level
-it lacks falls back to the Original blueprint.
+Other styles live at `data/hearthstead/structure/styles/<style>/<hut>/level<1-5>.nbt`
+(structure name `hearthstead:styles/<style>/<hut>/level<N>`). A data pack can add a whole new
+style by adding such a folder; it shows up in the style list automatically, and any hut or level
+it lacks falls back to the classic blueprint.
 
 Decorations live at `data/hearthstead/structure/decorations/<name>.nbt` (structure name
 `hearthstead:decorations/<name>`) and `data/hearthstead/structure/styles/<style>/decorations/<name>.nbt`.
@@ -779,11 +741,10 @@ layer (which replaces the ground), and its front faces north. Its icon in the Bu
 from `data/hearthstead/decoration_icons.json`, and its name from the translation key
 `decoration.hearthstead.<name>`.
 
-Air in a blueprint is cleared by the builder. Structure void is left untouched.
+Air in the structure is cleared by the builder. Structure void is left untouched.
 Block entity contents (for example, chest items) are not copied.
 
-The hut blueprints are imported from a MineColonies jar by `tools/import_blueprints.py`; the
-Quarry, Stash and Postbox and the decorations are generated by `tools/generate_schematics.py`.
+The default hut and decoration blueprints are generated by `tools/generate_schematics.py`.
 
 ## Building
 
@@ -809,18 +770,12 @@ scripts that generate the blueprints, textures and GUI sprites.
 
 In collaboration with claude.
 
-**Buildings:** the hut blueprints are from [MineColonies](https://github.com/ldtteam/minecolonies)'
-style packs, by the **LDT Team** and the style pack builders: Annie, Aravan (AravanFox), Carlansor,
-Cugo, Daddy_P1G, John Reiher, LadyShatana, Luna, Moobien, Pixblockus, Raycoms, SomeAddons,
-Thaylar, Thodor12 and many others ([style table](#building-styles)). They are licensed under GPL-3.0
-and were converted to vanilla blocks for Hearthstead.
-
-Inspired by MineColonies by the ldtteam; Hearthstead is not affiliated with or endorsed by them.
+Inspired by [MineColonies](https://github.com/ldtteam/minecolonies) by the ldtteam; Hearthstead
+is not affiliated with or endorsed by them.
 
 ## License
 
-GPL-3.0 (see `LICENSE`). The building blueprints come from MineColonies, which is licensed
-GPL-3.0-only, so Hearthstead as a whole is distributed under GPL-3.0 only (see `NOTICE.md`).
+GPL-3.0 (see `LICENSE`), the same license MineColonies uses.
 
 ## Coming from the old name
 

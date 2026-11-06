@@ -139,7 +139,7 @@ public class BuildingData {
         BuildingData building = new BuildingData(BlockPos.of(tag.getLongOr("pos", 0L)),
                 BuildingType.byId(tag.getStringOr("type", "")),
                 tag.getIntOr("level", 0));
-        building.style = Styles.migrate(tag.getStringOr("style", Styles.CLASSIC));
+        building.style = tag.getStringOr("style", Styles.CLASSIC);
         tag.getCompound("settings").ifPresent(saved -> {
             for (String key : saved.keySet()) {
                 saved.getString(key).ifPresent(value -> building.settings.put(key, value));
