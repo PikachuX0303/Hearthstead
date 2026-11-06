@@ -1,0 +1,161 @@
+{
+  "acacia": {
+    "name": "Urban Savanna",
+    "authors": [
+      "John Reiher"
+    ]
+  },
+  "ancientathens": {
+    "name": "Ancient Athens",
+    "authors": [
+      "John Reiher",
+      "Pixblockus",
+      "_Raycoms_",
+      "Thodor12"
+    ]
+  },
+  "birch": {
+    "name": "Urban Birch",
+    "authors": [
+      "Raycoms",
+      "Aravan",
+      "Cugo"
+    ]
+  },
+  "caledonia": {
+    "name": "Caledonia",
+    "authors": [
+      "Thaylar"
+    ]
+  },
+  "cavern": {
+    "name": "Cavern",
+    "authors": [
+      "LadyShatana"
+    ]
+  },
+  "colonial": {
+    "name": "Colonial",
+    "authors": [
+      "Raycoms",
+      "John Reiher",
+      "SomeAddons",
+      "Thodor12"
+    ]
+  },
+  "darkoak": {
+    "name": "Dark Oak Treehouse",
+    "authors": [
+      "Annie",
+      "Cugo"
+    ]
+  },
+  "fortress": {
+    "name": "Fortress",
+    "authors": [
+      "Aravan"
+    ]
+  },
+  "incan": {
+    "name": "Incan",
+    "authors": [
+      "Raycoms",
+      "John Reiher",
+      "SomeAddons"
+    ]
+  },
+  "jungle": {
+    "name": "Jungle Treehouse",
+    "authors": [
+      "John Reiher",
+      "assisted by Raycoms & Pixblockus"
+    ]
+  },
+  "lostcity": {
+    "name": "Lost Mesa City",
+    "authors": [
+      "Raycoms",
+      "John Reiher",
+      "SomeAddons"
+    ]
+  },
+  "medievalbirch": {
+    "name": "Medieval Birch",
+    "authors": [
+      "Carlansor"
+    ]
+  },
+  "medievaldarkoak": {
+    "name": "Medieval Dark Oak",
+    "authors": [
+      "Carlansor"
+    ]
+  },
+  "medievaloak": {
+    "name": "Medieval Oak",
+    "authors": [
+      "Carlansor"
+    ]
+  },
+  "medievalspruce": {
+    "name": "Medieval Spruce",
+    "authors": [
+      "Carlansor"
+    ]
+  },
+  "nordic": {
+    "name": "Nordic Spruce",
+    "authors": [
+      "Luna",
+      "John Reiher"
+    ]
+  },
+  "original": {
+    "name": "Minecolonies Original",
+    "authors": [
+      "many"
+    ]
+  },
+  "pagoda": {
+    "name": "Pagoda",
+    "authors": [
+      "Thaylar"
+    ]
+  },
+  "sandstone": {
+    "name": "Desert Oasis",
+    "authors": [
+      "Raycoms",
+      "John Reiher",
+      "SomeAddons",
+      "AravanFox",
+      "Moobien"
+    ]
+  },
+  "shire": {
+    "name": "Shire",
+    "authors": [
+      "Daddy_P1G",
+      "JohnReiher",
+      "and others"
+    ]
+  },
+  "spacewars": {
+    "name": "Space Wars",
+    "authors": [
+      "JohnReiher & Raycoms"
+    ]
+  },
+  "truedwarven": {
+    "name": "Stalactite Caves",
+    "authors": [
+      "Luna"
+    ]
+  },
+  "warped": {
+    "name": "Warped Netherlands",
+    "authors": [
+      "Cugo"
+    ]
+  }
+}

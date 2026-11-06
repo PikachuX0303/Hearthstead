@@ -196,6 +196,7 @@ public class BuildToolScreen extends ColonyScreen {
                     left + 8, top + 29, lineWidth, TEXT_LIGHT);
         }
         int styleY = top + 40 + 2 * (BUTTON + 2) + 2;
-        centered(g, Component.translatable("gui.hearthstead.style", Styles.displayName(preview.style())), left + 8 + 94, styleY + 6, TEXT);
+        fittedCentered(g, Component.translatable("gui.hearthstead.style", Styles.displayName(preview.style())), left + 8 + 94,
+                styleY + 6, 140, TEXT, false);
     }
 }

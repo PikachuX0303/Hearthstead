@@ -39,7 +39,7 @@ public class JobGameTests {
     @GameTest(environment = "hearthstead-gametest:fisherman", structure = PLATFORM, maxTicks = 6000, skyAccess = true)
     public void fishermanCatchesFish(GameTestHelper helper) {
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
-        BuildingData fisher = TestColonies.hut(helper, colony, new BlockPos(8, 1, 8), BuildingType.FISHERMAN, 1);
+        BuildingData fisher = TestColonies.hutUnbuilt(helper, colony, new BlockPos(8, 1, 8), BuildingType.FISHERMAN, 1);
         // A pond with a stone rim so the water cannot spread onto the shore.
         for (BlockPos pos : BlockPos.betweenClosed(15, 0, 3, 27, 0, 15)) {
             boolean rim = pos.getX() == 15 || pos.getX() == 27 || pos.getZ() == 3 || pos.getZ() == 15;
@@ -302,10 +302,14 @@ public class JobGameTests {
     @GameTest(environment = "hearthstead-gametest:florist", structure = PLATFORM, maxTicks = 3000, skyAccess = true)
     public void floristPicksFlowers(GameTestHelper helper) {
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
-        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.FLORIST, 1);
-        for (int x = 12; x <= 16; x += 2) {
-            helper.setBlock(new BlockPos(x, 0, 19), Blocks.GRASS_BLOCK);
-            helper.setBlock(new BlockPos(x, 1, 19), Blocks.POPPY);
+        BuildingData hut = TestColonies.hutUnbuilt(helper, colony, new BlockPos(14, 1, 14), BuildingType.FLORIST, 1);
+        // The florist leaves the building's own area alone: grow the flowers just outside it.
+        var house = dev.pikachux.hearthstead.blueprint.Blueprints.footprint(helper.getLevel().getServer(), helper.getLevel(), hut);
+        var level = helper.getLevel();
+        for (int x = -2; x <= 2; x += 2) {
+            BlockPos flower = new BlockPos(hut.pos().getX() + x, hut.pos().getY(), house.maxZ() + 1);
+            level.setBlockAndUpdate(flower.below(), Blocks.GRASS_BLOCK.defaultBlockState());
+            level.setBlockAndUpdate(flower, Blocks.POPPY.defaultBlockState());
         }
         CitizenData citizen = colony.addNewCitizen(helper.getLevel());
         helper.succeedWhen(() -> {
@@ -338,14 +342,12 @@ public class JobGameTests {
     @GameTest(environment = "hearthstead-gametest:beekeeper", structure = PLATFORM, maxTicks = 2000, skyAccess = true)
     public void beekeeperHarvestsHoney(GameTestHelper helper) {
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
-        BuildingData hut = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.BEEKEEPER, 1);
+        BuildingData hut = TestColonies.hutUnbuilt(helper, colony, new BlockPos(14, 1, 14), BuildingType.BEEKEEPER, 1);
         TestColonies.give(helper, hut, Items.SHEARS, 1);
-        BlockPos hive = hut.pos().offset(-1, 0, 2);
+        BlockPos hive = hut.pos().offset(-1, 0, 3);
         var level = helper.getLevel();
-        if (!(level.getBlockState(hive).getBlock() instanceof net.minecraft.world.level.block.BeehiveBlock)) {
-            throw helper.assertionException("Expected the apiary's beehive at " + hive + ", found " + level.getBlockState(hive));
-        }
-        level.setBlockAndUpdate(hive, level.getBlockState(hive).setValue(net.minecraft.world.level.block.BeehiveBlock.HONEY_LEVEL, 5));
+        level.setBlockAndUpdate(hive, Blocks.BEEHIVE.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.BeehiveBlock.HONEY_LEVEL, 5));
         CitizenData citizen = colony.addNewCitizen(level);
         helper.succeedWhen(() -> {
             if (TestColonies.count(helper, hut, Items.HONEYCOMB) == 0) {

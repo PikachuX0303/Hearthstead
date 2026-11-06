@@ -37,24 +37,31 @@ public class ColonyGameTests {
     public void allBlueprintsLoad(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         var styles = Styles.available(level.getServer());
-        if (!styles.containsAll(java.util.List.of("classic", "medieval", "desert", "nordic", "timber"))) {
-            throw helper.assertionException("Missing built-in styles: " + styles);
+        var expected = java.util.List.of("classic", "acacia", "ancientathens", "birch", "caledonia", "cavern", "colonial",
+                "darkoak", "fortress", "incan", "jungle", "lostcity", "medievalbirch", "medievaldarkoak", "medievaloak",
+                "medievalspruce", "nordic", "pagoda", "sandstone", "shire", "spacewars", "truedwarven", "warped");
+        if (!styles.equals(expected)) {
+            throw helper.assertionException("Expected the imported styles, got " + styles);
         }
         for (String style : styles) for (BuildingType type : BuildingType.values()) {
             BuildingData building = new BuildingData(BlockPos.ZERO, type, 0);
             building.setStyle(style);
             for (int lvl = 1; lvl <= BuildingType.MAX_LEVEL; lvl++) {
-                if (level.getServer().getStructureManager().get(Blueprints.id(building, lvl)).isEmpty()) {
-                    throw helper.assertionException("Style " + style + " lacks " + Blueprints.id(building, lvl));
-                }
+                // A style without a blueprint for some hut or level uses the classic one.
                 Blueprint blueprint = Blueprints.get(level.getServer(), building, lvl);
                 if (blueprint == null) {
                     throw helper.assertionException("Missing blueprint " + Blueprints.id(building, lvl));
                 }
-                for (Direction facing : Direction.Plane.HORIZONTAL) {
-                    if (blueprint.placements(BlockPos.ZERO, facing).isEmpty()) {
-                        throw helper.assertionException("Empty blueprint " + Blueprints.id(building, lvl));
-                    }
+                var entries = blueprint.entries();
+                // Exactly one hut block, this hut's, at the anchor.
+                long huts = entries.stream().filter(e -> e.state().getBlock() instanceof dev.pikachux.hearthstead.block.HutBlock).count();
+                boolean anchored = entries.stream().anyMatch(e -> e.offset().equals(BlockPos.ZERO)
+                        && e.state().is(ModBlocks.HUTS.get(type)));
+                if (blueprint.placements(BlockPos.ZERO, Direction.NORTH).isEmpty()) {
+                    throw helper.assertionException("Empty blueprint " + Blueprints.id(building, lvl));
+                }
+                if (huts != 1 || !anchored) {
+                    throw helper.assertionException(Blueprints.id(building, lvl) + " has " + huts + " hut blocks, anchored " + anchored);
                 }
             }
         }
@@ -121,13 +128,23 @@ public class ColonyGameTests {
     public void stylesChangeTheBuilding(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
-        colony.setStyle("desert");
+        colony.setStyle(dev.pikachux.hearthstead.blueprint.Styles.migrate("desert"));
+        if (!"sandstone".equals(colony.style())) {
+            throw helper.assertionException("Expected the old desert style to become sandstone, got " + colony.style());
+        }
         BuildingData residence = TestColonies.hut(helper, colony, new BlockPos(16, 1, 14), BuildingType.RESIDENCE, 0);
         residence.setStyle(colony.style());
-        Construction.buildInstantly(level, Construction.plan(level, residence, 1));
-        BlockPos corner = helper.absolutePos(new BlockPos(16, 1, 14)).offset(-3, 0, -3);
-        if (!level.getBlockState(corner).is(net.minecraft.world.level.block.Blocks.CUT_SANDSTONE)) {
-            throw helper.assertionException("Expected a cut sandstone corner, found " + level.getBlockState(corner));
+        var sandstone = Construction.plan(level, residence, 1);
+        residence.setStyle(dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
+        var classic = Construction.plan(level, residence, 1);
+        residence.setStyle(colony.style());
+        if (sandstone.equals(classic)) {
+            throw helper.assertionException("Expected the sandstone residence to differ from the classic one");
+        }
+        Construction.buildInstantly(level, sandstone);
+        long matching = sandstone.stream().filter(p -> level.getBlockState(p.pos()).equals(p.state())).count();
+        if (matching < sandstone.size() * 9 / 10) {
+            throw helper.assertionException("Expected the sandstone residence to be built, " + matching + " of " + sandstone.size());
         }
         helper.succeed();
     }

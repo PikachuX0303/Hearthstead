@@ -64,6 +64,24 @@ final class TestColonies {
         return building;
     }
 
+    /**
+     * Places a hut at the given level without building it: for tests of a job rather than a
+     * building, so the (large) building does not get in the way.
+     */
+    static BuildingData hutUnbuilt(GameTestHelper helper, Colony colony, BlockPos relative, BuildingType type, int level) {
+        ServerLevel world = helper.getLevel();
+        BlockPos pos = helper.absolutePos(relative);
+        world.setBlockAndUpdate(pos, ModBlocks.HUTS.get(type).defaultBlockState());
+        ((HutBlockEntity) world.getBlockEntity(pos)).setColonyId(colony.id());
+        BuildingData building = new BuildingData(pos, type, level);
+        colony.addBuilding(building);
+        WorkOrder order = colony.workOrder(pos);
+        if (order != null) {
+            colony.removeWorkOrder(order);
+        }
+        return building;
+    }
+
     static void give(GameTestHelper helper, BuildingData building, Item item, int count) {
         ItemStack rest = Storage.insert(Storage.containers(helper.getLevel(), building), new ItemStack(item, count));
         if (!rest.isEmpty()) {

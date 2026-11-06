@@ -65,7 +65,8 @@ jobs:
             echo "**Requires:** Minecraft 1.21.11, Fabric Loader 0.16.0 or newer, and Fabric API."
             echo "Put the jar into your \`mods\` folder."
             echo
-            echo "**Credits:** PikachuX0303, PerniciousPx and FallenStar114."
+            echo "**Credits:** PikachuX0303, PerniciousPx and FallenStar114. Buildings from the MineColonies"
+            echo "style packs by the LDT Team and the style pack builders (GPL-3.0), see NOTICE.md."
           } >> release-notes.md
 
       - name: Publish release

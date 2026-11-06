@@ -1014,7 +1014,7 @@ public class Colony {
         colony.happenings.load(tag.getCompoundOrEmpty("events"));
         colony.permissions.load(tag.getCompoundOrEmpty("permissions"));
         colony.research.load(tag.getCompoundOrEmpty("research"));
-        colony.style = tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC);
+        colony.style = dev.pikachux.hearthstead.blueprint.Styles.migrate(tag.getStringOr("style", dev.pikachux.hearthstead.blueprint.Styles.CLASSIC));
         tag.getListOrEmpty("workOrders").compoundStream().map(WorkOrder::load).forEach(colony.workOrders::add);
         tag.getListOrEmpty("decorations").compoundStream().map(Decoration::load).forEach(colony.decorations::add);
         tag.getListOrEmpty("fields").forEach(t -> t.asLong().ifPresent(l -> colony.fields.add(BlockPos.of(l))));

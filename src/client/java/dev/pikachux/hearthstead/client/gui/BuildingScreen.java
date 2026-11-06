@@ -317,9 +317,13 @@ public class BuildingScreen extends ColonyScreen {
     }
 
     private void renderOverview(GuiGraphics g, int x, int y, int w, int bottom) {
-        text(g, Component.translatable("gui.hearthstead.colony", view.colonyName()), x, y, TEXT);
+        Component colonyLine = Component.translatable("gui.hearthstead.colony", view.colonyName());
+        text(g, colonyLine, x, y, TEXT);
+        // The style on the right, in what room the colony name leaves (style names can be long).
         Component style = Component.translatable("gui.hearthstead.style", Styles.displayName(view.style()));
-        text(g, style, x + w - font.width(style), y, TEXT_LIGHT);
+        int room = w - font.width(colonyLine) - 8;
+        int width = Math.min(font.width(style), room);
+        fitted(g, style, x + w - width, y, room, TEXT_LIGHT);
         y += 12;
         if (view.level() == 0) {
             y = wrapped(g, Component.translatable("gui.hearthstead.not_built"), x, y, w, TEXT_LIGHT);

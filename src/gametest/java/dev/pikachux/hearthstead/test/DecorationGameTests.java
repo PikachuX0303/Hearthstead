@@ -133,11 +133,11 @@ public class DecorationGameTests {
         ServerLevel level = helper.getLevel();
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
         BlockPos anchor = helper.absolutePos(new BlockPos(6, 1, 6));
-        Decoration fountain = new Decoration("fountain", anchor, Direction.SOUTH, "medieval");
+        Decoration fountain = new Decoration("fountain", anchor, Direction.SOUTH, "medievaloak");
         List<Blueprint.Placement> plan = fountain.plan(level);
         Construction.buildInstantly(level, plan);
         colony.addDecoration(fountain);
-        colony.addDecoration(new Decoration("lamppost", helper.absolutePos(new BlockPos(14, 1, 6)), Direction.NORTH, "medieval"));
+        colony.addDecoration(new Decoration("lamppost", helper.absolutePos(new BlockPos(14, 1, 6)), Direction.NORTH, "medievaloak"));
         colony.checkDecorations(level);
         check(helper, colony.decorations().size() == 1, "the unbuilt lamppost to be forgotten");
         check(helper, fountain.intact() && colony.decorationHappiness() == Decoration.HAPPINESS, "the fountain to count");

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Generates the default hut schematics as vanilla structure (.nbt) files.
+"""Generates Hearthstead's own blueprints as vanilla structure (.nbt) files: the huts the imported
+MineColonies style packs have no blueprint for (quarry, stash, postbox; see import_blueprints.py)
+and the decorations.
 
-Output: src/main/resources/data/hearthstead/structure/huts/<hut>/level<N>.nbt          (classic style)
-        src/main/resources/data/hearthstead/structure/styles/<style>/<hut>/level<N>.nbt (other styles)
+Output: src/main/resources/data/hearthstead/structure/huts/<hut>/level<N>.nbt          (OWN_HUTS only)
         src/main/resources/data/hearthstead/structure/decorations/<name>.nbt           (decorations, classic)
-        src/main/resources/data/hearthstead/structure/styles/<style>/decorations/<name>.nbt
+        src/main/resources/data/hearthstead/structure/styles/<pack>/decorations/<name>.nbt
         src/main/resources/data/hearthstead/decoration_icons.json                     (build tool icons)
+
+Decorations are drawn in five looks; each non-classic look is written into the folder of the
+imported style pack it suits (DECOR_FOLDERS).
 
 Every template is authored with the hut block facing north. The hut block marks
 the anchor: the template is rotated and positioned so that its hut block lines
@@ -717,7 +721,7 @@ def write_decorations():
     for style in DECOR_STYLES:
         for name in DECORATIONS:
             blocks = build_decoration(name, style)
-            folder = DECOR_OUT if style == "classic" else os.path.join(STYLE_OUT, style, "decorations")
+            folder = DECOR_OUT if style == "classic" else os.path.join(STYLE_OUT, DECOR_FOLDERS[style], "decorations")
             write_nbt(os.path.join(folder, name + ".nbt"), to_nbt(None, blocks))
             count += 1
     classic = DECOR_STYLES["classic"]
@@ -728,15 +732,26 @@ def write_decorations():
     return count
 
 
+# Huts the MineColonies style packs have no blueprint for: these keep Hearthstead's own buildings.
+OWN_HUTS = ("quarry", "stash", "postbox")
+# The imported style pack each decoration look is written for.
+DECOR_FOLDERS = {"medieval": "medievaloak", "desert": "sandstone", "nordic": "nordic", "timber": "medievaldarkoak"}
+
+
 def main():
+    import shutil
+    # Remove what earlier versions generated: every hut but OWN_HUTS, and the old style folders.
+    for hut in os.listdir(OUT):
+        if hut not in OWN_HUTS:
+            shutil.rmtree(os.path.join(OUT, hut))
+    if os.path.isdir(STYLE_OUT):
+        shutil.rmtree(STYLE_OUT)
     count = 0
-    for style in ["classic"] + list(ARCH_STYLES):
-        for hut in STYLES:
-            for level in range(1, 6):
-                size, blocks = build(hut, level, style)
-                folder = os.path.join(OUT, hut) if style == "classic" else os.path.join(STYLE_OUT, style, hut)
-                write_nbt(os.path.join(folder, f"level{level}.nbt"), to_nbt(size, blocks))
-                count += 1
+    for hut in OWN_HUTS:
+        for level in range(1, 6):
+            size, blocks = build(hut, level, "classic")
+            write_nbt(os.path.join(OUT, hut, f"level{level}.nbt"), to_nbt(size, blocks))
+            count += 1
     print("wrote", count, "schematics")
     print("wrote", write_decorations(), "decorations")
 

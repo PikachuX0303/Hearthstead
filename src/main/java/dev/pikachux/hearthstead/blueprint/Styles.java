@@ -17,6 +17,10 @@ import java.util.TreeSet;
 public final class Styles {
     public static final String CLASSIC = "classic";
     private static final String STYLE_FOLDER = "structure/styles/";
+    private static final String COMPACT_STYLE_FOLDER = "blueprints/styles/";
+    /** Styles of earlier versions and the imported style that replaces each. */
+    private static final java.util.Map<String, String> RENAMED = java.util.Map.of(
+            "medieval", "medievaloak", "desert", "sandstone", "timber", "medievaldarkoak");
 
     private static List<String> cache;
 
@@ -31,13 +35,20 @@ public final class Styles {
     public static List<String> available(MinecraftServer server) {
         if (cache == null) {
             TreeSet<String> found = new TreeSet<>();
-            server.getResourceManager().listResources("structure/styles", id -> id.getPath().endsWith(".nbt"))
-                    .keySet().stream()
-                    .filter(id -> id.getNamespace().equals("hearthstead"))
-                    .map(Identifier::getPath)
-                    .map(path -> path.substring(STYLE_FOLDER.length()))
-                    .map(path -> path.substring(0, path.indexOf('/')))
-                    .forEach(found::add);
+            for (String folder : List.of(STYLE_FOLDER, COMPACT_STYLE_FOLDER)) {
+                String extension = folder.equals(STYLE_FOLDER) ? ".nbt" : ".blueprint";
+                server.getResourceManager().listResources(folder.substring(0, folder.length() - 1),
+                                id -> id.getPath().endsWith(extension))
+                        .keySet().stream()
+                        .filter(id -> id.getNamespace().equals("hearthstead"))
+                        .map(Identifier::getPath)
+                        .map(path -> path.substring(folder.length()))
+                        .filter(path -> path.indexOf('/') > 0)
+                        .map(path -> path.substring(0, path.indexOf('/')))
+                        // A style is a folder of hut blueprints; decorations alone do not make one.
+                        .forEach(found::add);
+            }
+            found.removeIf(style -> !hasHuts(server, style));
             List<String> styles = new ArrayList<>();
             styles.add(CLASSIC);
             found.remove(CLASSIC);
@@ -45,6 +56,19 @@ public final class Styles {
             cache = List.copyOf(styles);
         }
         return cache;
+    }
+
+    /** A style name from an older save, mapped to the style that replaced it. */
+    public static String migrate(String style) {
+        return RENAMED.getOrDefault(style, style);
+    }
+
+    private static boolean hasHuts(MinecraftServer server, String style) {
+        var manager = server.getResourceManager();
+        return !manager.listResources("structure/styles/" + style,
+                        id -> id.getPath().endsWith(".nbt") && !id.getPath().contains("/decorations/")).isEmpty()
+                || !manager.listResources("blueprints/styles/" + style,
+                        id -> id.getPath().endsWith(".blueprint")).isEmpty();
     }
 
     public static boolean isValid(MinecraftServer server, String style) {

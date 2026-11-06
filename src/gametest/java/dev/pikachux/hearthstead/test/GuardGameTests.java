@@ -100,7 +100,7 @@ public class GuardGameTests {
     public void druidsThrowPotions(GameTestHelper helper) {
         helper.getLevel().getServer().setDifficulty(Difficulty.NORMAL, true);
         Colony colony = TestColonies.found(helper, new BlockPos(4, 1, 27));
-        BuildingData tower = TestColonies.hut(helper, colony, new BlockPos(14, 1, 14), BuildingType.GUARD_TOWER, 1);
+        BuildingData tower = TestColonies.hutUnbuilt(helper, colony, new BlockPos(14, 1, 14), BuildingType.GUARD_TOWER, 1);
         tower.setSetting(HutSettings.GUARD_CLASS.id(), "druid");
         stock(helper, tower, new ItemStack(Items.NETHER_WART, 8));
         CitizenData guard = colony.addNewCitizen(helper.getLevel());

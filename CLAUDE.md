@@ -31,13 +31,15 @@ and the chat welcome message (`event/WelcomeMessage.java`).
 Existing Fabric mod libraries may be used (for example Mod Menu, Cloth Config or YACL for a
 config screen). Prefer well-maintained libraries available for 1.21.11 on Modrinth, keep them
 optional where that is practical (the mod should still run with only Fabric API), check that
-their license is compatible with GPL-3.0-or-later, and list any required ones in the README
+their license is compatible with GPL-3.0-only, and list any required ones in the README
 download section and in `fabric.mod.json` `depends` (optional ones in `suggests`).
 
 ## Generated assets
 
-- `tools/generate_schematics.py`: hut and decoration blueprints for every style, and the
-  decoration icons (`decoration_icons.json`).
+- `tools/import_blueprints.py`: the hut blueprints (`data/hearthstead/blueprints/`), imported from a
+  MineColonies jar: `tools/import_blueprints.py <minecolonies jar> <minecraft 1.21.11 client jar>`.
+- `tools/generate_schematics.py`: the Quarry, Stash and Postbox (MineColonies has no blueprint for
+  them), the decorations and their icons (`decoration_icons.json`).
 - `tools/generate_textures.py`: barbarian and pirate skins, the Build Tool and Clipboard icons and
   the mod icon (`assets/hearthstead/icon.png`).
 - `tools/generate_ui.py`: hut block textures, hut block models and the GUI theme sprites.
@@ -49,7 +51,11 @@ README's "Job outfits" and "Credits" sections. New outfits go into `CitizenEntit
 job mapping in `CitizenEntity.outfit`; skins with slim (3 pixel) arms also into `SLIM_OUTFITS`
 (a game test checks that list against the textures).
 
-All art is original; do not copy textures from MineColonies or other mods.
+Textures and other art are original; do not copy textures from MineColonies or other mods.
+The one exception, decided by the owner: the hut blueprints are MineColonies' style packs (LDT
+Team and the style pack builders, GPL-3.0-only). Keep them credited in the README ("Building
+styles" and "Credits"), `NOTICE.md`, `fabric.mod.json` (contributors) and the release notes footer,
+and keep the mod GPL-3.0-only.
 
 ## Commits and GitHub posts
 
